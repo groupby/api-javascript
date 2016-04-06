@@ -35,7 +35,7 @@ ratings:
 # exclude_paths key.
 
 exclude_paths:
-- **/*.ts
-- **/*.json
-- **/*.md
-- LISCENCE
+  - **/*.ts
+  - **/*.json
+  - **/*.md
+  - LICENSE
