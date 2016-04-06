@@ -3,13 +3,18 @@ node_js:
 - '0.12'
 - '0.10'
 - iojs
-after_script:
+
+cache:
+  directories:
+  - node_modules
+
+after_success:
 - codeclimate-test-reporter < coverage/lcov.info
 deploy:
   provider: npm
   email: ops@groupbyinc.com
   skip_cleanup: true,
-  api_key:
-    secure: b2egzrvttMT2b/9PewLGSnNWLtB9CxuBmCWdpzF26zjAEF4ZFZ/U7De304OdmYKgr9c5NjzccsJQNVuNYyjCmT6m0ESfXvnbw3zJzb52125NalqHmHgxgsPV85HKA2VRvr17Aja7i4AQTiSxCczPgophsf3Gy8K+9E+JHLei/VqbZOnGfWsrxnNGGA6b8GVWweNTGyAZ4Zdxy8/r3ohdxp732v+jkdzP8nd6lyJVBmSdc25MmFH3ulJYlhOvvFqoiCrriqWY08FMUCw0/yUX2FfemkvB3S9ZiBmfvYIQDGLAJVpSjG8qo3PgBY9OhdDwl3nPpm/IrMq5G8pZuIHxHYBiyH34BUuwY/137OFVdZ+U5XOca4/0OtbSEkJOy1qz9N9w4EUXaO3cyU8vv8J9lz+qA7eDoqo34eecyWqcvS1Yhbhn6sdO8a4HYl5k1GseQOuFIBoC8nYuJFS2jZgg97iRCm8CGq9plV7J0MUz8uw8+KKuotMhacZUQgbf+evuKwBpNB+xjVcJ5If0GTSOWp2CELoTz4esGUf52h1/fVkogRzrQFIMbnMLp8g3U2COjwajhkzATWouh/Tdx1iURfVfEjqCGY49pg9Y24sxGq+LOyvvp87lnZUKuHTEZAIUjd9iGLfppPjJpeO2M//q5cbaKkcN0Y8GknWmh6RY56w=
+  api_key: $NPM_API_KEY
   on:
     tags: true
+    node: '0.12'
