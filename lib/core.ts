@@ -1,7 +1,7 @@
 /// <reference path="./all.d.ts" />
 
-require('object.assign');
 import * as request from 'requestretry';
+import assign = require('object-assign');
 import * as qs from 'qs';
 import {
   Request,
@@ -67,7 +67,7 @@ export class CloudBridge {
       method: 'POST',
       uri: this.bridgeUrl,
       qs: queryParams,
-      body: Object.assign(body, { clientKey: this.clientKey }),
+      body: assign(body, { clientKey: this.clientKey }),
       json: true,
 
       timeout: 1500,
@@ -76,11 +76,11 @@ export class CloudBridge {
       fullResponse: false
     };
     return request(options)
-      .then(res => res.records ? Object.assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
+      .then(res => res.records ? assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
   }
 
   private convertRecordFields(record: RawRecord): Record {
-    let converted = Object.assign(record, { id: record._id, url: record._u, title: record._t });
+    let converted = assign(record, { id: record._id, url: record._u, title: record._t });
     delete converted._id;
     delete converted._u;
     delete converted._t;
@@ -131,7 +131,7 @@ export class Query {
   }
 
   withConfiguration(configuration: QueryConfiguration): Query {
-    Object.assign(this.request, configuration);
+    assign(this.request, configuration);
     return this;
   }
 
@@ -141,7 +141,7 @@ export class Query {
   }
 
   withRefinements(navigationName: string, ...refinements: Array<ValueRefinement | RangeRefinement>): Query {
-    let convert = (refinement: Refinement) => <SelectedRefinement>Object.assign(refinement, { navigationName });
+    let convert = (refinement: Refinement) => <SelectedRefinement>assign(refinement, { navigationName });
     this.request.refinements.push(...refinements.map(convert));
     return this;
   }
@@ -193,9 +193,9 @@ export class Query {
   withQueryParams(queryParams: Object | string): Query {
     switch (typeof queryParams) {
       case 'string':
-        return Object.assign(this, { queryParams: this.convertQueryString(<string>queryParams) });
+        return assign(this, { queryParams: this.convertQueryString(<string>queryParams) });
       case 'object':
-        return Object.assign(this, { queryParams });
+        return assign(this, { queryParams });
     }
   }
 
