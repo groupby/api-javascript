@@ -1,8 +1,8 @@
 /// <reference path="../lib/all.d.ts" />
 
-import * as chai from 'chai';
-import * as sinon from 'sinon';
-import * as nock from 'nock';
+import chai = require('chai');
+import sinon = require('sinon');
+import nock = require('nock');
 
 import { CloudBridge, Query } from '../lib/core';
 import { Refinement } from '../lib/response-models';

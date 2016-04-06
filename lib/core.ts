@@ -1,8 +1,11 @@
 /// <reference path="./all.d.ts" />
 
-import * as request from 'requestretry';
+if (!global.Promise) {
+  require('any-promise/register')('bluebird');
+}
+import request = require('requestretry');
 import assign = require('object-assign');
-import * as qs from 'qs';
+import qs = require('qs');
 import {
   Request,
   SelectedValueRefinement,
