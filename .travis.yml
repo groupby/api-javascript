@@ -13,7 +13,6 @@ after_success:
 deploy:
   provider: npm
   email: ops@groupbyinc.com
-  skip_cleanup: true,
   api_key: $NPM_API_KEY
   on:
     tags: true
