@@ -1,7 +1,7 @@
 /// <reference path="./all.d.ts" />
 
 if (!global.Promise) {
-  require('any-promise/register')('bluebird');
+  require('es6-promise').polyfill();
 }
 import request = require('requestretry');
 import assign = require('object-assign');
