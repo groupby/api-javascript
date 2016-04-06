@@ -32,7 +32,7 @@ The Uber JAR must be used to ensure shaded dependencies are included correctly.
 
 #### NPM
 
-  npm i --save groupby-api
+    npm i --save groupby-api
 
 ### Examples
 
