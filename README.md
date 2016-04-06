@@ -1,7 +1,6 @@
 GroupBy Search API
 ========
 
-<!-- ![release](https://img.shields.io/maven-central/v/com.groupbyinc/api-javascript.svg) -->
 ![license](https://img.shields.io/github/license/groupby/api-javascript.svg)
 [![npm](https://img.shields.io/npm/dm/groupby-api.svg)](https://www.npmjs.com/package/groupby-api)
 [![npm](https://img.shields.io/npm/v/groupby-api.svg)](https://www.npmjs.com/package/groupby-api)
