@@ -13,7 +13,7 @@ declare module '__groupby-api/core' {
     import { Results, ValueRefinement, RangeRefinement, Navigation } from '__groupby-api/response-models';
     export class CloudBridge {
         constructor(clientKey: string, customerId: string);
-        search(query: Query, callback: (Error?, Results?) => void): Axios.IPromise<Results> | void;
+        search(query: Query, callback?: (Error?, Results?) => void): Axios.IPromise<Results> | void;
     }
     export interface QueryConfiguration {
         userId?: string;

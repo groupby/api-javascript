@@ -55,7 +55,7 @@ export class CloudBridge {
     this.bridgeClusterUrl = baseUrl + CLUSTER;
   }
 
-  search(query: Query, callback: (Error?, Results?) => void): Axios.IPromise<Results> | void {
+  search(query: Query, callback?: (Error?, Results?) => void): Axios.IPromise<Results> | void {
     let response = this.fireRequest(this.bridgeUrl, query.build(), query.queryParams);
     if (callback) {
       response.then(res => callback(undefined, res))
