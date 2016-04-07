@@ -1,6 +1,7 @@
 var dts = require('dts-bundle');
+var packageJson = require('../package.json');
 
 dts.bundle({
-    name: 'api-javascript',
+    name: packageJson.name,
     main: 'build/api-javascript.d.ts'
 });

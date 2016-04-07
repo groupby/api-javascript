@@ -149,7 +149,8 @@ gulp.task('clean', ['clean:dev', 'clean:prod', 'clean:typings']);
 gulp.task('default', function (cb) {
   runSequence(
     'ci',
-    'build',
+    'scripts:prod',
+    'definitions',
     cb
   );
 });
@@ -160,6 +161,8 @@ gulp.task('default', function (cb) {
  */
 gulp.task('build', function(cb) {
   runSequence(
+    'clean',
+    'typings',
     'scripts:prod',
     'definitions',
     cb
