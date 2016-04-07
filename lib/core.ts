@@ -3,7 +3,7 @@
 if (!global.Promise) {
   require('es6-promise').polyfill();
 }
-import request = require('requestretry');
+import axios = require('axios');
 import assign = require('object-assign');
 import qs = require('qs');
 import {
@@ -55,7 +55,7 @@ export class CloudBridge {
     this.bridgeClusterUrl = baseUrl + CLUSTER;
   }
 
-  search(query: Query, callback: (Error?, Results?) => void): PromiseLike<Results> | void {
+  search(query: Query, callback: (Error?, Results?) => void): Axios.IPromise<Results> | void {
     let response = this.fireRequest(this.bridgeUrl, query.build(), query.queryParams);
     if (callback) {
       response.then(res => callback(undefined, res))
@@ -65,24 +65,21 @@ export class CloudBridge {
     }
   }
 
-  private fireRequest(url: string, body: Request, queryParams: Object): PromiseLike<Results> {
+  private fireRequest(url: string, body: Request, queryParams: Object): Axios.IPromise<Results> {
     let options = {
-      method: 'POST',
-      uri: this.bridgeUrl,
-      qs: queryParams,
-      body: assign(body, { clientKey: this.clientKey }),
-      json: true,
-
-      timeout: 1500,
-      maxAttempts: 3,
-      retryDelay: 80,
-      fullResponse: false
+      url: this.bridgeUrl,
+      method: 'post',
+      params: queryParams,
+      data: assign(body, { clientKey: this.clientKey }),
+      responseType: 'json',
+      timeout: 1500
     };
-    return request(options)
+    return axios(options)
+      .then(res => <Results>res.data)
       .then(res => res.records ? assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
   }
 
-  private convertRecordFields(record: RawRecord): Record {
+  private convertRecordFields(record: RawRecord): Record | RawRecord {
     let converted = assign(record, { id: record._id, url: record._u, title: record._t });
     delete converted._id;
     delete converted._u;
@@ -95,7 +92,7 @@ export class CloudBridge {
   }
 }
 
-interface RawRecord {
+interface RawRecord extends Record {
   _id: string;
   _u: string;
   _t: string;

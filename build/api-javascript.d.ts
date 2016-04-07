@@ -11,7 +11,7 @@ declare module '__api-javascript/core' {
     import { Results, ValueRefinement, RangeRefinement, Navigation } from '__api-javascript/response-models';
     export class CloudBridge {
         constructor(clientKey: string, customerId: string);
-        search(query: Query, callback: (Error?, Results?) => void): PromiseLike<Results> | void;
+        search(query: Query, callback: (Error?, Results?) => void): Axios.IPromise<Results> | void;
     }
     export interface QueryConfiguration {
         userId?: string;

@@ -9,7 +9,7 @@ export declare class CloudBridge {
     private bridgeRefinementsSearchUrl;
     private bridgeClusterUrl;
     constructor(clientKey: string, customerId: string);
-    search(query: Query, callback: (Error?, Results?) => void): PromiseLike<Results> | void;
+    search(query: Query, callback: (Error?, Results?) => void): Axios.IPromise<Results> | void;
     private fireRequest(url, body, queryParams);
     private convertRecordFields(record);
 }
