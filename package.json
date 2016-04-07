@@ -10,7 +10,6 @@
     "test": "test"
   },
   "scripts": {
-    "preinstall": "npm install --ignore-scripts",
     "postinstall": "gulp typings",
     "test": "gulp ci"
   },
