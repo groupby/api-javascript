@@ -15,6 +15,7 @@ export interface Results {
     relatedQueries: Array<string>;
     rewrites: Array<string>;
     errors: string;
+    warnings: Array<string>;
     debugInfo: DebugInfo;
 }
 export interface Template {
@@ -42,6 +43,7 @@ export interface Record {
 export interface Navigation {
     name: string;
     refinements: Array<ValueRefinement | RangeRefinement>;
+    ignored: boolean;
 }
 export declare type RefinementType = 'Value' | 'Range';
 export interface Refinement {

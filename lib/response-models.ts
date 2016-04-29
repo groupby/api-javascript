@@ -21,6 +21,7 @@ export interface Results {
   rewrites: Array<string>;
 
   errors: string;
+  warnings: Array<string>;
   debugInfo: DebugInfo;
 }
 
@@ -53,6 +54,7 @@ export interface Record {
 export interface Navigation {
   name: string;
   refinements: Array<ValueRefinement | RangeRefinement>;
+  ignored: boolean;
 }
 
 export type RefinementType = 'Value' | 'Range';
