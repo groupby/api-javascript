@@ -28,7 +28,7 @@ export interface Results {
 export interface Template {
   name: string;
   ruleName: string;
-  zones: Object;
+  zones: any;
 }
 
 export interface PageInfo {
@@ -37,10 +37,10 @@ export interface PageInfo {
 }
 
 export interface DebugInfo {
-  rawRequest: Object;
-  rawResponse: Object;
-  rawAggregationsRequest: Object;
-  rawAggregationsResponse: Object;
+  rawRequest: any;
+  rawResponse: any;
+  rawAggregationsRequest: any;
+  rawAggregationsResponse: any;
 }
 
 export interface Record {
@@ -48,7 +48,7 @@ export interface Record {
   url: string;
   title: string;
   snippet?: string;
-  allMeta: Object;
+  allMeta: any;
 }
 
 export interface Navigation {

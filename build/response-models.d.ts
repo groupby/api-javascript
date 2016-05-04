@@ -21,24 +21,24 @@ export interface Results {
 export interface Template {
     name: string;
     ruleName: string;
-    zones: Object;
+    zones: any;
 }
 export interface PageInfo {
     recordStart: number;
     recordEnd: number;
 }
 export interface DebugInfo {
-    rawRequest: Object;
-    rawResponse: Object;
-    rawAggregationsRequest: Object;
-    rawAggregationsResponse: Object;
+    rawRequest: any;
+    rawResponse: any;
+    rawAggregationsRequest: any;
+    rawAggregationsResponse: any;
 }
 export interface Record {
     id: string;
     url: string;
     title: string;
     snippet?: string;
-    allMeta: Object;
+    allMeta: any;
 }
 export interface Navigation {
     name: string;

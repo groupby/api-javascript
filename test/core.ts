@@ -36,6 +36,24 @@ describe('My Library', function() {
     expect(query).to.be.ok;
   });
 
+  it('should be reuseable', done => {
+    let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
+      .post('/api/v1/search')
+      .twice()
+      .reply(200, 'success');
+
+    query = new Query('skirts');
+
+    bridge.search(query)
+      .then(results => expect(results).to.equal('success'))
+      .then(() => bridge.search(query))
+      .then(results => {
+        expect(results).to.equal('success');
+        mock.done();
+        done();
+      });
+  });
+
   it('should send a search query and return a promise', done => {
     let queryParams = {
       size: 20,

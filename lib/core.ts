@@ -55,7 +55,7 @@ export class CloudBridge {
     this.bridgeClusterUrl = baseUrl + CLUSTER;
   }
 
-  search(query: Query, callback?: (Error?, Results?) => void): Axios.IPromise<Results> | void {
+  search(query: Query, callback: (Error?, Results?) => void = undefined): Axios.IPromise<Results> | void {
     let response = this.fireRequest(this.bridgeUrl, query.build(), query.queryParams);
     if (callback) {
       response.then(res => callback(undefined, res))
@@ -268,9 +268,10 @@ export class Query {
   }
 
   build(): Request {
-    this.request.refinements.push(...NavigationConverter.convert(this.unprocessedNavigations));
+    let builtRequest = assign(new Request(), this.request);
+    builtRequest.refinements.push(...NavigationConverter.convert(this.unprocessedNavigations));
 
-    return this.clearEmptyArrays(this.request);
+    return this.clearEmptyArrays(builtRequest);
   }
 
   private clearEmptyArrays(request: Request): Request {
