@@ -13,7 +13,7 @@ declare module '__groupby-api/core' {
     import { Results, ValueRefinement, RangeRefinement, Navigation } from '__groupby-api/response-models';
     export class CloudBridge {
         constructor(clientKey: string, customerId: string);
-        search(query: Query, callback?: (Error?, Results?) => void): Axios.IPromise<Results> | void;
+        search(query: string | Query | Request, callback?: (Error?, Results?) => void): PromiseLike<Results> | void;
     }
     export interface QueryConfiguration {
         userId?: string;
@@ -23,7 +23,7 @@ declare module '__groupby-api/core' {
         biasingProfile?: string;
     }
     export class Query {
-        queryParams: Object;
+        queryParams: any;
         constructor(query?: string);
         withConfiguration(configuration: QueryConfiguration): Query;
         withSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query;
@@ -166,7 +166,7 @@ declare module '__groupby-api/response-models' {
     export interface Navigation {
         name: string;
         refinements: Array<ValueRefinement | RangeRefinement>;
-        ignored: boolean;
+        ignored?: boolean;
     }
     export type RefinementType = 'Value' | 'Range';
     export interface Refinement {

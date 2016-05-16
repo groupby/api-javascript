@@ -9,7 +9,8 @@ export declare class CloudBridge {
     private bridgeRefinementsSearchUrl;
     private bridgeClusterUrl;
     constructor(clientKey: string, customerId: string);
-    search(query: Query, callback?: (Error?, Results?) => void): Axios.IPromise<Results> | void;
+    search(query: string | Query | Request, callback?: (Error?, Results?) => void): PromiseLike<Results> | void;
+    private generateError(error, callback);
     private fireRequest(url, body, queryParams);
     private convertRecordFields(record);
 }
@@ -23,7 +24,7 @@ export interface QueryConfiguration {
 export declare class Query {
     private request;
     private unprocessedNavigations;
-    queryParams: Object;
+    queryParams: any;
     constructor(query?: string);
     withConfiguration(configuration: QueryConfiguration): Query;
     withSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query;

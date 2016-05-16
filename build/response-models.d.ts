@@ -43,7 +43,7 @@ export interface Record {
 export interface Navigation {
     name: string;
     refinements: Array<ValueRefinement | RangeRefinement>;
-    ignored: boolean;
+    ignored?: boolean;
 }
 export declare type RefinementType = 'Value' | 'Range';
 export interface Refinement {

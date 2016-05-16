@@ -54,7 +54,7 @@ export interface Record {
 export interface Navigation {
   name: string;
   refinements: Array<ValueRefinement | RangeRefinement>;
-  ignored: boolean;
+  ignored?: boolean;
 }
 
 export type RefinementType = 'Value' | 'Range';

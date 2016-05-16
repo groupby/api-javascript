@@ -55,8 +55,27 @@ export class CloudBridge {
     this.bridgeClusterUrl = baseUrl + CLUSTER;
   }
 
-  search(query: Query, callback: (Error?, Results?) => void = undefined): Axios.IPromise<Results> | void {
-    let response = this.fireRequest(this.bridgeUrl, query.build(), query.queryParams);
+  search(query: string | Query | Request, callback: (Error?, Results?) => void = undefined): PromiseLike<Results> | void {
+    let queryParams = {};
+    let request = undefined;
+    switch (typeof query) {
+      case 'string': {
+        request = new Query(<string>query).build();
+        break;
+      }
+      case 'object': {
+        if (query instanceof Query) {
+          queryParams = query.queryParams;
+          request = query.build();
+        } else {
+          request = query;
+        }
+        break;
+      }
+      default: return this.generateError('query was not of a recognised type', callback);
+    }
+
+    let response = this.fireRequest(this.bridgeUrl, request, queryParams);
     if (callback) {
       response.then(res => callback(undefined, res))
         .catch(err => callback(err));
@@ -65,7 +84,16 @@ export class CloudBridge {
     }
   }
 
-  private fireRequest(url: string, body: Request, queryParams: Object): Axios.IPromise<Results> {
+  private generateError(error: string, callback: (Error) => void): void | PromiseLike<any> {
+    let err = new Error(error);
+    if (callback) {
+      callback(err);
+    } else {
+      return Promise.reject(err);
+    }
+  }
+
+  private fireRequest(url: string, body: Request, queryParams: any): Axios.IPromise<Results> {
     let options = {
       url: this.bridgeUrl,
       method: 'post',
@@ -81,13 +109,13 @@ export class CloudBridge {
 
   private convertRecordFields(record: RawRecord): Record | RawRecord {
     let converted = assign(record, { id: record._id, url: record._u, title: record._t });
-    delete converted._id;
-    delete converted._u;
-    delete converted._t;
+    delete converted._id, converted._u, converted._t;
+
     if (record._snippet) {
       converted.snippet = record._snippet;
       delete converted._snippet;
     }
+
     return converted;
   }
 }
@@ -110,7 +138,7 @@ export interface QueryConfiguration {
 export class Query {
   private request: Request;
   private unprocessedNavigations: Navigation[];
-  queryParams: Object;
+  queryParams: any;
 
   constructor(query: string = '') {
     this.request = <Request>{};

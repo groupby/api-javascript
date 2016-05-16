@@ -36,6 +36,42 @@ describe('My Library', function() {
     expect(query).to.be.ok;
   });
 
+  it('should be accept a direct query string', done => {
+    let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
+      .post('/api/v1/search', {
+        query: 'skirts',
+        clientKey: CLIENT_KEY
+      })
+      .reply(200, 'success');
+
+    bridge.search('skirts')
+      .then(results => {
+        expect(results).to.equal('success');
+        mock.done();
+        done();
+      });
+  });
+
+  it('should be accept a raw request', done => {
+    let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
+      .post('/api/v1/search', {
+        query: 'skirts',
+        fields: ['title', 'description'],
+        clientKey: CLIENT_KEY
+      })
+      .twice()
+      .reply(200, 'success');
+
+    bridge.search(new Query('skirts').withFields('title', 'description').build())
+      .then(results => expect(results).to.equal('success'))
+      .then(() => bridge.search({ query: 'skirts', fields: ['title', 'description'] }))
+      .then(results => {
+        expect(results).to.equal('success');
+        mock.done();
+        done();
+      });
+  });
+
   it('should be reuseable', done => {
     let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
       .post('/api/v1/search')
