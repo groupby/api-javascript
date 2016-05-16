@@ -109,7 +109,7 @@ export interface QueryConfiguration {
 
 export class Query {
   private request: Request;
-  private unprocessedNavigations: Array<Navigation>;
+  private unprocessedNavigations: Navigation[];
   queryParams: Object;
 
   constructor(query: string = '') {
@@ -146,12 +146,12 @@ export class Query {
     return this;
   }
 
-  withNavigations(...navigations: Array<Navigation>): Query {
+  withNavigations(...navigations: Navigation[]): Query {
     this.unprocessedNavigations.push(...navigations);
     return this;
   }
 
-  withCustomUrlParams(customUrlParams: Array<CustomUrlParam> | string): Query {
+  withCustomUrlParams(customUrlParams: CustomUrlParam[] | string): Query {
     if (typeof customUrlParams === 'string') {
       this.request.customUrlParams.push(...this.convertParamString(customUrlParams));
     } else if (customUrlParams instanceof Array) {
@@ -160,37 +160,37 @@ export class Query {
     return this;
   }
 
-  private convertParamString(customUrlParams: string): Array<CustomUrlParam> {
+  private convertParamString(customUrlParams: string): CustomUrlParam[] {
     let parsed = qs.parse(customUrlParams);
     return Object.keys(parsed).reduce((converted, key) => converted.concat({ key, value: parsed[key] }), []);
   }
 
-  withFields(...fields: Array<string>): Query {
+  withFields(...fields: string[]): Query {
     this.request.fields.push(...fields);
     return this;
   }
 
-  withOrFields(...orFields: Array<string>): Query {
+  withOrFields(...orFields: string[]): Query {
     this.request.orFields.push(...orFields);
     return this;
   }
 
-  withSorts(...sorts: Array<Sort>): Query {
+  withSorts(...sorts: Sort[]): Query {
     this.request.sort.push(...sorts);
     return this;
   }
 
-  withIncludedNavigations(...navigationNames: Array<string>): Query {
+  withIncludedNavigations(...navigationNames: string[]): Query {
     this.request.includedNavigations.push(...navigationNames);
     return this;
   }
 
-  withExcludedNavigations(...navigationNames: Array<string>): Query {
+  withExcludedNavigations(...navigationNames: string[]): Query {
     this.request.excludedNavigations.push(...navigationNames);
     return this;
   }
 
-  withQueryParams(queryParams: Object | string): Query {
+  withQueryParams(queryParams: any | string): Query {
     switch (typeof queryParams) {
       case 'string':
         return assign(this, { queryParams: this.convertQueryString(<string>queryParams) });
@@ -199,7 +199,7 @@ export class Query {
     }
   }
 
-  private convertQueryString(queryParams: string): Object {
+  private convertQueryString(queryParams: string): any {
     return qs.parse(queryParams);
   }
 

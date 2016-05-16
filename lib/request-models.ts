@@ -4,13 +4,13 @@ export class Request {
 
   // query parameters
   query: string;
-  fields: Array<string>;
-  orFields: Array<string>;
-  includedNavigations: Array<string>;
-  excludedNavigations: Array<string>;
-  sort: Array<Sort>;
-  customUrlParams: Array<CustomUrlParam>;
-  refinements: Array<SelectedRefinement>;
+  fields: string[];
+  orFields: string[];
+  includedNavigations: string[];
+  excludedNavigations: string[];
+  sort: Sort[];
+  customUrlParams: CustomUrlParam[];
+  refinements: SelectedRefinement[];
   restrictNavigation: RestrictNavigation;
   biasing: Biasing;
   matchStrategy: MatchStrategy;
@@ -73,9 +73,9 @@ export interface Bias {
 }
 
 export interface Biasing {
-  bringToTop?: Array<string>;
+  bringToTop?: string[];
   augmentBiases: boolean;
-  biases: Array<Bias>;
+  biases: Bias[];
   influence?: number;
 }
 
@@ -87,5 +87,5 @@ export interface PartialMatchRule {
 }
 
 export interface MatchStrategy {
-  rules: Array<PartialMatchRule>;
+  rules: PartialMatchRule[];
 }

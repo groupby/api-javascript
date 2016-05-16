@@ -12,16 +12,16 @@ export interface Results {
   pageInfo: PageInfo;
 
   totalRecordCount: number;
-  records: Array<Record>;
+  records: Record[];
 
-  availableNavigation: Array<Navigation>;
-  selectedNavigation: Array<Navigation>;
-  didYouMean: Array<string>;
-  relatedQueries: Array<string>;
-  rewrites: Array<string>;
+  availableNavigation: Navigation[];
+  selectedNavigation: Navigation[];
+  didYouMean: string[];
+  relatedQueries: string[];
+  rewrites: string[];
 
   errors: string;
-  warnings: Array<string>;
+  warnings: string[];
   debugInfo: DebugInfo;
 }
 

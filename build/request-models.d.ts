@@ -1,13 +1,13 @@
 import { Refinement, ValueRefinement, RangeRefinement } from './response-models';
 export declare class Request {
     query: string;
-    fields: Array<string>;
-    orFields: Array<string>;
-    includedNavigations: Array<string>;
-    excludedNavigations: Array<string>;
-    sort: Array<Sort>;
-    customUrlParams: Array<CustomUrlParam>;
-    refinements: Array<SelectedRefinement>;
+    fields: string[];
+    orFields: string[];
+    includedNavigations: string[];
+    excludedNavigations: string[];
+    sort: Sort[];
+    customUrlParams: CustomUrlParam[];
+    refinements: SelectedRefinement[];
     restrictNavigation: RestrictNavigation;
     biasing: Biasing;
     matchStrategy: MatchStrategy;
@@ -50,9 +50,9 @@ export interface Bias {
     strength: BiasStrength;
 }
 export interface Biasing {
-    bringToTop?: Array<string>;
+    bringToTop?: string[];
     augmentBiases: boolean;
-    biases: Array<Bias>;
+    biases: Bias[];
     influence?: number;
 }
 export interface PartialMatchRule {
@@ -62,5 +62,5 @@ export interface PartialMatchRule {
     percentage?: boolean;
 }
 export interface MatchStrategy {
-    rules: Array<PartialMatchRule>;
+    rules: PartialMatchRule[];
 }

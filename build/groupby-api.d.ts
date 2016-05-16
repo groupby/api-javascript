@@ -28,14 +28,14 @@ declare module '__groupby-api/core' {
         withConfiguration(configuration: QueryConfiguration): Query;
         withSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query;
         withRefinements(navigationName: string, ...refinements: Array<ValueRefinement | RangeRefinement>): Query;
-        withNavigations(...navigations: Array<Navigation>): Query;
-        withCustomUrlParams(customUrlParams: Array<CustomUrlParam> | string): Query;
-        withFields(...fields: Array<string>): Query;
-        withOrFields(...orFields: Array<string>): Query;
-        withSorts(...sorts: Array<Sort>): Query;
-        withIncludedNavigations(...navigationNames: Array<string>): Query;
-        withExcludedNavigations(...navigationNames: Array<string>): Query;
-        withQueryParams(queryParams: Object | string): Query;
+        withNavigations(...navigations: Navigation[]): Query;
+        withCustomUrlParams(customUrlParams: CustomUrlParam[] | string): Query;
+        withFields(...fields: string[]): Query;
+        withOrFields(...orFields: string[]): Query;
+        withSorts(...sorts: Sort[]): Query;
+        withIncludedNavigations(...navigationNames: string[]): Query;
+        withExcludedNavigations(...navigationNames: string[]): Query;
+        withQueryParams(queryParams: any | string): Query;
         refineByValue(navigationName: string, value: string, exclude?: boolean): Query;
         refineByRange(navigationName: string, low: number, high: number, exclude?: boolean): Query;
         restrictNavigation(restrictNavigation: RestrictNavigation): Query;
@@ -55,13 +55,13 @@ declare module '__groupby-api/request-models' {
     import { Refinement, ValueRefinement, RangeRefinement } from '__groupby-api/response-models';
     export class Request {
         query: string;
-        fields: Array<string>;
-        orFields: Array<string>;
-        includedNavigations: Array<string>;
-        excludedNavigations: Array<string>;
-        sort: Array<Sort>;
-        customUrlParams: Array<CustomUrlParam>;
-        refinements: Array<SelectedRefinement>;
+        fields: string[];
+        orFields: string[];
+        includedNavigations: string[];
+        excludedNavigations: string[];
+        sort: Sort[];
+        customUrlParams: CustomUrlParam[];
+        refinements: SelectedRefinement[];
         restrictNavigation: RestrictNavigation;
         biasing: Biasing;
         matchStrategy: MatchStrategy;
@@ -104,9 +104,9 @@ declare module '__groupby-api/request-models' {
         strength: BiasStrength;
     }
     export interface Biasing {
-        bringToTop?: Array<string>;
+        bringToTop?: string[];
         augmentBiases: boolean;
-        biases: Array<Bias>;
+        biases: Bias[];
         influence?: number;
     }
     export interface PartialMatchRule {
@@ -116,7 +116,7 @@ declare module '__groupby-api/request-models' {
         percentage?: boolean;
     }
     export interface MatchStrategy {
-        rules: Array<PartialMatchRule>;
+        rules: PartialMatchRule[];
     }
 }
 
@@ -131,14 +131,14 @@ declare module '__groupby-api/response-models' {
         template: Template;
         pageInfo: PageInfo;
         totalRecordCount: number;
-        records: Array<Record>;
-        availableNavigation: Array<Navigation>;
-        selectedNavigation: Array<Navigation>;
-        didYouMean: Array<string>;
-        relatedQueries: Array<string>;
-        rewrites: Array<string>;
+        records: Record[];
+        availableNavigation: Navigation[];
+        selectedNavigation: Navigation[];
+        didYouMean: string[];
+        relatedQueries: string[];
+        rewrites: string[];
         errors: string;
-        warnings: Array<string>;
+        warnings: string[];
         debugInfo: DebugInfo;
     }
     export interface Template {
