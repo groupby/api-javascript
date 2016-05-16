@@ -36,6 +36,16 @@ describe('My Library', function() {
     expect(query).to.be.ok;
   });
 
+  it('should handle invalid query types', done => {
+    bridge.search(12331)
+      .catch(err => expect(err.message).to.equal('query was not of a recognised type'))
+      .then(() => bridge.search(true, (err, res) => {
+        expect(err.message).to.equal('query was not of a recognised type');
+        expect(res).to.not.be.ok;
+        done();
+      }));
+  });
+
   it('should be accept a direct query string', done => {
     let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
       .post('/api/v1/search', {
