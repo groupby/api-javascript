@@ -24,9 +24,7 @@ displayed.
 
 ```html
 <html>
-<head>
-...
-</head>
+<head>...</head>
 <body>
   <!-- the search box -->
   <div id="query"></div>
@@ -36,7 +34,7 @@ displayed.
   <div id="relatedSearches"></div>
   <!-- Selected navigations that represent the 
        filters selected by the user -->
-  <div id="selectedNavigations"></div>
+  <div id="selectedNavigation"></div>
   <!-- Based on the current search and navigation state
        these are the available filters that can be used -->
   <div id="availableNavigation"></div>
@@ -47,11 +45,41 @@ displayed.
   <!-- If a rule has been fired this is where the template 
        zones will be unpacked -->
   <div id="template"></div>
-  
 </body>
 </html>
 ```
 
 ###Step 2
 
-Add the JavaScript that 
+Add the JavaScript that will attach the service to the div's above.
+
+```html
+<html>
+<head></head>
+<body>
+<script src="://cdn.groupbycloud.com/build/api-javascript-1.0.2.min.js"></script>
+<script src="://cdn.groupbycloud.com/build/api-javascript-searchandiser-1.0.2.min.js"></script>
+<script>
+    
+    var config = {
+        area: 'Production',
+        collection: 'Products'
+    };
+    searchandiser(config);
+    
+    searchandiser.attach('query', '#query');
+    searchandiser.attach('didYouMean', '#didYouMean');
+    searchandiser.attach('relatedSearches', '#relatedSearches');
+    searchandiser.attach('selectedNavigation', '#selectedNavigation');
+    searchandiser.attach('availableNavigation', '#availableNavigation');
+    searchandiser.attach('paging', '#paging');
+    searchandiser.attach('results', '#results', function(id) {
+       // event to handle results click
+    });
+    searchandiser.attach('template', '#template');
+
+</script>
+</body>
+</html>
+
+###Step 3
