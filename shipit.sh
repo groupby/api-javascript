@@ -13,8 +13,9 @@ fi
 
 # retag package json.
 sed  -i "s/\"version\":\s*\"${currentVersion}\"/\"version\": \"${newVersion}\"/g" package.json
+sed  -i "s/-${currentVersion}/-${newVersion}/g" README.md
 
-git add package.json
+git add package.json README.md
 git commit -m "bumped version from ${currentVersion} --> ${newVersion}" || exit 1
 git push || exit 1
 

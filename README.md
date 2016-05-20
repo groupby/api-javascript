@@ -57,8 +57,8 @@ Add the JavaScript that will attach the service to the div's above.
 <html>
 <head></head>
 <body>
-<script src="://cdn.groupbycloud.com/build/api-javascript-1.0.2.min.js"></script>
-<script src="://cdn.groupbycloud.com/build/api-javascript-searchandiser-1.0.2.min.js"></script>
+<script src="://cdn.groupbycloud.com/build/api-javascript-1.0.14.min.js"></script>
+<script src="://cdn.groupbycloud.com/build/api-javascript-searchandiser-1.0.14.min.js"></script>
 <script>
     
     var config = {
