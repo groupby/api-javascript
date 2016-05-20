@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-
 # This script creates a release of the JavaScript API and makes it available on the groupby CDN.
 
 # read version number from standard in.
+currentBranch=`git name-rev --name-only HEAD`
 currentVersion=`cat package.json | jq -r .version`
 echo "Type the version number that you want to use (Current version is: ${currentVersion})"
 read newVersion
@@ -15,8 +15,8 @@ fi
 sed  -ie "s/\"version\":\s*\"${currentVersion}\"/\"version\": \"${newVersion}\"/g" package.json
 
 git add package.json
-git commit -m "bumped version from ${currentVersion} --> ${newVersion}"
-git push
+git commit -m "bumped version from ${currentVersion} --> ${newVersion}" || exit 1
+git push || exit 1
 
 # build distribution.
 gulp build
@@ -24,9 +24,10 @@ echo "Built new versions in dist"
 ls dist
 
 # checkout gh-pages
-git checkout gh-pages
-git add dist
-git commit -m "built and deployed version: ${newVersion}"
-git push
+git checkout gh-pages || exit 1
+git add dist || exit 1
+git commit -m "built and deployed version: ${newVersion}" || exit 1
+git push || exit 1
 
-git checkout develop
+echo "Going back to original branch: ${currentBranch}"
+git checkout ${currentBranch}
