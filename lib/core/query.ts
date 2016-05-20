@@ -1,9 +1,3 @@
-/// <reference path="./all.d.ts" />
-
-if (!global.Promise) {
-  require('es6-promise').polyfill();
-}
-import axios = require('axios');
 import assign = require('object-assign');
 import qs = require('qs');
 import {
@@ -17,7 +11,7 @@ import {
   MatchStrategy,
   Biasing,
   Bias
-} from './request-models';
+} from '../request-models';
 import {
   Results,
   Record,
@@ -26,106 +20,8 @@ import {
   Refinement,
   RefinementType,
   Navigation
-} from './response-models';
-import { NavigationConverter } from './util';
-
-const SEARCH = '/search';
-const REFINEMENTS = '/refinements';
-const REFINEMENT_SEARCH = '/refinement';
-const CLUSTER = '/cluster';
-
-const BIASING_DEFAULTS = {
-  biases: [],
-  bringToTop: [],
-  augmentBiases: false
-};
-
-export class CloudBridge {
-
-  private bridgeUrl: string;
-  private bridgeRefinementsUrl: string;
-  private bridgeRefinementsSearchUrl: string;
-  private bridgeClusterUrl: string;
-
-  constructor(private clientKey: string, private customerId: string) {
-    let baseUrl = `https://${customerId}.groupbycloud.com:443/api/v1`;
-    this.bridgeUrl = baseUrl + SEARCH;
-    this.bridgeRefinementsUrl = baseUrl + REFINEMENTS;
-    this.bridgeRefinementsSearchUrl = baseUrl + REFINEMENT_SEARCH;
-    this.bridgeClusterUrl = baseUrl + CLUSTER;
-  }
-
-  search(query: string | Query | Request, callback: (Error?, Results?) => void = undefined): PromiseLike<Results> | void {
-    let queryParams = {};
-    let request = undefined;
-    switch (typeof query) {
-      case 'string': {
-        request = new Query(<string>query).build();
-        break;
-      }
-      case 'object': {
-        if (query instanceof Query) {
-          queryParams = query.queryParams;
-          request = query.build();
-        } else {
-          request = query;
-        }
-        break;
-      }
-      default: return this.generateError('query was not of a recognised type', callback);
-    }
-
-    let response = this.fireRequest(this.bridgeUrl, request, queryParams);
-    if (callback) {
-      response.then(res => callback(undefined, res))
-        .catch(err => callback(err));
-    } else {
-      return response;
-    }
-  }
-
-  private generateError(error: string, callback: (Error) => void): void | PromiseLike<any> {
-    let err = new Error(error);
-    if (callback) {
-      callback(err);
-    } else {
-      return Promise.reject(err);
-    }
-  }
-
-  private fireRequest(url: string, body: Request, queryParams: any): Axios.IPromise<Results> {
-    let options = {
-      url: this.bridgeUrl,
-      method: 'post',
-      params: queryParams,
-      data: assign(body, { clientKey: this.clientKey }),
-      responseType: 'json',
-      timeout: 1500
-    };
-    return axios(options)
-      .then(res => <Results>res.data)
-      .then(res => res.records ? assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
-  }
-
-  private convertRecordFields(record: RawRecord): Record | RawRecord {
-    let converted = assign(record, { id: record._id, url: record._u, title: record._t });
-    delete converted._id, converted._u, converted._t;
-
-    if (record._snippet) {
-      converted.snippet = record._snippet;
-      delete converted._snippet;
-    }
-
-    return converted;
-  }
-}
-
-interface RawRecord extends Record {
-  _id: string;
-  _u: string;
-  _t: string;
-  _snippet?: string;
-}
+} from '../response-models';
+import { NavigationConverter } from '../util';
 
 export interface QueryConfiguration {
   userId?: string;

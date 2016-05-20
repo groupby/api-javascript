@@ -1,19 +1,5 @@
-/// <reference path="../lib/all.d.ts" />
-import { Request, SelectedValueRefinement, SelectedRangeRefinement, CustomUrlParam, RestrictNavigation, Sort, MatchStrategy, Biasing } from './request-models';
-import { Results, ValueRefinement, RangeRefinement, Navigation } from './response-models';
-export declare class CloudBridge {
-    private clientKey;
-    private customerId;
-    private bridgeUrl;
-    private bridgeRefinementsUrl;
-    private bridgeRefinementsSearchUrl;
-    private bridgeClusterUrl;
-    constructor(clientKey: string, customerId: string);
-    search(query: string | Query | Request, callback?: (Error?, Results?) => void): PromiseLike<Results> | void;
-    private generateError(error, callback);
-    private fireRequest(url, body, queryParams);
-    private convertRecordFields(record);
-}
+import { Request, SelectedValueRefinement, SelectedRangeRefinement, CustomUrlParam, RestrictNavigation, Sort, MatchStrategy, Biasing } from '../request-models';
+import { ValueRefinement, RangeRefinement, Navigation } from '../response-models';
 export interface QueryConfiguration {
     userId?: string;
     language?: string;
