@@ -65,10 +65,19 @@ Add the JavaScript that will attach the service to the div's above.
     
     var config = {
         area: 'Production',
-        collection: 'Products'
+        collection: 'Products',
+        language: 'en',
+        // tell the renderer what a record looks like
+        recordStructure: {
+            title: 'title',
+            image_prefix: 'http://example.com/images',
+            image: 'image_url',
+            image_suffix: '.png',
+            description: 'desc_en'
+        }
     };
-    searchandiser(config);
     
+    var searchandiser = new Searchandiser(config);    
     searchandiser.attach('query', '#query');
     searchandiser.attach('didYouMean', '#didYouMean');
     searchandiser.attach('relatedSearches', '#relatedSearches');
