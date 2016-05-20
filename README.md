@@ -86,4 +86,4 @@ Add the JavaScript that will attach the service to the div's above.
 ###Step 3
 
 To theme the results use CSS for each of the elements.  For a complete style reference see this 
-document: [docs/css-reference.md]
+document: [docs/css-reference.md](docs/css-reference.md)
