@@ -12,7 +12,10 @@ var gulp = require('gulp'),
   typings = require('gulp-typings'),
   nodemon = require('gulp-nodemon'),
   shell = require('gulp-shell'),
-  istanbul = require('gulp-istanbul');
+  istanbul = require('gulp-istanbul'),
+  minify = require('gulp-minify'),
+  concat = require('gulp-concat'),
+  pjson = require('./package.json');
 
 require('git-guppy')(gulp);
 
@@ -20,7 +23,8 @@ var PATHS = {
   src: 'lib',
   build: 'build',
   test: 'test',
-  typings: 'typings'
+  typings: 'typings',
+  dist: 'dist'
 };
 
 var tsProject = ts.createProject('tsconfig.json', { sortOutput: true });
@@ -83,7 +87,8 @@ gulp.task('scripts:dev:watch', ['scripts:dev'], function() {
 gulp.task('clean:dev', function(cb) {
   del([
     PATHS.src + '/**/*.js',
-    PATHS.test + '/**/*.js'
+    PATHS.test + '/**/*.js',
+    PATHS.dist + '/**/*.js'
   ], cb);
 });
 
@@ -165,8 +170,28 @@ gulp.task('build', function(cb) {
     'typings',
     'scripts:prod',
     'definitions',
+    'compress',
     cb
   );
+});
+
+gulp.task('concat', function() {
+  return gulp.src('build/**/*.js')
+    .pipe(concat('api-javascript-' + pjson.version + '.js'))
+    .pipe(gulp.dest('build/'));
+});
+
+gulp.task('compress', ['concat'], function() {
+  gulp.src('build/api-javascript-' + pjson.version + '.js')
+    .pipe(minify({
+        ext:{
+            src:'-debug.js',
+            min:'.min.js'
+        },
+        exclude: ['tasks'],
+        ignoreFiles: ['.combo.js', '.min.js']
+    }))
+    .pipe(gulp.dest('dist'))
 });
 
 /**
