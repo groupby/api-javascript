@@ -19,7 +19,8 @@ Implementing on an existing website
 
 ###Step 1
 
-Ensure that there are `div` tags on your site with IDs that correspond to the elements we will display.
+Ensure that there are `div` tags on your site with IDs that correspond to the elements will be 
+displayed.
 
 ```html
 <html>
@@ -50,3 +51,7 @@ Ensure that there are `div` tags on your site with IDs that correspond to the el
 </body>
 </html>
 ```
+
+###Step 2
+
+Add the JavaScript that 
