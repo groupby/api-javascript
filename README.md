@@ -70,9 +70,9 @@ Add the JavaScript that will attach the service to the div's above.
         // tell the renderer what a record looks like
         recordStructure: {
             title: 'title',
-            image_prefix: 'http://example.com/images',
+            imagePrefix: 'http://example.com/images',
             image: 'image_url',
-            image_suffix: '.png',
+            imageSuffix: '.png',
             description: 'desc_en'
         }
     };
