@@ -1,7 +1,7 @@
-/// <reference path="../lib/all.d.ts" />
+/// <reference path="../src/all.d.ts" />
 
 import chai = require('chai');
-import { Query } from '../lib/core/query';
+import { Query } from '../src/core/query';
 import {
   ComplexRequest,
   CombinedRefinements,
