@@ -9,20 +9,20 @@
     "outDir": "build"
   },
   "filesGlob": [
-    "lib/**/*.ts",
-    "typings/main.d.ts",
+    "src/**/*.ts",
+    "typings/index.d.ts",
     "test/**/*.ts",
     "!node_modules/**/*.ts"
   ],
   "files": [
-    "lib/all.d.ts",
-    "lib/api-javascript.ts",
-    "lib/core/bridge.ts",
-    "lib/core/query.ts",
-    "lib/request-models.ts",
-    "lib/response-models.ts",
-    "lib/util.ts",
-    "typings/main.d.ts",
+    "src/all.d.ts",
+    "src/api-javascript.ts",
+    "src/core/bridge.ts",
+    "src/core/query.ts",
+    "src/request-models.ts",
+    "src/response-models.ts",
+    "src/util.ts",
+    "typings/index.d.ts",
     "test/bridge.ts",
     "test/fixtures.ts",
     "test/query.ts"

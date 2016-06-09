@@ -1,12 +1,12 @@
-/// <reference path="../lib/all.d.ts" />
+/// <reference path="../src/all.d.ts" />
 
 import chai = require('chai');
 import sinon = require('sinon');
 import nock = require('nock');
 
-import { CloudBridge } from '../lib/core/bridge';
-import { BrowserBridge } from '../lib/core/bridge';
-import { Query } from '../lib/core/query';
+import { CloudBridge } from '../src/core/bridge';
+import { BrowserBridge } from '../src/core/bridge';
+import { Query } from '../src/core/query';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
