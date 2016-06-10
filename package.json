@@ -10,7 +10,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "karma start"
+    "test": "gulp typings:install && karma start"
   },
   "repository": {
     "type": "git",
