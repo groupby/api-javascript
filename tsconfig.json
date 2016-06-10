@@ -1,31 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES5",
+    "target": "es5",
     "module": "commonjs",
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "declaration": true,
-    "outDir": "build"
+    "outDir": "dist"
   },
-  "filesGlob": [
-    "src/**/*.ts",
-    "typings/index.d.ts",
-    "test/**/*.ts",
-    "!node_modules/**/*.ts"
-  ],
-  "files": [
-    "src/all.d.ts",
-    "src/api-javascript.ts",
-    "src/core/bridge.ts",
-    "src/core/query.ts",
-    "src/request-models.ts",
-    "src/response-models.ts",
-    "src/util.ts",
-    "typings/index.d.ts",
-    "test/bridge.ts",
-    "test/fixtures.ts",
-    "test/query.ts"
+  "exclude": [
+    "node_modules"
   ],
   "atom": {
     "rewriteTsconfig": true,

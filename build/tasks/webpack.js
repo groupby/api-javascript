@@ -1,23 +1,18 @@
 var gulp = require('gulp'),
   webpack = require('webpack-stream'),
   pjson = require('../../package.json'),
-  paths = require('../paths.js');
+  paths = require('../paths.js'),
+  assign = require('object-assign'),
+  packConfig = require('../../webpack.config');
 
 gulp.task('webpack:bundle', function() {
-  return gulp.src(paths.src + '/api-javascript.ts')
-    .pipe(webpack(require('../../webpack.config')))
+  return gulp.src('')
+    .pipe(webpack(packConfig))
     .pipe(gulp.dest('dist/'));
 });
 
 gulp.task('webpack:watch', function() {
-  return gulp.src(paths.src + '/api-javascript.ts')
-    .pipe(webpack({
-      watch: true,
-      output: { filename: pjson.name + '-' + pjson.version + '.js' },
-      resolve: { extensions: ['', '.webpack.js', '.web.js', '.ts', '.js'] },
-      module: {
-        loaders: [{ test: /\.ts$/, loader: 'ts-loader' }]
-      }
-    }))
+  return gulp.src('')
+    .pipe(webpack(assign({}, packConfig, { watch: true })))
     .pipe(gulp.dest('dist/'));
 });

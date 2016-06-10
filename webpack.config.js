@@ -1,15 +1,16 @@
-var webpack = require('webpack');
 var pjson = require('./package.json');
 
 module.exports = {
+  entry: './src/api-javascript.ts',
   output: { filename: pjson.name + '-' + pjson.version + '.js' },
   resolve: {
-    extensions: ['', '.webpack.js', '.web.js', '.ts', '.js'],
-    modulesDirectories: ['node_modules']
+    extensions: ['', '.ts', '.js']
   },
   module: {
     loaders: [
       { test: /\.ts$/, exclude: /node_modules/, loader: 'ts-loader' }
     ]
-  }
+  },
+
+  devtool: 'source-map'
 };

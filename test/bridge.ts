@@ -2,7 +2,7 @@
 
 import chai = require('chai');
 import sinon = require('sinon');
-import nock = require('nock');
+import mock = require('xhr-mock');
 
 import { CloudBridge } from '../src/core/bridge';
 import { BrowserBridge } from '../src/core/bridge';
@@ -10,18 +10,20 @@ import { Query } from '../src/core/query';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
-let expect = chai.expect;
+const expect = chai.expect;
 
-describe('Bridge', function() {
+describe('Bridge', () => {
   let bridge,
     query;
 
   beforeEach(() => {
+    mock.setup();
     bridge = new CloudBridge(CLIENT_KEY, CUSTOMER_ID);
     query = new Query('test');
   });
 
   afterEach(() => {
+    mock.teardown();
     bridge = null;
     query = null;
   });
@@ -41,114 +43,86 @@ describe('Bridge', function() {
   });
 
   it('should be accept a direct query string', done => {
-    let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
-      .post('/api/v1/search', {
-        query: 'skirts',
-        clientKey: CLIENT_KEY
-      })
-      .reply(200, 'success');
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      const body = JSON.parse(req.body())
+      expect(body.query).to.equal('skirts');
+      expect(body.clientKey).to.equal(CLIENT_KEY);
+      return res.status(200)
+        .body('success');
+    });
 
     bridge.search('skirts')
-      .then(results => {
-        expect(results).to.equal('success');
-        mock.done();
-        done();
-      });
+      .then(() => done());
   });
 
   it('should be accept a raw request', done => {
-    let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
-      .post('/api/v1/search', {
-        query: 'skirts',
-        fields: ['title', 'description'],
-        clientKey: CLIENT_KEY
-      })
-      .twice()
-      .reply(200, 'success');
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      const body = JSON.parse(req.body())
+      expect(body.fields).to.deep.equal(['title', 'description']);
+      return res.status(200)
+        .body('success');
+    });
 
     bridge.search(new Query('skirts').withFields('title', 'description').build())
       .then(results => expect(results).to.equal('success'))
       .then(() => bridge.search({ query: 'skirts', fields: ['title', 'description'] }))
       .then(results => {
         expect(results).to.equal('success');
-        mock.done();
         done();
       });
   });
 
   it('should be reuseable', done => {
-    let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
-      .post('/api/v1/search')
-      .twice()
-      .reply(200, 'success');
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      return res.status(200).body('success');
+    });
 
-    query = new Query('skirts');
-
-    bridge.search(query)
+    bridge.search(query = new Query('skirts'))
       .then(results => expect(results).to.equal('success'))
       .then(() => bridge.search(query))
       .then(results => {
         expect(results).to.equal('success');
-        mock.done();
         done();
       });
   });
 
   it('should send a search query and return a promise', done => {
-    let queryParams = {
-      size: 20,
-      syle: 'branded',
-      other: ''
-    };
-    let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
-      .post('/api/v1/search', {
-        query: 'skirts',
-        clientKey: CLIENT_KEY
-      })
-      .query(queryParams)
-      .reply(200, 'success');
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&syle=branded&other=`, (req, res) => {
+      return res.status(200).body('success');
+    });
 
     query = new Query('skirts')
-      .withQueryParams(queryParams);
+      .withQueryParams({
+        size: 20,
+        syle: 'branded',
+        other: ''
+      });
 
     bridge.search(query)
       .then(results => {
         expect(results).to.equal('success');
-        mock.done();
         done();
       });
   });
 
   it('should send a search query and take a callback', done => {
-    let mock = nock(`https://${CUSTOMER_ID}.groupbycloud.com`)
-      .post('/api/v1/search', {
-        query: 'shoes',
-        clientKey: CLIENT_KEY
-      })
-      .query({
-        size: 20,
-        style: 'branded'
-      })
-      .reply(200, 'success');
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&style=branded`, (req, res) => {
+      return res.status(200).body('success');
+    });
 
     query = new Query('shoes')
       .withQueryParams('size=20&style=branded');
 
     bridge.search(query, (err, results) => {
       expect(results).to.equal('success');
-      mock.done();
       done();
     });
   });
 
   it('should send requests to the CORS supported endpoint', done => {
-    let mock = nock('http://ecomm.groupbycloud.com')
-      .post(`/semanticSearch/${CUSTOMER_ID}`, { query: 'shoes' })
-      .query({
-        size: 20,
-        style: 'branded'
-      })
-      .reply(200, 'success');
+    mock.post('http://ecomm.groupbycloud.com/semanticSearch/services?size=20&style=branded', (req, res) => {
+      return res.status(200).body('success');
+    });
 
     query = new Query('shoes')
       .withQueryParams('size=20&style=branded');
@@ -156,7 +130,6 @@ describe('Bridge', function() {
     new BrowserBridge(CUSTOMER_ID)
       .search(query, (err, results) => {
         expect(results).to.equal('success');
-        mock.done();
         done();
       });
   });

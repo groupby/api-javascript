@@ -10,7 +10,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "gulp test"
+    "test": "karma start"
   },
   "repository": {
     "type": "git",
@@ -48,15 +48,26 @@
     "gulp-typings": "^2.0.0",
     "gulp-util": "^3.0.6",
     "guppy-pre-commit": "^0.2.1",
+    "karma": "^0.13.22",
+    "karma-chai": "^0.1.0",
+    "karma-mocha": "^1.0.1",
+    "karma-phantomjs-launcher": "^1.0.0",
+    "karma-phantomjs-shim": "^1.4.0",
+    "karma-sinon": "^1.0.5",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^1.7.0",
     "merge-stream": "^0.1.8",
     "mocha": "^2.2.5",
+    "mocha-loader": "^0.7.1",
     "nock": "^8.0.0",
+    "phantomjs-prebuilt": "^2.1.7",
     "require-dir": "^0.3.0",
     "run-sequence": "^1.1.2",
     "sinon": "^1.16.1",
     "ts-loader": "^0.8.2",
     "typescript": "^1.5.3",
-    "webpack-stream": "^3.2.0"
+    "webpack-stream": "^3.2.0",
+    "xhr-mock": "^1.6.0"
   },
   "dependencies": {
     "axios": "^0.9.1",
