@@ -1,5 +1,5 @@
-import assign = require('object-assign');
 import qs = require('qs');
+import deepEql = require('deep-equal');
 import {
   Request,
   SelectedValueRefinement,
@@ -11,7 +11,7 @@ import {
   MatchStrategy,
   Biasing,
   Bias
-} from '../request-models';
+} from '../models/request';
 import {
   Results,
   Record,
@@ -20,8 +20,8 @@ import {
   Refinement,
   RefinementType,
   Navigation
-} from '../response-models';
-import { NavigationConverter } from '../util';
+} from '../models/response';
+import { NavigationConverter } from '../utils/converter';
 
 export interface QueryConfiguration {
   userId?: string;
@@ -54,8 +54,13 @@ export class Query {
     this.request.pruneRefinements = true;
   }
 
+  withQuery(query: string): Query {
+    this.request.query = query;
+    return this;
+  }
+
   withConfiguration(configuration: QueryConfiguration): Query {
-    assign(this.request, configuration);
+    Object.assign(this.request, configuration);
     return this;
   }
 
@@ -64,8 +69,16 @@ export class Query {
     return this;
   }
 
+  withoutSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
+    refinements.forEach(refinement => {
+      const index = this.request.refinements.findIndex(ref => deepEql(ref, refinement));
+      if (index > -1) this.request.refinements.splice(index, 1);
+    });
+    return this;
+  }
+
   withRefinements(navigationName: string, ...refinements: Array<ValueRefinement | RangeRefinement>): Query {
-    let convert = (refinement: Refinement) => <SelectedRefinement>assign(refinement, { navigationName });
+    const convert = (refinement: Refinement) => <SelectedRefinement>Object.assign(refinement, { navigationName });
     this.request.refinements.push(...refinements.map(convert));
     return this;
   }
@@ -85,7 +98,7 @@ export class Query {
   }
 
   private convertParamString(customUrlParams: string): CustomUrlParam[] {
-    let parsed = qs.parse(customUrlParams);
+    const parsed = qs.parse(customUrlParams);
     return Object.keys(parsed).reduce((converted, key) => converted.concat({ key, value: parsed[key] }), []);
   }
 
@@ -117,9 +130,9 @@ export class Query {
   withQueryParams(queryParams: any | string): Query {
     switch (typeof queryParams) {
       case 'string':
-        return assign(this, { queryParams: this.convertQueryString(<string>queryParams) });
+        return Object.assign(this, { queryParams: this.convertQueryString(<string>queryParams) });
       case 'object':
-        return assign(this, { queryParams });
+        return Object.assign(this, { queryParams });
     }
   }
 
@@ -192,7 +205,7 @@ export class Query {
   }
 
   build(): Request {
-    let builtRequest = assign(new Request(), this.request);
+    const builtRequest = Object.assign(new Request(), this.request);
     builtRequest.refinements.push(...NavigationConverter.convert(this.unprocessedNavigations));
 
     return this.clearEmptyArrays(builtRequest);

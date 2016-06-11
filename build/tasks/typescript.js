@@ -3,8 +3,7 @@ var gulp = require('gulp'),
   merge = require('merge-stream'),
   concat = require('gulp-concat'),
   sourcemaps = require('gulp-sourcemaps'),
-  paths = require('../paths'),
-  assign = require('object-assign');
+  paths = require('../paths');
 
 var tsProject = ts.createProject('tsconfig.json', { sortOutput: true, declaration: true });
 

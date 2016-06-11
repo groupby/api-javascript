@@ -6,3 +6,4 @@ typings/
 lib/
 
 !out/
+!definitions/

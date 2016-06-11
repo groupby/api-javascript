@@ -1,4 +1,4 @@
-import { Refinement, RefinementType, ValueRefinement, RangeRefinement } from './response-models';
+import { Refinement, RefinementType, ValueRefinement, RangeRefinement } from './response';
 
 export class Request {
 

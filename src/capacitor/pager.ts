@@ -1,48 +1,23 @@
-import { Query } from './core/query';
-import { BrowserBridge } from './core/bridge';
-import { Results } from './response-models';
+import { FluxCapacitor } from './index';
 
-export class FluxCapacitor {
-  query: Query;
-  bridge: BrowserBridge;
-  results: Results;
-
-  constructor(endpoint: string, config: any = {}) {
-    this.bridge = new BrowserBridge(endpoint);
-    this.query = new Query().withConfiguration(config);
-  }
-
-  nextPage() {
-    new Pager(this).next();
-  };
-
-  lastPage() {
-    new Pager(this).last();
-  };
-
-  search() {
-    return this.bridge.search(this.query)
-      .then(res => this.results = res);
-  }
-}
-
-class Pager {
+export class Pager {
   constructor(private flux: FluxCapacitor) { }
 
   next() {
-    this.paginate(true, this.hasNext);
+    return this.paginate(true, this.hasNext);
   }
 
   last() {
-    this.paginate(false, this.hasPrevious);
+    return this.paginate(false, this.hasPrevious);
   }
 
   private paginate(forward: boolean, predicate: boolean) {
     const step = this.step(forward);
     if (predicate) {
       this.flux.query.skip(step);
-      this.flux.search();
+      return this.flux.search();
     }
+    return Promise.reject(new Error(`already on ${forward ? 'last' : 'first'} page`));
   }
 
   private get hasNext(): boolean {

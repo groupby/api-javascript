@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
 
-import chai = require('chai');
+import { expect } from 'chai';
 import { Query } from '../src/core/query';
 import {
   ComplexRequest,
@@ -10,7 +10,6 @@ import {
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
-let expect = chai.expect;
 
 describe('Query', function() {
   let query;
@@ -28,7 +27,7 @@ describe('Query', function() {
   });
 
   it('should build a simple request with defaults', () => {
-    let request = query.build();
+    const request = query.build();
     expect(request).to.eql({
       query: 'test',
       wildcardSearchEnabled: false,
@@ -37,7 +36,7 @@ describe('Query', function() {
   });
 
   it('should build a complex request', () => {
-    let request = new Query('complex')
+    const request = new Query('complex')
       .withConfiguration({
         userId: '13afasd',
         language: 'en',
@@ -78,7 +77,7 @@ describe('Query', function() {
   });
 
   it('should allow multiple methods of setting refinements', () => {
-    let request = new Query('refinements')
+    const request = new Query('refinements')
       .withSelectedRefinements(
       {
         navigationName: 'size',
@@ -124,8 +123,19 @@ describe('Query', function() {
     expect(request.refinements).to.eql(CombinedRefinements);
   });
 
+  it('should allow unsetting refinement', () => {
+    const query = new Query('refinements')
+      .withSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' }, { type: 'Range', navigationName: 'price', low: 20, high: 40 });
+    expect(query.build().refinements.length).to.eql(2);
+
+    query.withoutSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' });
+    const request = query.build();
+    expect(request.refinements.length).to.eql(1);
+    expect(request.refinements[0].type).to.eql('Range');
+  });
+
   it('should convert custom URL params', () => {
-    let request = new Query('parameters')
+    const request = new Query('parameters')
       .withCustomUrlParams('banner=nike_landing&style=branded')
       .withCustomUrlParams('defaults')
       .withCustomUrlParams('others=&something=as_well')
