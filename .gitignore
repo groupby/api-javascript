@@ -9,4 +9,6 @@ test/**/*.js
 examples/**/*.js
 coverage
 .idea
-dist
+dist/
+definitions/
+out/

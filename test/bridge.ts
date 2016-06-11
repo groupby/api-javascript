@@ -1,4 +1,4 @@
-/// <reference path="../src/all.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 
 import chai = require('chai');
 import sinon = require('sinon');
