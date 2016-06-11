@@ -2,5 +2,7 @@ module.exports = {
   src: 'src',
   test: 'test',
   typings: 'typings',
-  dist: 'dist'
+  dist: 'dist',
+  out: 'out',
+  definitions: 'definitions'
 };

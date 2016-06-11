@@ -10,7 +10,7 @@ require('require-dir')('build/tasks');
 gulp.task('default', function(cb) {
   runSequence(
     'build',
-    'test',
+    // 'test',
     cb
   );
 });
@@ -22,8 +22,7 @@ gulp.task('default', function(cb) {
 gulp.task('build', function(cb) {
   runSequence(
     'clean',
-    'typings:install',
-    'webpack:bundle',
+    'typings:install', ['typescript:build', 'webpack:bundle', 'webpack:minify'],
     cb
   );
 });

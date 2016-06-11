@@ -1,1 +1,1 @@
-module.exports = require('./build/api-javascript');
+module.exports = require('./out/index');

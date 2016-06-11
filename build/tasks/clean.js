@@ -14,4 +14,16 @@ gulp.task('clean:dist', function(cb) {
   ], cb);
 });
 
-gulp.task('clean', ['clean:dist', 'clean:typings']);
+gulp.task('clean:out', function(cb) {
+  del([
+    paths.out
+  ], cb);
+});
+
+gulp.task('clean:definitions', function(cb) {
+  del([
+    paths.definitions
+  ], cb);
+});
+
+gulp.task('clean', ['clean:dist', 'clean:typings', 'clean:definitions', 'clean:out']);

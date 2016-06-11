@@ -1,7 +1,7 @@
 var pjson = require('./package.json');
 
 module.exports = {
-  entry: './src/api-javascript.ts',
+  entry: './src/index.ts',
   output: { filename: pjson.name + '-' + pjson.version + '.js' },
   resolve: {
     extensions: ['', '.ts', '.js']

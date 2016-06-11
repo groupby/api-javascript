@@ -1,7 +1,6 @@
 import axios = require('axios');
-import assign = require('object-assign');
-import { Request } from '../request-models';
-import { Results, Record } from '../response-models';
+import { Request } from '../models/request';
+import { Results, Record } from '../models/response';
 import { Query } from './query';
 
 const SEARCH = '/search';
@@ -26,7 +25,7 @@ export abstract class AbstractBridge {
 
   protected abstract augmentRequest(request: any): any;
 
-  search(query: string | Query | Request, callback: (Error?, Results?) => void = undefined): PromiseLike<Results> | void {
+  search(query: string | Query | Request, callback: (Error?, Results?) => void = undefined): Promise<Results> {
     let [request, queryParams] = this.extractRequest(query);
     if (request === null) return this.generateError('query was not of a recognised type', callback);
 
@@ -49,7 +48,7 @@ export abstract class AbstractBridge {
     }
   }
 
-  private generateError(error: string, callback: (Error) => void): void | PromiseLike<any> {
+  private generateError(error: string, callback: (Error) => void): Promise<any> {
     const err = new Error(error);
     if (callback) callback(err);
     else return Promise.reject(err);
@@ -66,11 +65,11 @@ export abstract class AbstractBridge {
     };
     return axios(options)
       .then(res => res.data)
-      .then(res => res.records ? assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
+      .then(res => res.records ? Object.assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
   }
 
   private convertRecordFields(record: RawRecord): Record | RawRecord {
-    const converted = assign(record, { id: record._id, url: record._u, title: record._t });
+    const converted = Object.assign(record, { id: record._id, url: record._u, title: record._t });
     delete converted._id, converted._u, converted._t;
 
     if (record._snippet) {
@@ -98,7 +97,7 @@ export class CloudBridge extends AbstractBridge {
   }
 
   protected augmentRequest(request: any): any {
-    return assign(request, { clientKey: this.clientKey });
+    return Object.assign(request, { clientKey: this.clientKey });
   }
 }
 

@@ -1,16 +1,13 @@
-/// <reference path="../src/all.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 
-import chai = require('chai');
-import sinon = require('sinon');
+import { expect } from 'chai';
 import mock = require('xhr-mock');
 
-import { CloudBridge } from '../src/core/bridge';
-import { BrowserBridge } from '../src/core/bridge';
+import { CloudBridge, BrowserBridge } from '../src/core/bridge';
 import { Query } from '../src/core/query';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
-const expect = chai.expect;
 
 describe('Bridge', () => {
   let bridge,
@@ -120,12 +117,11 @@ describe('Bridge', () => {
   });
 
   it('should send requests to the CORS supported endpoint', done => {
-    mock.post('http://ecomm.groupbycloud.com/semanticSearch/services?size=20&style=branded', (req, res) => {
+    mock.post(`http://ecomm.groupbycloud.com/semanticSearch/${CUSTOMER_ID}`, (req, res) => {
       return res.status(200).body('success');
     });
 
-    query = new Query('shoes')
-      .withQueryParams('size=20&style=branded');
+    query = new Query('shoes');
 
     new BrowserBridge(CUSTOMER_ID)
       .search(query, (err, results) => {

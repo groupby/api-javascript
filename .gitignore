@@ -3,10 +3,13 @@
 .tmp
 tmp
 node_modules
+npm-debug.log
 typings
 lib/**/*.js
 test/**/*.js
 examples/**/*.js
 coverage
 .idea
-dist
+dist/
+definitions/
+out/
