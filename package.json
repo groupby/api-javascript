@@ -1,6 +1,6 @@
 {
   "name": "groupby-api",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Client for the GroupBy Searchandiser API.",
   "typescript": {
     "definition": "definitions/index.d.ts"
