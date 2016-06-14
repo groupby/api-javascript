@@ -20,10 +20,4 @@ gulp.task('clean:out', function(cb) {
   ], cb);
 });
 
-gulp.task('clean:definitions', function(cb) {
-  del([
-    paths.definitions
-  ], cb);
-});
-
-gulp.task('clean', ['clean:dist', 'clean:typings', 'clean:definitions', 'clean:out']);
+gulp.task('clean', ['clean:dist', 'clean:typings', 'clean:out']);

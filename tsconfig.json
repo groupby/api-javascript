@@ -9,7 +9,7 @@
   },
   "exclude": [
     "node_modules",
-    "definitions"
+    "out"
   ],
   "atom": {
     "rewriteTsconfig": true,

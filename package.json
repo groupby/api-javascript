@@ -3,7 +3,7 @@
   "version": "1.0.18",
   "description": "Client for the GroupBy Searchandiser API.",
   "typescript": {
-    "definition": "definitions/index.d.ts"
+    "definition": "out/index.d.ts"
   },
   "main": "index.js",
   "directories": {

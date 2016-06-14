@@ -18,7 +18,7 @@ gulp.task('typescript:build', function() {
   return merge([
     tsResult.dts
     .pipe(concat('index.d.ts'))
-    .pipe(gulp.dest(paths.definitions)),
+    .pipe(gulp.dest(paths.out)),
     tsResult.js
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(paths.out))

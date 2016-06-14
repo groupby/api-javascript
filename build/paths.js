@@ -3,6 +3,5 @@ module.exports = {
   test: 'test',
   typings: 'typings',
   dist: 'dist',
-  out: 'out',
-  definitions: 'definitions'
+  out: 'out'
 };
