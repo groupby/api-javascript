@@ -2,7 +2,9 @@
   "name": "groupby-api",
   "version": "1.0.20",
   "description": "Client for the GroupBy Searchandiser API.",
-  "typings": "out/groupby-api.d.ts",
+  "typescript": {
+    "definition": "out/groupby-api.d.ts"
+  },
   "main": "index.js",
   "directories": {
     "test": "test"
