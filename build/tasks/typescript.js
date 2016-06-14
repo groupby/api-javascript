@@ -3,13 +3,15 @@ var gulp = require('gulp'),
   merge = require('merge-stream'),
   concat = require('gulp-concat'),
   sourcemaps = require('gulp-sourcemaps'),
-  paths = require('../paths');
+  paths = require('../paths'),
+  shell = require('gulp-shell');
 
 var tsProject = ts.createProject('tsconfig.json', { sortOutput: true, declaration: true });
 
 gulp.task('typescript:build', function() {
   var tsResult = gulp.src([
       paths.src + '/**/*.ts',
+      paths.src + '/**/*.d.ts',
       paths.test + '/**/*.ts'
     ], { base: paths.src })
     .pipe(sourcemaps.init())
@@ -17,10 +19,14 @@ gulp.task('typescript:build', function() {
 
   return merge([
     tsResult.dts
-    .pipe(concat('index.d.ts'))
+    // .pipe(concat('index.d.ts'))
     .pipe(gulp.dest(paths.out)),
     tsResult.js
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(paths.out))
   ]);
 });
+
+gulp.task('typescript:definitions', shell.task([
+  'node build/scripts/dts-bundle.js'
+]));
