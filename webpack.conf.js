@@ -1,8 +1,10 @@
-var pjson = require('./package.json');
+var fail = require('webpack-fail-plugin'),
+  pjson = require('./package.json');
 
 module.exports = {
   entry: './src/index.ts',
   output: { filename: pjson.name + '-' + pjson.version + '.js' },
+  plugins: [fail],
   resolve: {
     extensions: ['', '.ts', '.js']
   },

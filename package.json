@@ -68,7 +68,8 @@
     "run-sequence": "^1.1.2",
     "sinon": "^1.16.1",
     "ts-loader": "^0.8.2",
-    "typescript": "^1.5.3",
+    "typescript": "^1.9.0-dev.20160615-1.0",
+    "webpack-fail-plugin": "^1.0.4",
     "webpack-stream": "^3.2.0",
     "xhr-mock": "^1.6.0"
   },
@@ -76,6 +77,7 @@
     "axios": "^0.9.1",
     "deep-equal": "^1.0.1",
     "es6-promise": "^3.1.2",
+    "eventemitter3": "^1.2.0",
     "qs": "^6.1.0"
   }
 }
