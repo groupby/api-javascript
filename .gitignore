@@ -1,14 +1,12 @@
 .vscode/launch.json
 .DS_Store
 .tmp
+.idea
 tmp
 node_modules
 npm-debug.log
 typings
-lib/**/*.js
+src/**/*.js
 test/**/*.js
-examples/**/*.js
 coverage
-.idea
-dist/
-out/
+dist

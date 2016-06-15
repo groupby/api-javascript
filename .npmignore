@@ -1,8 +1,9 @@
 .*
 coverage/
-scripts/
+build/
 test/
 typings/
-lib/
+src/
+dist/
 
-!out/
+!dist/commonjs

@@ -22,7 +22,7 @@ gulp.task('default', function(cb) {
 gulp.task('build', function(cb) {
   runSequence(
     'clean',
-    'typings:install', ['typescript:build', 'webpack:bundle', 'webpack:minify'],
+    'typings:install', ['typescript:build', 'webpack:bundle', 'webpack:minify', 'typings:copy'],
     'typescript:definitions',
     cb
   );

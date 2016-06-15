@@ -1,7 +1,8 @@
-var dts = require('dts-bundle');
-var packageJson = require('../../package.json');
+var dts = require('dts-bundle'),
+  pjson = require('../../package.json'),
+  paths = require('../paths');
 
 dts.bundle({
-  name: packageJson.name,
-  main: 'out/index.d.ts'
+  name: pjson.name,
+  main: paths.dist.commonjs + '/index.d.ts'
 });

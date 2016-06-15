@@ -20,10 +20,10 @@ gulp.task('typescript:build', function() {
   return merge([
     tsResult.dts
     // .pipe(concat('index.d.ts'))
-    .pipe(gulp.dest(paths.out)),
+    .pipe(gulp.dest(paths.dist.commonjs)),
     tsResult.js
     .pipe(sourcemaps.write())
-    .pipe(gulp.dest(paths.out))
+    .pipe(gulp.dest(paths.dist.commonjs))
   ]);
 });
 

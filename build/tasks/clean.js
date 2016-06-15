@@ -10,14 +10,8 @@ gulp.task('clean:typings', function(cb) {
 
 gulp.task('clean:dist', function(cb) {
   del([
-    paths.dist
+    paths.dist.root
   ], cb);
 });
 
-gulp.task('clean:out', function(cb) {
-  del([
-    paths.out
-  ], cb);
-});
-
-gulp.task('clean', ['clean:dist', 'clean:typings', 'clean:out']);
+gulp.task('clean', ['clean:dist', 'clean:typings']);

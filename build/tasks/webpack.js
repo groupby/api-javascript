@@ -9,7 +9,7 @@ var gulp = require('gulp'),
 gulp.task('webpack:bundle', function() {
   return gulp.src('')
     .pipe(webpack(packConfig))
-    .pipe(gulp.dest('dist/'));
+    .pipe(gulp.dest(paths.dist.browser));
 });
 
 gulp.task('webpack:minify', function() {
@@ -20,12 +20,12 @@ gulp.task('webpack:minify', function() {
 
   return gulp.src('')
     .pipe(webpack(minConfig))
-    .pipe(gulp.dest('dist/'));
+    .pipe(gulp.dest(paths.dist.browser));
 });
 
 
 gulp.task('webpack:watch', function() {
   return gulp.src('')
     .pipe(webpack(assign({}, packConfig, { watch: true })))
-    .pipe(gulp.dest('dist/'));
+    .pipe(gulp.dest(paths.dist.browser));
 });

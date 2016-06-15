@@ -2,6 +2,10 @@ module.exports = {
   src: 'src',
   test: 'test',
   typings: 'typings',
-  dist: 'dist',
-  out: 'out'
+  dist: {
+    root: 'dist',
+    browser: 'dist/browser',
+    commonjs: 'dist/commonjs',
+    typings: 'dist/typings'
+  }
 };

@@ -5,7 +5,7 @@ var gulp = require('gulp'),
   paths = require('../paths.js');
 
 gulp.task('test', function(cb) {
-  gulp.src(paths.dist + '/**/*.js')
+  gulp.src(paths.dist.commonjs + '/**/*.js')
     .pipe(istanbul())
     .pipe(istanbul.hookRequire())
     .on('finish', function() {
