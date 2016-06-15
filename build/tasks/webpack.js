@@ -3,7 +3,7 @@ var gulp = require('gulp'),
   webpack = require('webpack-stream'),
   pjson = require('../../package.json'),
   paths = require('../paths.js'),
-  packConfig = require('../../webpack.config'),
+  packConfig = require('../../webpack.conf'),
   assign = require('object-assign');
 
 gulp.task('webpack:bundle', function() {

@@ -4,6 +4,14 @@ build/
 test/
 typings/
 src/
-dist/
+gulpfile.js
 
+*.json
+*.yml
+*.conf.js
+
+dist/*
 !dist/commonjs
+
+dist/commonjs/**/*.d.ts
+!dist/commonjs/groupby-api.d.ts
