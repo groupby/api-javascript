@@ -1,4 +1,4 @@
-import { FluxCapacitor } from './index';
+import { FluxCapacitor, Events } from './index';
 
 export class Pager {
   constructor(private flux: FluxCapacitor) { }
@@ -9,6 +9,11 @@ export class Pager {
 
   last() {
     return this.paginate(false, this.hasPrevious);
+  }
+
+  reset() {
+    this.flux.query.skip(0);
+    return this.flux.search();
   }
 
   private paginate(forward: boolean, predicate: boolean) {

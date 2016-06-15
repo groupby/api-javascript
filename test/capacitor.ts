@@ -7,6 +7,7 @@ import { FluxCapacitor, Results, Events, SelectedValueRefinement } from '../src/
 const CUSTOMER_ID = 'services';
 const SEARCH_URL = `http://ecomm.groupbycloud.com/semanticSearch/${CUSTOMER_ID}`;
 const SELECTED_REFINEMENT: SelectedValueRefinement = { type: 'Value', navigationName: 'brand', value: 'DeWalt' };
+const REFINEMENT_RESULT = { availableNavigation: 'a', selectedNavigation: 'b' };
 
 describe('FluxCapacitor', function() {
   let flux: FluxCapacitor;
@@ -37,10 +38,12 @@ describe('FluxCapacitor', function() {
       flux.search('testing');
     });
 
-    it('should emit a results event', done => {
-      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-      flux.on(Events.RESULTS, () => done());
-      flux.search('');
+    describe('events', () => {
+      it('should emit a results event', done => {
+        mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+        flux.on(Events.RESULTS, () => done());
+        flux.search('');
+      });
     });
   });
 
@@ -73,19 +76,62 @@ describe('FluxCapacitor', function() {
       flux.unrefine({ type: 'Value', navigationName: 'brand', value: 'DeWalt' });
     });
 
-    it('should emit refinements_changed event on refinement', done => {
+    it('should reset paging on refinement', done => {
       mock.post(SEARCH_URL, (req, res) => res.body('ok'));
 
-      flux.on(Events.REFINEMENTS_CHANGED, () => done());
-      flux.refine(SELECTED_REFINEMENT);
+      flux.refine(SELECTED_REFINEMENT)
+        .then(() => {
+          expect(flux.query.build().skip).to.equal(0);
+          done();
+        });
     });
 
-    it('should emit refinements_changed event on un-refinement', done => {
+    it('should reset paging on un-refinement', done => {
+      flux.query.skip(20);
       flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
       mock.post(SEARCH_URL, (req, res) => res.body('ok'));
 
-      flux.on(Events.REFINEMENTS_CHANGED, () => done());
-      flux.unrefine(SELECTED_REFINEMENT);
+      flux.unrefine(SELECTED_REFINEMENT)
+        .then(() => {
+          expect(flux.query.build().skip).to.equal(0);
+          done();
+        });
+    });
+
+    it('should skip reset paging on refinement', done => {
+      flux.query.skip(20);
+      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+
+      flux.refine(SELECTED_REFINEMENT, { reset: false })
+        .then(() => {
+          expect(flux.query.build().skip).to.equal(20);
+          done();
+        });
+    });
+
+    describe('events', () => {
+      it('should emit refinements_changed event on refinement', done => {
+        mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
+
+        flux.on(Events.REFINEMENTS_CHANGED, data => {
+          expect(data.available).to.equal('a');
+          expect(data.selected).to.equal('b');
+          done();
+        });
+        flux.refine(SELECTED_REFINEMENT);
+      });
+
+      it('should emit refinements_changed event on un-refinement', done => {
+        flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
+        mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
+
+        flux.on(Events.REFINEMENTS_CHANGED, data => {
+          expect(data.available).to.equal('a');
+          expect(data.selected).to.equal('b');
+          done();
+        });
+        flux.unrefine(SELECTED_REFINEMENT);
+      });
     });
   });
 
@@ -116,20 +162,6 @@ describe('FluxCapacitor', function() {
       });
       flux.lastPage();
     });
-
-    it('should emit page_changed event on page forward', done => {
-      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-
-      flux.on(Events.PAGE_CHANGED, () => done());
-      flux.nextPage();
-    });
-
-    it('should emit page_changed event on page backward', done => {
-      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-
-      flux.on(Events.PAGE_CHANGED, () => done());
-      flux.lastPage();
-    });
   });
 
   describe('reset behaviour', () => {
@@ -147,11 +179,13 @@ describe('FluxCapacitor', function() {
       flux.reset();
     });
 
-    it('should emit reset event', done => {
-      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+    describe('events', () => {
+      it('should emit reset event', done => {
+        mock.post(SEARCH_URL, (req, res) => res.body('ok'));
 
-      flux.on(Events.RESET, () => done());
-      flux.reset();
+        flux.on(Events.RESET, () => done());
+        flux.reset();
+      });
     });
   });
 

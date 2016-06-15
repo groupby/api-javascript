@@ -8,9 +8,10 @@ import { SelectedValueRefinement, SelectedRangeRefinement } from '../models/requ
 export namespace Events {
   export const RESULTS = 'results';
   export const REFINEMENTS_CHANGED = 'refinements_changed';
-  export const PAGE_CHANGED = 'page_changed';
   export const RESET = 'reset';
 }
+
+export type FluxRefinement = SelectedValueRefinement | SelectedRangeRefinement;
 
 export class FluxCapacitor extends EventEmitter {
   private originalQuery: string = '';
@@ -25,13 +26,11 @@ export class FluxCapacitor extends EventEmitter {
   }
 
   nextPage() {
-    return new Pager(this).next()
-      .then(() => this.emit(Events.PAGE_CHANGED));
+    return new Pager(this).next();
   }
 
   lastPage() {
-    return new Pager(this).last()
-      .then(() => this.emit(Events.PAGE_CHANGED));
+    return new Pager(this).last();
   }
 
   search(query: string = this.originalQuery) {
@@ -45,19 +44,26 @@ export class FluxCapacitor extends EventEmitter {
 
   reset() {
     this.query = new Query(this.originalQuery);
-    return this.search()
+    return new Pager(this).reset()
       .then(() => this.emit(Events.RESET));
   }
 
-  refine(refinement: SelectedValueRefinement | SelectedRangeRefinement) {
-    this.query.withSelectedRefinements(refinement);
-    return this.search()
-      .then(() => this.emit(Events.REFINEMENTS_CHANGED, this.navigationInfo));
+  private resetPaging(reset: boolean): Promise<any> {
+    return (reset ? new Pager(this).reset() : this.search());
   }
 
-  unrefine(refinement: SelectedValueRefinement | SelectedRangeRefinement) {
+  refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }) {
+    this.query.withSelectedRefinements(refinement);
+    return this.doRefinement(config);
+  }
+
+  unrefine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }) {
     this.query.withoutSelectedRefinements(refinement);
-    return this.search()
+    return this.doRefinement(config);
+  }
+
+  private doRefinement(config: RefinementConfig) {
+    return this.resetPaging(config.reset)
       .then(() => this.emit(Events.REFINEMENTS_CHANGED, this.navigationInfo));
   }
 
@@ -67,4 +73,8 @@ export class FluxCapacitor extends EventEmitter {
       selected: this.results.selectedNavigation
     };
   }
+}
+
+export interface RefinementConfig {
+  reset?: boolean;
 }
