@@ -179,6 +179,15 @@ describe('FluxCapacitor', function() {
       flux.reset();
     });
 
+    it('should accept a new query on reset', done => {
+      flux.query.withQuery('alabama');
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).query).to.equal('texas');
+        done();
+      });
+      flux.reset('texas');
+    });
+
     describe('events', () => {
       it('should emit reset event', done => {
         mock.post(SEARCH_URL, (req, res) => res.body('ok'));

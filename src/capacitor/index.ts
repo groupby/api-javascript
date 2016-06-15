@@ -42,9 +42,9 @@ export class FluxCapacitor extends EventEmitter {
       });
   }
 
-  reset() {
-    this.query = new Query(this.originalQuery);
-    return new Pager(this).reset()
+  reset(query: string = this.originalQuery) {
+    this.query = new Query();
+    return this.search(query)
       .then(() => this.emit(Events.RESET));
   }
 
