@@ -1,4 +1,4 @@
-(() => {
+export function pollyfill() {
   if (!Array.prototype.findIndex) {
     Array.prototype.findIndex = function(predicate) {
       if (this === null) {
@@ -87,4 +87,4 @@
     };
   }
 
-})();
+}

@@ -1,7 +1,7 @@
 /// <reference path="../typings/index.d.ts"/>
 
 require('es6-promise').polyfill();
-import './polyfills';
+require('./polyfills').pollyfill();
 
 export * from './core/query';
 export * from './core/bridge';
