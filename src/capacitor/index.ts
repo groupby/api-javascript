@@ -9,6 +9,7 @@ export namespace Events {
   export const RESULTS = 'results';
   export const REFINEMENTS_CHANGED = 'refinements_changed';
   export const RESET = 'reset';
+  export const REWRITE_QUERY = 'rewrite_query';
 }
 
 export type FluxRefinement = SelectedValueRefinement | SelectedRangeRefinement;
@@ -42,10 +43,15 @@ export class FluxCapacitor extends EventEmitter {
       });
   }
 
+  rewrite(query: string) {
+    return this.search(query)
+      .then(() => this.emit(Events.REWRITE_QUERY, query));
+  }
+
   reset(query: string = this.originalQuery) {
     this.query = new Query();
     return this.search(query)
-      .then(() => this.emit(Events.RESET));
+      .then(() => this.emit(Events.RESET, this.results));
   }
 
   private resetPaging(reset: boolean): Promise<any> {
