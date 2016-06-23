@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "es6-promise": "registry:npm/es6-promise#3.0.0+20160211003958",
-    "nock": "registry:npm/nock#0.7.0+20160211003958",
     "xhr-mock": "github:effervescentia/typed-xhr-mock#c3fea91aaeede6982f59dea2a6f6ad5291a5256b"
   }
 }
