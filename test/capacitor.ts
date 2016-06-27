@@ -164,6 +164,16 @@ describe('FluxCapacitor', function() {
     });
   });
 
+  describe('resizing behaviour', () => {
+    it('should resize the page', done => {
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).pageSize).to.equal(30);
+        done();
+      });
+      flux.resize(30);
+    });
+  });
+
   describe('reset behaviour', () => {
     it('should reset the query', done => {
       flux.query

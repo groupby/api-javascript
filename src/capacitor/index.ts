@@ -1,5 +1,5 @@
 import EventEmitter = require('eventemitter3');
-import { Query } from '../core/query';
+import { Query, QueryConfiguration } from '../core/query';
 import { BrowserBridge } from '../core/bridge';
 import { Results } from '../models/response';
 import { Pager } from './pager';
@@ -20,7 +20,7 @@ export class FluxCapacitor extends EventEmitter {
   bridge: BrowserBridge;
   results: Results;
 
-  constructor(endpoint: string, config: any = {}) {
+  constructor(endpoint: string, config: QueryConfiguration & any = {}) {
     super();
     this.bridge = new BrowserBridge(endpoint);
     this.query = new Query().withConfiguration(config);
@@ -52,6 +52,11 @@ export class FluxCapacitor extends EventEmitter {
     this.query = new Query();
     return this.search(query)
       .then(() => this.emit(Events.RESET, this.results));
+  }
+
+  resize(pageSize: number) {
+    this.query.withConfiguration({ pageSize });
+    return this.search();
   }
 
   private resetPaging(reset: boolean): Promise<any> {

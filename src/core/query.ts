@@ -29,6 +29,7 @@ export interface QueryConfiguration {
   collection?: string;
   area?: string;
   biasingProfile?: string;
+  pageSize?: number;
 }
 
 export class Query {
