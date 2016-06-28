@@ -12,7 +12,8 @@ export class Pager {
   }
 
   last() {
-    this.flux.query.skip(this.total - (this.total % this.pageSize));
+    const remainder = this.total % this.pageSize;
+    this.flux.query.skip(remainder > 0 ? this.total - remainder : this.total - this.pageSize);
     return this.flux.search();
   }
 

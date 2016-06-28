@@ -26,12 +26,8 @@ export class FluxCapacitor extends EventEmitter {
     this.query = new Query().withConfiguration(config);
   }
 
-  nextPage() {
-    return new Pager(this).next();
-  }
-
-  lastPage() {
-    return new Pager(this).prev();
+  get page() {
+    return new Pager(this);
   }
 
   search(query: string = this.originalQuery) {
@@ -61,7 +57,7 @@ export class FluxCapacitor extends EventEmitter {
   }
 
   private resetPaging(reset: boolean): Promise<any> {
-    return (reset ? new Pager(this).reset() : this.search());
+    return reset ? this.page.reset() : this.search();
   }
 
   refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }) {

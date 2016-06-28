@@ -141,12 +141,20 @@ describe('FluxCapacitor', function() {
       flux.results = <Results>{ totalRecordCount: 300 };
     });
 
+    it('should reset paging', done => {
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).skip).to.equal(0);
+        done();
+      });
+      flux.page.reset();
+    });
+
     it('should page forward', done => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.equal(30);
         done();
       });
-      flux.nextPage();
+      flux.page.next();
     });
 
     it('should page backward', done => {
@@ -154,7 +162,15 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).skip).to.equal(10);
         done();
       });
-      flux.lastPage();
+      flux.page.prev();
+    });
+
+    it('should advance to last page', done => {
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).skip).to.equal(290);
+        done();
+      });
+      flux.page.last();
     });
   });
 
