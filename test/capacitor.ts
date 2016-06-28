@@ -165,12 +165,24 @@ describe('FluxCapacitor', function() {
   });
 
   describe('resizing behaviour', () => {
-    it('should resize the page', done => {
+    it('should resize the page and keep offset', done => {
+      flux.query.skip(20);
       mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).skip).to.equal(20);
         expect(JSON.parse(req.body()).pageSize).to.equal(30);
         done();
       });
       flux.resize(30);
+    });
+
+    it('should resize the page', done => {
+      flux.query.skip(20);
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).skip).to.equal(0);
+        expect(JSON.parse(req.body()).pageSize).to.equal(30);
+        done();
+      });
+      flux.resize(30, 0);
     });
   });
 

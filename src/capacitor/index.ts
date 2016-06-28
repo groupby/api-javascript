@@ -54,8 +54,9 @@ export class FluxCapacitor extends EventEmitter {
       .then(() => this.emit(Events.RESET, this.results));
   }
 
-  resize(pageSize: number) {
+  resize(pageSize: number, offset?: number) {
     this.query.withConfiguration({ pageSize });
+    if (offset !== undefined) this.query.skip(offset);
     return this.search();
   }
 
