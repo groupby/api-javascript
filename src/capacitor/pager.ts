@@ -7,8 +7,13 @@ export class Pager {
     return this.paginate(true, this.hasNext);
   }
 
-  last() {
+  prev() {
     return this.paginate(false, this.hasPrevious);
+  }
+
+  last() {
+    this.flux.query.skip(this.total - (this.total % this.pageSize));
+    return this.flux.search();
   }
 
   reset() {
@@ -34,14 +39,18 @@ export class Pager {
   }
 
   private step(add: boolean): number {
-    const records = this.flux.results.records.length;
-    const skip = this.lastStep + (add ? records : -records);
+    const skip = this.lastStep + (add ? this.pageSize : -this.pageSize);
     return skip >= 0 ? skip : 0;
   }
 
   private get lastStep(): number {
-    return this.flux.results.pageInfo.recordStart - 1;
+    return this.flux.query.build().skip;
   }
+
+  private get pageSize(): number {
+    return this.flux.query.build().pageSize || 10;
+  }
+
   private get total(): number {
     return this.flux.results.totalRecordCount;
   }

@@ -137,14 +137,8 @@ describe('FluxCapacitor', function() {
 
   describe('paging behaviour', () => {
     beforeEach(() => {
-      flux.results = <Results>{
-        totalRecordCount: 300,
-        records: Array(10).fill({}),
-        pageInfo: {
-          recordStart: 21,
-          recordEnd: 31
-        }
-      };
+      flux.query.skip(20);
+      flux.results = <Results>{ totalRecordCount: 300 };
     });
 
     it('should page forward', done => {

@@ -31,7 +31,7 @@ export class FluxCapacitor extends EventEmitter {
   }
 
   lastPage() {
-    return new Pager(this).last();
+    return new Pager(this).prev();
   }
 
   search(query: string = this.originalQuery) {
