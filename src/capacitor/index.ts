@@ -62,11 +62,13 @@ export class FluxCapacitor extends EventEmitter {
 
   refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }) {
     this.query.withSelectedRefinements(refinement);
+    if (config.skipSearch) return Promise.resolve(true);
     return this.doRefinement(config);
   }
 
   unrefine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }) {
     this.query.withoutSelectedRefinements(refinement);
+    if (config.skipSearch) return Promise.resolve(true);
     return this.doRefinement(config);
   }
 
@@ -85,4 +87,5 @@ export class FluxCapacitor extends EventEmitter {
 
 export interface RefinementConfig {
   reset?: boolean;
+  skipSearch?: boolean;
 }
