@@ -31,9 +31,9 @@ describe('Bridge', () => {
 
   it('should handle invalid query types', done => {
     bridge.search(12331)
-      .catch(err => expect(err.message).to.equal('query was not of a recognised type'))
+      .catch(err => expect(err.message).to.eq('query was not of a recognised type'))
       .then(() => bridge.search(true, (err, res) => {
-        expect(err.message).to.equal('query was not of a recognised type');
+        expect(err.message).to.eq('query was not of a recognised type');
         expect(res).to.not.be.ok;
         done();
       }));
@@ -42,8 +42,8 @@ describe('Bridge', () => {
   it('should be accept a direct query string', done => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       const body = JSON.parse(req.body())
-      expect(body.query).to.equal('skirts');
-      expect(body.clientKey).to.equal(CLIENT_KEY);
+      expect(body.query).to.eq('skirts');
+      expect(body.clientKey).to.eq(CLIENT_KEY);
       return res.status(200)
         .body('success');
     });
@@ -55,16 +55,16 @@ describe('Bridge', () => {
   it('should be accept a raw request', done => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       const body = JSON.parse(req.body())
-      expect(body.fields).to.deep.equal(['title', 'description']);
+      expect(body.fields).to.eql(['title', 'description']);
       return res.status(200)
         .body('success');
     });
 
     bridge.search(new Query('skirts').withFields('title', 'description').build())
-      .then(results => expect(results).to.equal('success'))
+      .then(results => expect(results).to.eq('success'))
       .then(() => bridge.search({ query: 'skirts', fields: ['title', 'description'] }))
       .then(results => {
-        expect(results).to.equal('success');
+        expect(results).to.eq('success');
         done();
       });
   });
@@ -75,10 +75,10 @@ describe('Bridge', () => {
     });
 
     bridge.search(query = new Query('skirts'))
-      .then(results => expect(results).to.equal('success'))
+      .then(results => expect(results).to.eq('success'))
       .then(() => bridge.search(query))
       .then(results => {
-        expect(results).to.equal('success');
+        expect(results).to.eq('success');
         done();
       });
   });
@@ -97,7 +97,7 @@ describe('Bridge', () => {
 
     bridge.search(query)
       .then(results => {
-        expect(results).to.equal('success');
+        expect(results).to.eq('success');
         done();
       });
   });
@@ -111,7 +111,7 @@ describe('Bridge', () => {
       .withQueryParams('size=20&style=branded');
 
     bridge.search(query, (err, results) => {
-      expect(results).to.equal('success');
+      expect(results).to.eq('success');
       done();
     });
   });
@@ -125,7 +125,7 @@ describe('Bridge', () => {
 
     new BrowserBridge(CUSTOMER_ID)
       .search(query, (err, results) => {
-        expect(results).to.equal('success');
+        expect(results).to.eq('success');
         done();
       });
   });

@@ -126,12 +126,12 @@ describe('Query', function() {
   it('should allow unsetting refinement', () => {
     const query = new Query('refinements')
       .withSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' }, { type: 'Range', navigationName: 'price', low: 20, high: 40 });
-    expect(query.build().refinements.length).to.eql(2);
+    expect(query.build().refinements.length).to.eq(2);
 
     query.withoutSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' });
     const request = query.build();
-    expect(request.refinements.length).to.eql(1);
-    expect(request.refinements[0].type).to.eql('Range');
+    expect(request.refinements.length).to.eq(1);
+    expect(request.refinements[0].type).to.eq('Range');
   });
 
   it('should convert custom URL params', () => {
@@ -144,4 +144,29 @@ describe('Query', function() {
     expect(request.customUrlParams).to.eql(CustomParamsFromString);
   });
 
+  it('should expose a copy of the raw request', () => {
+    const query = new Query('raw request')
+      .skip(10)
+      .withPageSize(300);
+    const rawRequest = query.rawRequest;
+    expect(rawRequest.skip).to.eq(10);
+    expect(rawRequest.pageSize).to.eq(300);
+    rawRequest.skip = 20;
+    rawRequest.pageSize = 47;
+    expect(query.build().skip).to.eq(10);
+    expect(query.build().pageSize).to.eq(300);
+  });
+
+  it('should expose a copy of the raw navigations', () => {
+    const query = new Query('raw request')
+      .skip(10)
+      .withPageSize(300);
+    const rawRequest = query.rawRequest;
+    expect(rawRequest.skip).to.eq(10);
+    expect(rawRequest.pageSize).to.eq(300);
+    rawRequest.skip = 20;
+    rawRequest.pageSize = 47;
+    expect(query.build().skip).to.eq(10);
+    expect(query.build().pageSize).to.eq(300);
+  });
 });

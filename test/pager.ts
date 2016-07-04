@@ -13,7 +13,7 @@ const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
 
 describe('Pager', function() {
-  function flux(opts: { start: number, total?: number } | number, search: Function): FluxCapacitor {
+  function flux(opts: { start: number, total?: number } | number, search?: Function): FluxCapacitor {
     const recordStart = typeof opts === 'number' ? opts : opts.start;
     const totalRecordCount = (typeof opts === 'object' && opts.total) || 30;
     return <FluxCapacitor>{
@@ -27,71 +27,95 @@ describe('Pager', function() {
     expect(new Pager(<FluxCapacitor>{})).to.be.ok;
   });
 
-  it('should step forward', done => {
+  it('first step', (done) => {
+    const mockFlux = flux(0, function() {
+      expect(this.query.build().skip).to.eq(10);
+      done();
+    });
+    mockFlux.query = new Query();
+    new Pager(mockFlux).next();
+  });
+
+  it('should step forward', (done) => {
     new Pager(flux(10, function() {
-      expect(this.query.build().skip).to.equal(20);
+      expect(this.query.build().skip).to.eq(20);
       done();
     })).next();
   });
 
-  it('should step backward', done => {
+  it('should step backward', (done) => {
     new Pager(flux(20, function() {
-      expect(this.query.build().skip).to.equal(10);
+      expect(this.query.build().skip).to.eq(10);
       done();
     })).prev();
   });
 
-  it('should step to 0 at the lowest', done => {
+  it('should step to 0 at the lowest', (done) => {
     new Pager(flux(2, function() {
-      expect(this.query.build().skip).to.equal(0);
+      expect(this.query.build().skip).to.eq(0);
       done();
     })).prev();
   });
 
-  it('should reset the pagination to 0', done => {
+  it('should reset the pagination to 0', (done) => {
     new Pager(flux(2, function() {
-      expect(this.query.build().skip).to.equal(0);
+      expect(this.query.build().skip).to.eq(0);
       done();
     })).reset();
   });
 
-  it('should step to the last page', done => {
+  it('should step to the last page', (done) => {
     new Pager(flux({ start: 30, total: 45 }, function() {
-      expect(this.query.build().skip).to.equal(40);
+      expect(this.query.build().skip).to.eq(40);
       done();
     })).next();
   });
 
-  it('should step down from last page', done => {
+  it('should step down from last page', (done) => {
     new Pager(flux({ start: 40, total: 45 }, function() {
-      expect(this.query.build().skip).to.equal(30);
+      expect(this.query.build().skip).to.eq(30);
       done();
     })).prev();
   });
 
-  it('should skip to the last page', done => {
+  it('should skip to the last page', (done) => {
     new Pager(flux({ start: 0, total: 45 }, function() {
-      expect(this.query.build().skip).to.equal(40);
+      expect(this.query.build().skip).to.eq(40);
       done();
     })).last();
   });
 
+  it('should allow next', () => {
+    expect(new Pager(flux({ start: 0, total: 45 })).hasNext).to.be.true;
+  });
+
+  it('should not allow next', () => {
+    expect(new Pager(flux({ start: 43, total: 45 })).hasNext).to.be.false;
+  });
+
+  it('should allow previous', () => {
+    expect(new Pager(flux(12)).hasPrevious).to.be.true;
+  });
+
+  it('should not allow previous', () => {
+    expect(new Pager(flux(0)).hasPrevious).to.be.false;
+  });
+
   describe('error states', () => {
-    it('should throw error if paging too low', done => {
+    it('should throw error if paging too low', (done) => {
       new Pager(flux(0, () => { })).prev()
         .catch(err => {
-          expect(err.message).to.equal('already on first page');
+          expect(err.message).to.eq('already on first page');
           done();
         });
     });
 
-    it('should throw error if paging too high', done => {
+    it('should throw error if paging too high', (done) => {
       new Pager(flux(24, () => { })).next()
         .catch(err => {
-          expect(err.message).to.equal('already on last page');
+          expect(err.message).to.eq('already on last page');
           done();
         });
     });
   });
-
 });

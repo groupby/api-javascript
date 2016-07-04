@@ -1,7 +1,7 @@
 import EventEmitter = require('eventemitter3');
 import { Query, QueryConfiguration } from '../core/query';
 import { BrowserBridge } from '../core/bridge';
-import { Results } from '../models/response';
+import { Results, Navigation } from '../models/response';
 import { Pager } from './pager';
 import { SelectedValueRefinement, SelectedRangeRefinement } from '../models/request';
 
@@ -12,6 +12,7 @@ export namespace Events {
   export const REWRITE_QUERY = 'rewrite_query';
 }
 
+export { Pager };
 export type FluxRefinement = SelectedValueRefinement | SelectedRangeRefinement;
 
 export class FluxCapacitor extends EventEmitter {
@@ -30,59 +31,69 @@ export class FluxCapacitor extends EventEmitter {
     return new Pager(this);
   }
 
-  search(query: string = this.originalQuery) {
+  search(query: string = this.originalQuery): Promise<Results> {
     return this.bridge.search(this.query.withQuery(query))
       .then(res => {
         this.results = res;
         this.originalQuery = query;
         this.emit(Events.RESULTS, res);
+        return res;
       });
   }
 
-  rewrite(query: string) {
+  rewrite(query: string): Promise<string> {
     return this.search(query)
-      .then(() => this.emit(Events.REWRITE_QUERY, query));
+      .then(() => this.emit(Events.REWRITE_QUERY, query))
+      .then(() => query);
   }
 
-  reset(query: string = this.originalQuery) {
+  reset(query: string = this.originalQuery): Promise<string> {
     this.query = new Query();
     return this.search(query)
-      .then(() => this.emit(Events.RESET, this.results));
+      .then(res => this.emit(Events.RESET, res))
+      .then(() => query);
   }
 
-  resize(pageSize: number, offset?: number) {
+  resize(pageSize: number, offset?: number): Promise<number> {
     this.query.withConfiguration({ pageSize });
     if (offset !== undefined) this.query.skip(offset);
-    return this.search();
+    return this.search()
+      .then(() => pageSize);
   }
 
-  private resetPaging(reset: boolean): Promise<any> {
+  refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {
+    this.query.withSelectedRefinements(refinement);
+    if (config.skipSearch) return Promise.resolve(this.navigationInfo);
+    return this.doRefinement(config);
+  }
+
+  unrefine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {
+    this.query.withoutSelectedRefinements(refinement);
+    if (config.skipSearch) return Promise.resolve(this.navigationInfo);
+    return this.doRefinement(config);
+  }
+
+  private resetPaging(reset: boolean): Promise<Results> {
     return reset ? this.page.reset() : this.search();
   }
 
-  refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }) {
-    this.query.withSelectedRefinements(refinement);
-    if (config.skipSearch) return Promise.resolve(true);
-    return this.doRefinement(config);
-  }
-
-  unrefine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }) {
-    this.query.withoutSelectedRefinements(refinement);
-    if (config.skipSearch) return Promise.resolve(true);
-    return this.doRefinement(config);
-  }
-
-  private doRefinement(config: RefinementConfig) {
+  private doRefinement(config: RefinementConfig): Promise<NavigationInfo> {
     return this.resetPaging(config.reset)
-      .then(() => this.emit(Events.REFINEMENTS_CHANGED, this.navigationInfo));
+      .then(() => this.emit(Events.REFINEMENTS_CHANGED, this.navigationInfo))
+      .then(() => this.navigationInfo);
   }
 
-  private get navigationInfo() {
+  private get navigationInfo(): NavigationInfo {
     return {
       available: this.results.availableNavigation,
       selected: this.results.selectedNavigation
     };
   }
+}
+
+export interface NavigationInfo {
+  available: Navigation[],
+  selected: Navigation[]
 }
 
 export interface RefinementConfig {

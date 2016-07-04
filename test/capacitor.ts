@@ -32,7 +32,7 @@ describe('FluxCapacitor', function() {
   describe('search behaviour', () => {
     it('should make a search request', done => {
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).query).to.equal('testing');
+        expect(JSON.parse(req.body()).query).to.eq('testing');
         done();
       });
       flux.search('testing');
@@ -50,7 +50,7 @@ describe('FluxCapacitor', function() {
   describe('refinement behaviour', () => {
     it('should make a request on refinement', done => {
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).refinements.length).to.equal(1);
+        expect(JSON.parse(req.body()).refinements.length).to.eq(1);
         done();
       });
       flux.refine(SELECTED_REFINEMENT);
@@ -81,7 +81,7 @@ describe('FluxCapacitor', function() {
 
       flux.refine(SELECTED_REFINEMENT)
         .then(() => {
-          expect(flux.query.build().skip).to.equal(0);
+          expect(flux.query.build().skip).to.eq(0);
           done();
         });
     });
@@ -93,7 +93,7 @@ describe('FluxCapacitor', function() {
 
       flux.unrefine(SELECTED_REFINEMENT)
         .then(() => {
-          expect(flux.query.build().skip).to.equal(0);
+          expect(flux.query.build().skip).to.eq(0);
           done();
         });
     });
@@ -104,7 +104,7 @@ describe('FluxCapacitor', function() {
 
       flux.refine(SELECTED_REFINEMENT, { reset: false })
         .then(() => {
-          expect(flux.query.build().skip).to.equal(20);
+          expect(flux.query.build().skip).to.eq(20);
           done();
         });
     });
@@ -114,8 +114,8 @@ describe('FluxCapacitor', function() {
         mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
 
         flux.on(Events.REFINEMENTS_CHANGED, data => {
-          expect(data.available).to.equal('a');
-          expect(data.selected).to.equal('b');
+          expect(data.available).to.eq('a');
+          expect(data.selected).to.eq('b');
           done();
         });
         flux.refine(SELECTED_REFINEMENT);
@@ -126,8 +126,8 @@ describe('FluxCapacitor', function() {
         mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
 
         flux.on(Events.REFINEMENTS_CHANGED, data => {
-          expect(data.available).to.equal('a');
-          expect(data.selected).to.equal('b');
+          expect(data.available).to.eq('a');
+          expect(data.selected).to.eq('b');
           done();
         });
         flux.unrefine(SELECTED_REFINEMENT);
@@ -143,7 +143,7 @@ describe('FluxCapacitor', function() {
 
     it('should reset paging', done => {
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).skip).to.equal(0);
+        expect(JSON.parse(req.body()).skip).to.eq(0);
         done();
       });
       flux.page.reset();
@@ -151,7 +151,7 @@ describe('FluxCapacitor', function() {
 
     it('should page forward', done => {
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).skip).to.equal(30);
+        expect(JSON.parse(req.body()).skip).to.eq(30);
         done();
       });
       flux.page.next();
@@ -159,7 +159,7 @@ describe('FluxCapacitor', function() {
 
     it('should page backward', done => {
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).skip).to.equal(10);
+        expect(JSON.parse(req.body()).skip).to.eq(10);
         done();
       });
       flux.page.prev();
@@ -167,7 +167,7 @@ describe('FluxCapacitor', function() {
 
     it('should advance to last page', done => {
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).skip).to.equal(290);
+        expect(JSON.parse(req.body()).skip).to.eq(290);
         done();
       });
       flux.page.last();
@@ -178,8 +178,8 @@ describe('FluxCapacitor', function() {
     it('should resize the page and keep offset', done => {
       flux.query.skip(20);
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).skip).to.equal(20);
-        expect(JSON.parse(req.body()).pageSize).to.equal(30);
+        expect(JSON.parse(req.body()).skip).to.eq(20);
+        expect(JSON.parse(req.body()).pageSize).to.eq(30);
         done();
       });
       flux.resize(30);
@@ -188,8 +188,8 @@ describe('FluxCapacitor', function() {
     it('should resize the page', done => {
       flux.query.skip(20);
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).skip).to.equal(0);
-        expect(JSON.parse(req.body()).pageSize).to.equal(30);
+        expect(JSON.parse(req.body()).skip).to.eq(0);
+        expect(JSON.parse(req.body()).pageSize).to.eq(30);
         done();
       });
       flux.resize(30, 0);
@@ -205,7 +205,7 @@ describe('FluxCapacitor', function() {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).pageSize).to.not.be.ok;
         expect(JSON.parse(req.body()).orFields).to.not.be.ok;
-        expect(JSON.parse(req.body()).query).to.equal('');
+        expect(JSON.parse(req.body()).query).to.eq('');
         done();
       });
       flux.reset();
@@ -214,7 +214,7 @@ describe('FluxCapacitor', function() {
     it('should accept a new query on reset', done => {
       flux.query.withQuery('alabama');
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).query).to.equal('texas');
+        expect(JSON.parse(req.body()).query).to.eq('texas');
         done();
       });
       flux.reset('texas');

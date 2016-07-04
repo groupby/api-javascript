@@ -205,6 +205,14 @@ export class Query {
     return this;
   }
 
+  get rawRequest(): Request {
+    return Object.create(this.request);
+  }
+
+  get rawNavigations(): Navigation[] {
+    return Object.create(this.unprocessedNavigations);
+  }
+
   build(): Request {
     const builtRequest = Object.assign(new Request(), this.request);
     builtRequest.refinements.push(...NavigationConverter.convert(this.unprocessedNavigations));
