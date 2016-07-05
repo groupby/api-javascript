@@ -118,6 +118,14 @@ export class Query {
     return this;
   }
 
+  withoutSorts(...sorts: Sort[]): Query {
+    sorts.forEach(oldSort => {
+      const found = this.request.sort.findIndex(sort => sort.field === oldSort.field);
+      if (found > -1) this.request.sort.splice(found, 1);
+    });
+    return this;
+  }
+
   withIncludedNavigations(...navigationNames: string[]): Query {
     this.request.includedNavigations.push(...navigationNames);
     return this;

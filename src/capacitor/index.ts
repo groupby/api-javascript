@@ -3,13 +3,14 @@ import { Query, QueryConfiguration } from '../core/query';
 import { BrowserBridge } from '../core/bridge';
 import { Results, Navigation } from '../models/response';
 import { Pager } from './pager';
-import { SelectedValueRefinement, SelectedRangeRefinement } from '../models/request';
+import { SelectedValueRefinement, SelectedRangeRefinement, Sort } from '../models/request';
 
 export namespace Events {
   export const RESULTS = 'results';
   export const REFINEMENTS_CHANGED = 'refinements_changed';
   export const RESET = 'reset';
   export const REWRITE_QUERY = 'rewrite_query';
+  export const SORT = 'sort';
 }
 
 export { Pager };
@@ -59,6 +60,11 @@ export class FluxCapacitor extends EventEmitter {
     if (offset !== undefined) this.query.skip(offset);
     return this.search()
       .then(() => pageSize);
+  }
+
+  sort(sort: Sort): Promise<Results> {
+    this.query.withoutSorts(sort).withSorts(sort);
+    return this.search();
   }
 
   refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {

@@ -169,4 +169,15 @@ describe('Query', function() {
     expect(query.build().skip).to.eq(10);
     expect(query.build().pageSize).to.eq(300);
   });
+
+  it('should allow sorts to be unselected', () => {
+    const query = new Query('')
+      .withSorts({ field: 'this', order: 'Ascending' }, { field: 'that', order: 'Descending' });
+    expect(query.rawRequest.sort.length).to.eq(2);
+    query.withoutSorts({ field: 'that', order: 'Ascending' });
+    expect(query.rawRequest.sort.length).to.eq(1);
+    expect(query.rawRequest.sort[0].field).to.eq('this');
+    query.withoutSorts({ field: 'this', order: 'Ascending' });
+    expect(query.rawRequest.sort.length).to.eq(0);
+  });
 });

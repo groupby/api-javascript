@@ -203,9 +203,10 @@ describe('FluxCapacitor', function() {
         .withPageSize(20)
         .withOrFields('boots', 'hats');
       mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).pageSize).to.not.be.ok;
-        expect(JSON.parse(req.body()).orFields).to.not.be.ok;
-        expect(JSON.parse(req.body()).query).to.eq('');
+        const body = JSON.parse(req.body());
+        expect(body.pageSize).to.not.be.ok;
+        expect(body.orFields).to.not.be.ok;
+        expect(body.query).to.eq('');
         done();
       });
       flux.reset();
@@ -230,4 +231,31 @@ describe('FluxCapacitor', function() {
     });
   });
 
+  describe('sort behaviour', () => {
+    it('should add sorts', (done) => {
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).sort).to.eql([{ field: 'price', order: 'Ascending' }]);
+        done();
+      });
+      flux.sort({ field: 'price', order: 'Ascending' });
+    });
+
+    it('should add more sorts', (done) => {
+      flux.query.withSorts({ field: 'title', order: 'Descending' });
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).sort.length).to.eq(2);
+        done();
+      });
+      flux.sort({ field: 'price', order: 'Ascending' });
+    });
+
+    it('should remove sorts', (done) => {
+      flux.query.withSorts({ field: 'price', order: 'Descending' });
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).sort).to.eql([{ field: 'price', order: 'Ascending' }]);
+        done();
+      });
+      flux.sort({ field: 'price', order: 'Ascending' });
+    });
+  });
 });
