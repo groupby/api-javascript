@@ -119,10 +119,7 @@ export class Query {
   }
 
   withoutSorts(...sorts: Sort[]): Query {
-    sorts.forEach(oldSort => {
-      const found = this.request.sort.findIndex(sort => sort.field === oldSort.field);
-      if (found > -1) this.request.sort.splice(found, 1);
-    });
+    this.request.sort = this.request.sort.filter(oldSort => sorts.findIndex(sort => sort.field === oldSort.field) === -1);
     return this;
   }
 
