@@ -8,6 +8,7 @@ const CUSTOMER_ID = 'services';
 const SEARCH_URL = `http://ecomm.groupbycloud.com/semanticSearch/${CUSTOMER_ID}`;
 const SELECTED_REFINEMENT: SelectedValueRefinement = { type: 'Value', navigationName: 'brand', value: 'DeWalt' };
 const REFINEMENT_RESULT = { availableNavigation: 'a', selectedNavigation: 'b' };
+const DETAILS_RESULT = { records: [{}] };
 
 describe('FluxCapacitor', function() {
   let flux: FluxCapacitor;
@@ -258,6 +259,26 @@ describe('FluxCapacitor', function() {
         done();
       });
       flux.sort({ field: 'price', order: 'Ascending' });
+    });
+  });
+
+  describe('details behaviour', () => {
+    it('should refine by id', (done) => {
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).refinements).to.eql([{ navigationName: 'id', type: 'Value', value: '14830' }]);
+        done();
+      });
+      flux.details('14830');
+    });
+
+    it('should emit details event', (done) => {
+      mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(DETAILS_RESULT)));
+
+      flux.on(Events.DETAILS, data => {
+        expect(data).to.be.ok;
+        done();
+      });
+      flux.details('14830');
     });
   });
 });

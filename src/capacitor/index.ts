@@ -12,6 +12,7 @@ export namespace Events {
   export const RESET = 'reset';
   export const REWRITE_QUERY = 'rewrite_query';
   export const SORT = 'sort';
+  export const DETAILS = 'details';
 }
 
 export { Pager };
@@ -78,6 +79,14 @@ export class FluxCapacitor extends EventEmitter {
     this.query.withoutSelectedRefinements(refinement);
     if (config.skipSearch) return Promise.resolve(this.navigationInfo);
     return this.doRefinement(config);
+  }
+
+  details(id: string): Promise<Results> {
+    return this.bridge.search(new Query().withSelectedRefinements({ navigationName: 'id', type: 'Value', value: id }))
+      .then(res => {
+        if (res.records.length) this.emit(Events.DETAILS, res.records[0]);
+        return res;
+      });
   }
 
   private get filteredRequest() {
