@@ -13,11 +13,14 @@ const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
 
 describe('Pager', function() {
-  function flux(opts: { start: number, total?: number } | number, search?: Function): FluxCapacitor {
+  function flux(opts: { start: number, total?: number, pageSize?: number } | number, search?: Function): FluxCapacitor {
     const recordStart = typeof opts === 'number' ? opts : opts.start;
     const totalRecordCount = (typeof opts === 'object' && opts.total) || 30;
+    const pageSize = (typeof opts === 'object' && opts.pageSize) || 10;
     return <FluxCapacitor>{
-      query: new Query().skip(recordStart),
+      query: new Query()
+        .skip(recordStart)
+        .withPageSize(pageSize),
       results: { totalRecordCount },
       search
     };
@@ -112,6 +115,20 @@ describe('Pager', function() {
           .jump(-2)
           .catch(() => done());
       });
+    });
+  });
+
+  describe('current page behaviour', () => {
+    it('should return the current page', () => {
+      expect(new Pager(flux(0)).current).to.eq(0);
+    });
+
+    it('should return from the middle', () => {
+      expect(new Pager(flux(45)).current).to.eq(4);
+    });
+
+    it('should change based on pageSize', () => {
+      expect(new Pager(flux({ start: 36, pageSize: 12 })).current).to.eq(3);
     });
   });
 

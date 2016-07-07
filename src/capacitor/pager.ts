@@ -23,6 +23,10 @@ export class Pager {
     return this.flux.search();
   }
 
+  get current(): number {
+    return Math.floor(this.lastStep / this.pageSize);
+  }
+
   jump(page: number): Promise<Results> {
     const offset = this.pageSize * page;
     return this.pageTo(offset, offset >= 0 && offset < this.total, `page ${page} does not exist`);
@@ -45,7 +49,6 @@ export class Pager {
       this.flux.query.skip(offset);
       return this.flux.search();
     }
-    console.log(error);
     return Promise.reject(new Error(error));
   }
 
