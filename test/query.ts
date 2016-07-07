@@ -148,7 +148,7 @@ describe('Query', function() {
     const query = new Query('raw request')
       .skip(10)
       .withPageSize(300);
-    const rawRequest = query.rawRequest;
+    const rawRequest = query.raw;
     expect(rawRequest.skip).to.eq(10);
     expect(rawRequest.pageSize).to.eq(300);
     rawRequest.skip = 20;
@@ -161,7 +161,7 @@ describe('Query', function() {
     const query = new Query('raw request')
       .skip(10)
       .withPageSize(300);
-    const rawRequest = query.rawRequest;
+    const rawRequest = query.raw;
     expect(rawRequest.skip).to.eq(10);
     expect(rawRequest.pageSize).to.eq(300);
     rawRequest.skip = 20;
@@ -173,11 +173,11 @@ describe('Query', function() {
   it('should allow sorts to be unselected', () => {
     const query = new Query('')
       .withSorts({ field: 'this', order: 'Ascending' }, { field: 'that', order: 'Descending' });
-    expect(query.rawRequest.sort.length).to.eq(2);
+    expect(query.raw.sort.length).to.eq(2);
     query.withoutSorts({ field: 'that', order: 'Ascending' });
-    expect(query.rawRequest.sort.length).to.eq(1);
-    expect(query.rawRequest.sort[0].field).to.eq('this');
+    expect(query.raw.sort.length).to.eq(1);
+    expect(query.raw.sort[0].field).to.eq('this');
     query.withoutSorts({ field: 'this', order: 'Ascending' });
-    expect(query.rawRequest.sort.length).to.eq(0);
+    expect(query.raw.sort.length).to.eq(0);
   });
 });

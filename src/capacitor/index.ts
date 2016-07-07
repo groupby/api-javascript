@@ -81,7 +81,7 @@ export class FluxCapacitor extends EventEmitter {
   }
 
   private get filteredRequest() {
-    return filterObject(this.query.rawRequest, '!{query,refinements}');
+    return filterObject(this.query.raw, '!{query,refinements}');
   }
 
   private resetPaging(reset: boolean): Promise<Results> {

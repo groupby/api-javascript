@@ -20,7 +20,7 @@ describe('Pager', function() {
       query: new Query().skip(recordStart),
       results: { totalRecordCount },
       search
-    }
+    };
   };
 
   it('should be defined', () => {
@@ -29,7 +29,7 @@ describe('Pager', function() {
 
   it('first step', (done) => {
     const mockFlux = flux(0, function() {
-      expect(this.query.build().skip).to.eq(10);
+      expect(this.query.raw.skip).to.eq(10);
       done();
     });
     mockFlux.query = new Query();
@@ -38,51 +38,81 @@ describe('Pager', function() {
 
   it('should step forward', (done) => {
     new Pager(flux(10, function() {
-      expect(this.query.build().skip).to.eq(20);
+      expect(this.query.raw.skip).to.eq(20);
       done();
     })).next();
   });
 
   it('should step backward', (done) => {
     new Pager(flux(20, function() {
-      expect(this.query.build().skip).to.eq(10);
+      expect(this.query.raw.skip).to.eq(10);
       done();
     })).prev();
   });
 
   it('should step to 0 at the lowest', (done) => {
     new Pager(flux(2, function() {
-      expect(this.query.build().skip).to.eq(0);
+      expect(this.query.raw.skip).to.eq(0);
       done();
     })).prev();
   });
 
   it('should reset the pagination to 0', (done) => {
     new Pager(flux(2, function() {
-      expect(this.query.build().skip).to.eq(0);
+      expect(this.query.raw.skip).to.eq(0);
       done();
     })).reset();
   });
 
   it('should step to the last page', (done) => {
     new Pager(flux({ start: 30, total: 45 }, function() {
-      expect(this.query.build().skip).to.eq(40);
+      expect(this.query.raw.skip).to.eq(40);
       done();
     })).next();
   });
 
   it('should step down from last page', (done) => {
     new Pager(flux({ start: 40, total: 45 }, function() {
-      expect(this.query.build().skip).to.eq(30);
+      expect(this.query.raw.skip).to.eq(30);
       done();
     })).prev();
   });
 
   it('should skip to the last page', (done) => {
     new Pager(flux({ start: 0, total: 45 }, function() {
-      expect(this.query.build().skip).to.eq(40);
+      expect(this.query.raw.skip).to.eq(40);
       done();
     })).last();
+  });
+
+  describe('jump behaviour', () => {
+    it('should jump to the first page', (done) => {
+      new Pager(flux({ start: 0, total: 200 }, function() {
+        expect(this.query.raw.skip).to.eq(0);
+        done();
+      })).jump(0);
+    });
+
+    it('should jump to a page', (done) => {
+      new Pager(flux({ start: 0, total: 200 }, function() {
+        expect(this.query.raw.skip).to.eq(80);
+        done();
+      })).jump(8);
+    });
+
+    describe('error states', () => {
+      it('should not jump past the results', (done) => {
+        new Pager(flux({ start: 0, total: 30 }))
+          .jump(8)
+          .catch(() => done());
+      });
+
+      it('should not jump to lower than the first page', (done) => {
+        new Pager(flux(0))
+          .jump(-2)
+          .catch(() => done());
+      });
+    });
   });
 
   it('should allow next', () => {

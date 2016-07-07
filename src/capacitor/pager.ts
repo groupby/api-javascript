@@ -5,11 +5,11 @@ export class Pager {
   constructor(private flux: FluxCapacitor) { }
 
   next(): Promise<Results> {
-    return this.paginate(true, this.hasNext);
+    return this.pageTo(this.step(true), this.hasNext, 'already on last page');
   }
 
   prev(): Promise<Results> {
-    return this.paginate(false, this.hasPrevious);
+    return this.pageTo(this.step(false), this.hasPrevious, 'already on first page');
   }
 
   last(): Promise<Results> {
@@ -23,6 +23,11 @@ export class Pager {
     return this.flux.search();
   }
 
+  jump(page: number): Promise<Results> {
+    const offset = this.pageSize * page;
+    return this.pageTo(offset, offset >= 0 && offset < this.total, `page ${page} does not exist`);
+  }
+
   get hasNext(): boolean {
     return this.step(true) < this.total;
   }
@@ -32,12 +37,16 @@ export class Pager {
   }
 
   private paginate(forward: boolean, predicate: boolean): Promise<Results | void> {
-    const step = this.step(forward);
+    return this.pageTo(this.step(forward), predicate, `already on ${forward ? 'last' : 'first'} page`);
+  }
+
+  private pageTo(offset: number, predicate: boolean, error: string): Promise<Results | void> {
     if (predicate) {
-      this.flux.query.skip(step);
+      this.flux.query.skip(offset);
       return this.flux.search();
     }
-    return Promise.reject(new Error(`already on ${forward ? 'last' : 'first'} page`));
+    console.log(error);
+    return Promise.reject(new Error(error));
   }
 
   private step(add: boolean): number {

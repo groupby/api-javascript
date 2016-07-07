@@ -210,7 +210,7 @@ export class Query {
     return this;
   }
 
-  get rawRequest(): Request {
+  get raw(): Request {
     return Object.assign(new Request(), this.request);
   }
 
@@ -219,7 +219,7 @@ export class Query {
   }
 
   build(): Request {
-    const builtRequest = this.rawRequest;
+    const builtRequest = this.raw;
     builtRequest.refinements.push(...NavigationConverter.convert(this.unprocessedNavigations));
 
     return this.clearEmptyArrays(builtRequest);
