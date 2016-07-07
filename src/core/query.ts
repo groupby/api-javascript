@@ -211,7 +211,7 @@ export class Query {
   }
 
   get rawRequest(): Request {
-    return Object.create(this.request);
+    return Object.assign(new Request(), this.request);
   }
 
   get rawNavigations(): Navigation[] {
@@ -219,7 +219,7 @@ export class Query {
   }
 
   build(): Request {
-    const builtRequest = Object.assign(new Request(), this.request);
+    const builtRequest = this.rawRequest;
     builtRequest.refinements.push(...NavigationConverter.convert(this.unprocessedNavigations));
 
     return this.clearEmptyArrays(builtRequest);

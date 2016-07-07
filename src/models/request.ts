@@ -1,16 +1,17 @@
 import { Refinement, RefinementType, ValueRefinement, RangeRefinement } from './response';
 
 export class Request {
-
   // query parameters
   query: string;
+  refinements: SelectedRefinement[];
+
+  // query configuration
   fields: string[];
   orFields: string[];
   includedNavigations: string[];
   excludedNavigations: string[];
   sort: Sort[];
   customUrlParams: CustomUrlParam[];
-  refinements: SelectedRefinement[];
   restrictNavigation: RestrictNavigation;
   biasing: Biasing;
   matchStrategy: MatchStrategy;
@@ -31,7 +32,6 @@ export class Request {
   pruneRefinements: boolean;
   disableAutocorrection: boolean;
   wildcardSearchEnabled: boolean;
-
 }
 
 export type SortOrder = 'Ascending' | 'Descending';
