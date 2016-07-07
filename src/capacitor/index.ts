@@ -1,4 +1,5 @@
 import EventEmitter = require('eventemitter3');
+import filterObject = require('filter-object');
 import { Query, QueryConfiguration } from '../core/query';
 import { BrowserBridge } from '../core/bridge';
 import { Results, Navigation } from '../models/response';
@@ -49,7 +50,7 @@ export class FluxCapacitor extends EventEmitter {
   }
 
   reset(query: string = this.originalQuery): Promise<string> {
-    this.query = new Query();
+    this.query = new Query().withConfiguration(this.filteredRequest);
     return this.search(query)
       .then(res => this.emit(Events.RESET, res))
       .then(() => query);
@@ -77,6 +78,10 @@ export class FluxCapacitor extends EventEmitter {
     this.query.withoutSelectedRefinements(refinement);
     if (config.skipSearch) return Promise.resolve(this.navigationInfo);
     return this.doRefinement(config);
+  }
+
+  private get filteredRequest() {
+    return filterObject(this.query.rawRequest, '!{query,refinements}');
   }
 
   private resetPaging(reset: boolean): Promise<Results> {
