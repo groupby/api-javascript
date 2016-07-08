@@ -13,8 +13,8 @@ export class Pager {
   }
 
   last(): Promise<Results> {
-    const remainder = this.total % this.pageSize;
-    this.flux.query.skip(remainder > 0 ? this.total - remainder : this.total - this.pageSize);
+    const remainder = this.totalRecords % this.pageSize;
+    this.flux.query.skip(remainder > 0 ? this.totalRecords - remainder : this.totalRecords - this.pageSize);
     return this.flux.search();
   }
 
@@ -29,11 +29,15 @@ export class Pager {
 
   jump(page: number): Promise<Results> {
     const offset = this.pageSize * page;
-    return this.pageTo(offset, offset >= 0 && offset < this.total, `page ${page} does not exist`);
+    return this.pageTo(offset, offset >= 0 && offset < this.totalRecords, `page ${page} does not exist`);
+  }
+
+  get total(): number {
+    return this.totalRecords > 0 ? Math.floor(this.totalRecords / this.pageSize) : 0;
   }
 
   get hasNext(): boolean {
-    return this.step(true) < this.total;
+    return this.step(true) < this.totalRecords;
   }
 
   get hasPrevious(): boolean {
@@ -65,7 +69,7 @@ export class Pager {
     return this.flux.query.build().pageSize || 10;
   }
 
-  private get total(): number {
+  private get totalRecords(): number {
     return this.flux.results.totalRecordCount || -1;
   }
 }

@@ -15,8 +15,8 @@ const CUSTOMER_ID = 'services';
 describe('Pager', function() {
   function flux(opts: { start: number, total?: number, pageSize?: number } | number, search?: Function): FluxCapacitor {
     const recordStart = typeof opts === 'number' ? opts : opts.start;
-    const totalRecordCount = (typeof opts === 'object' && opts.total) || 30;
-    const pageSize = (typeof opts === 'object' && opts.pageSize) || 10;
+    const totalRecordCount = typeof opts === 'object' && new Number(opts.total) >= 0 ? opts.total : 30;
+    const pageSize = typeof opts === 'object' && new Number(opts.pageSize) >= 0 ? opts.pageSize : 10;
     return <FluxCapacitor>{
       query: new Query()
         .skip(recordStart)
@@ -130,6 +130,16 @@ describe('Pager', function() {
     it('should change based on pageSize', () => {
       expect(new Pager(flux({ start: 36, pageSize: 12 })).current).to.eq(3);
     });
+  });
+
+  describe('total pages behaviour', () => {
+    it('should return the total number of pages', () => {
+      expect(new Pager(flux({ start: 0, total: 457 })).total).to.eq(45);
+    });
+
+    it('should return no pages', () => {
+      expect(new Pager(flux({ start: 0, total: 0 })).total).to.eq(0);
+    })
   });
 
   it('should allow next', () => {
