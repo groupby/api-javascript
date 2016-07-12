@@ -1,2 +1,1 @@
-require('es6-promise').polyfill();
-import '../src/polyfills';
+require('es6-shim');

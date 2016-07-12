@@ -1,8 +1,7 @@
 /// <reference path="../typings/index.d.ts"/>
 /// <reference path="../custom_typings/filter-object.d.ts"/>
 
-require('es6-promise').polyfill();
-require('./polyfills').pollyfill();
+require('es6-shim');
 
 export * from './core/query';
 export * from './core/bridge';

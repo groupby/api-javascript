@@ -142,6 +142,43 @@ describe('Pager', function() {
     })
   });
 
+  describe('pages behaviour', () => {
+    it('should return an array of beginning at 1', () => {
+      expect(new Pager(flux({ start: 0, total: 100 })).displayPages()).to.eql([1, 2, 3, 4, 5]);
+    });
+
+    it('should still begin at 1', () => {
+      expect(new Pager(flux({ start: 20, total: 100 })).displayPages()).to.eql([1, 2, 3, 4, 5]);
+    });
+
+    it('should start shifting the page range up', () => {
+      expect(new Pager(flux({ start: 30, total: 100 })).displayPages()).to.eql([2, 3, 4, 5, 6]);
+    });
+
+    it('should return an array of pages', () => {
+      expect(new Pager(flux({ start: 50, total: 100 })).displayPages()).to.eql([4, 5, 6, 7, 8]);
+    });
+
+    it('should return array ending at 11', () => {
+      expect(new Pager(flux({ start: 100, total: 100 })).displayPages()).to.eql([7, 8, 9, 10, 11]);
+    });
+
+    it('should still end at 11', () => {
+      expect(new Pager(flux({ start: 80, total: 100 })).displayPages()).to.eql([7, 8, 9, 10, 11]);
+    });
+
+    it('should start shifting the page range down', () => {
+      expect(new Pager(flux({ start: 70, total: 100 })).displayPages()).to.eql([6, 7, 8, 9, 10]);
+    });
+
+    it('should show smaller ranges', () => {
+      expect(new Pager(flux({ start: 0, total: 30 })).displayPages()).to.eql([1, 2, 3, 4]);
+      expect(new Pager(flux({ start: 0, total: 20 })).displayPages()).to.eql([1, 2, 3]);
+      expect(new Pager(flux({ start: 0, total: 10 })).displayPages()).to.eql([1, 2]);
+      expect(new Pager(flux({ start: 0, total: 7 })).displayPages()).to.eql([1]);
+    });
+  });
+
   it('should allow next', () => {
     expect(new Pager(flux({ start: 0, total: 45 })).hasNext).to.be.true;
   });
