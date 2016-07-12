@@ -271,6 +271,22 @@ describe('FluxCapacitor', function() {
       flux.details('14830');
     });
 
+    it('should persist area, collection, language', (done) => {
+      flux.query.withConfiguration({
+        area: 'nonProd',
+        collection: 'offbrand',
+        language: 'zh'
+      });
+      mock.post(SEARCH_URL, (req, res) => {
+        const body = JSON.parse(req.body());
+        expect(body.area).to.eq('nonProd');
+        expect(body.collection).to.eq('offbrand');
+        expect(body.language).to.eq('zh');
+        done();
+      });
+      flux.details('14830');
+    });
+
     it('should emit details event', (done) => {
       mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(DETAILS_RESULT)));
 
