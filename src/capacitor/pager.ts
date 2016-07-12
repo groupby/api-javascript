@@ -36,6 +36,25 @@ export class Pager {
     return this.totalRecords > 0 ? Math.floor(this.totalRecords / this.pageSize) : 0;
   }
 
+  displayPages(limit: number = 5): number[] {
+    return Array.from(Array(Math.min(this.total + 1, limit)).keys()).map(this.transformPages(limit));
+  }
+
+  private transformPages(limit: number): (number) => number {
+    const border = Math.floor(limit / 2);
+    return (value: number): number => {
+      // account for 0-indexed pages
+      value++;
+      if (this.current <= border) {
+        return value;
+      } else if (this.current > this.total - border) {
+        return value + this.total + 1 - limit;
+      } else {
+        return value + this.current - border;
+      }
+    }
+  }
+
   get hasNext(): boolean {
     return this.step(true) < this.totalRecords;
   }
@@ -72,4 +91,5 @@ export class Pager {
   private get totalRecords(): number {
     return this.flux.results.totalRecordCount || -1;
   }
+
 }
