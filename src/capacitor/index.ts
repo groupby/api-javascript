@@ -9,6 +9,7 @@ import { SelectedValueRefinement, SelectedRangeRefinement, Sort } from '../model
 export namespace Events {
   export const RESULTS = 'results';
   export const REFINEMENTS_CHANGED = 'refinements_changed';
+  export const PAGE_CHANGED = 'page_changed';
   export const RESET = 'reset';
   export const REWRITE_QUERY = 'rewrite_query';
   export const SORT = 'sort';
