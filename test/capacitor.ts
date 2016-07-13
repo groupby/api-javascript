@@ -202,6 +202,7 @@ describe('FluxCapacitor', function() {
       flux.query
         .withQuery('alabama')
         .withPageSize(20)
+        .skip(34)
         .withSelectedRefinements({ navigationName: 'a', value: 'b', type: 'Value' })
         .withOrFields('boots', 'hats');
       mock.post(SEARCH_URL, (req, res) => {
@@ -209,6 +210,7 @@ describe('FluxCapacitor', function() {
         expect(body.pageSize).to.be.ok;
         expect(body.orFields).to.be.ok;
         expect(body.refinements).to.not.be.ok;
+        expect(body.skip).to.not.be.ok;
         expect(body.query).to.eq('');
         done();
       });
