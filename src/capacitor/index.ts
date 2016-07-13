@@ -53,6 +53,7 @@ export class FluxCapacitor extends EventEmitter {
 
   reset(query: string = this.originalQuery): Promise<string> {
     this.query = new Query().withConfiguration(this.filteredRequest);
+    this.emit(Events.PAGE_CHANGED, { pageIndex: 0, finalPage: this.page.finalPage })
     return this.search(query)
       .then(res => this.emit(Events.RESET, res))
       .then(() => query);
@@ -60,7 +61,10 @@ export class FluxCapacitor extends EventEmitter {
 
   resize(pageSize: number, offset?: number): Promise<number> {
     this.query.withConfiguration({ pageSize });
-    if (offset !== undefined) this.query.skip(offset);
+    if (offset !== undefined) {
+      this.query.skip(offset);
+      this.emit(Events.PAGE_CHANGED, { pageIndex: this.page.pageFromOffset(offset), lastPage: this.page.finalPage });
+    }
     return this.search()
       .then(() => pageSize);
   }

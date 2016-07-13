@@ -25,7 +25,7 @@ export class Pager {
   }
 
   get currentPage(): number {
-    return Math.floor(this.lastStep / this.pageSize);
+    return this.pageFromOffset(this.lastStep);
   }
 
   jump(page: number): Promise<Results> {
@@ -76,7 +76,7 @@ export class Pager {
     if (predicate) {
       this.flux.query.skip(offset);
       this.flux.emit(Events.PAGE_CHANGED, {
-        pageIndex: Math.floor(offset / this.pageSize),
+        pageIndex: this.pageFromOffset(offset),
         finalPage: this.finalPage
       });
       return this.flux.search();
@@ -99,6 +99,10 @@ export class Pager {
 
   private get totalRecords(): number {
     return this.flux.results ? this.flux.results.totalRecordCount : -1;
+  }
+
+  pageFromOffset(offset: number): number {
+    return Math.floor(offset / this.pageSize);
   }
 
 }

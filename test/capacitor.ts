@@ -227,10 +227,15 @@ describe('FluxCapacitor', function() {
     });
 
     describe('events', () => {
-      it('should emit reset event', done => {
+      it('should emit events', done => {
         mock.post(SEARCH_URL, (req, res) => res.body('ok'));
 
-        flux.on(Events.RESET, () => done());
+        let count = 0;
+        const checkComplete = () => {
+          if (++count === 2) done();
+        };
+        flux.on(Events.RESET, checkComplete);
+        flux.on(Events.PAGE_CHANGED, checkComplete);
         flux.reset();
       });
     });
