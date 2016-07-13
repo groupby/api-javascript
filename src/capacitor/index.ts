@@ -65,8 +65,8 @@ export class FluxCapacitor extends EventEmitter {
       .then(() => pageSize);
   }
 
-  sort(sort: Sort): Promise<Results> {
-    this.query.withoutSorts(sort).withSorts(sort);
+  sort(sort: Sort, clearSorts: Sort[] = [sort]): Promise<Results> {
+    this.query.withoutSorts(...clearSorts).withSorts(sort);
     return this.search();
   }
 

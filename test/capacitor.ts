@@ -2,7 +2,7 @@
 
 import { expect } from 'chai';
 import mock = require('xhr-mock');
-import { FluxCapacitor, Results, Events, SelectedValueRefinement } from '../src/index';
+import { FluxCapacitor, Results, Events, SelectedValueRefinement, Sort } from '../src/index';
 
 const CUSTOMER_ID = 'services';
 const SEARCH_URL = `http://ecomm.groupbycloud.com/semanticSearch/${CUSTOMER_ID}`;
@@ -259,6 +259,16 @@ describe('FluxCapacitor', function() {
         done();
       });
       flux.sort({ field: 'price', order: 'Ascending' });
+    });
+
+    it('should remove all sorts', (done) => {
+      const sorts: Sort[] = [{ field: 'price', order: 'Descending' }, { field: 'other', order: 'Ascending' }, { field: 'type', order: 'Descending' }];
+      flux.query.withSorts(...sorts);
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).sort).to.eql([{ field: 'price', order: 'Ascending' }]);
+        done();
+      });
+      flux.sort({ field: 'price', order: 'Ascending' }, sorts);
     });
   });
 
