@@ -242,6 +242,17 @@ describe('FluxCapacitor', function() {
   });
 
   describe('sort behaviour', () => {
+    it('should reset paging', (done) => {
+      flux.query.skip(30);
+      mock.post(SEARCH_URL, (req, res) => {
+        const body = JSON.parse(req.body());
+        expect(body.skip).to.not.be.ok;
+        expect(body.sort).to.eql([{ field: 'price', order: 'Ascending' }]);
+        done();
+      });
+      flux.sort({ field: 'price', order: 'Ascending' });
+    });
+
     it('should add sorts', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).sort).to.eql([{ field: 'price', order: 'Ascending' }]);
