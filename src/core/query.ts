@@ -30,6 +30,7 @@ export interface QueryConfiguration {
   area?: string;
   biasingProfile?: string;
   pageSize?: number;
+  fields?: string | string[];
 }
 
 export class Query {
