@@ -88,7 +88,7 @@ export class FluxCapacitor extends EventEmitter {
 
   details(id: string): Promise<Results> {
     return this.bridge.search(new Query()
-      .withConfiguration(filterObject(this.query.raw, '{area,collection,language}'))
+      .withConfiguration(filterObject(this.query.raw, '{area,collection,language,fields}'))
       .withSelectedRefinements({ navigationName: 'id', type: 'Value', value: id }))
       .then(res => {
         if (res.records.length) this.emit(Events.DETAILS, res.records[0]);
