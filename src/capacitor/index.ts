@@ -41,6 +41,7 @@ export class FluxCapacitor extends EventEmitter {
         this.results = res;
         this.originalQuery = query;
         this.emit(Events.RESULTS, res);
+        this.emit(Events.PAGE_CHANGED, { pageIndex: this.page.currentPage, finalPage: this.page.finalPage });
         return res;
       });
   }
