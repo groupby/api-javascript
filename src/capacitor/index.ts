@@ -71,7 +71,10 @@ export class FluxCapacitor extends EventEmitter {
 
   sort(sort: Sort, clearSorts: Sort[] = [sort]): Promise<string> {
     this.query.withoutSorts(...clearSorts).withSorts(sort);
-    return this.reset();
+    this.page.reset();
+    return this.search(this.originalQuery)
+    .then(res => this.emit(Events.RESET, res))
+    .then(() => this.originalQuery);
   }
 
   refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {
