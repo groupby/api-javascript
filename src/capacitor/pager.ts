@@ -46,11 +46,20 @@ export class Pager {
   }
 
   private transformPages(limit: number): (number) => number {
+    console.log(`Limit is ${limit}`);
     const border = Math.floor(limit / 2);
+    console.log(`Border is ${border}`);
     return (value: number): number => {
+      console.log(`Current page ${this.currentPage}`);
+      console.log(`Final page ${this.finalPage}`);
+      console.log(`Value to transform ${value}`);
+
+
       // account for 0-indexed pages
       value++;
       if (this.currentPage <= border) {
+        return value;
+      } else if ((border < this.finalPage) && (this.finalPage < (limit - 1))) {
         return value;
       } else if (this.currentPage > this.finalPage - border) {
         return value + this.finalPage + 1 - limit;
