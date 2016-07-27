@@ -50,11 +50,14 @@ export class Pager {
     return (value: number): number => {
       // account for 0-indexed pages
       value++;
-      if ((this.currentPage <= border) || (this.finalPage + 1 - limit < 0)) {
+      if (this.currentPage <= border || limit > this.finalPage) {
+        // pages start at beginning
         return value;
       } else if (this.currentPage > this.finalPage - border) {
+        // pages start and end in the middle
         return value + this.finalPage + 1 - limit;
       } else {
+        // pages end at last page
         return value + this.currentPage - border;
       }
     }
