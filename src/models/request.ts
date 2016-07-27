@@ -3,7 +3,7 @@ import { Refinement, RefinementType, ValueRefinement, RangeRefinement } from './
 export class Request {
   // query parameters
   query: string;
-  refinements: SelectedRefinement[];
+  refinements: Set<SelectedRefinement>;
 
   // query configuration
   fields: string[];

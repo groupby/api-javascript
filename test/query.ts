@@ -126,11 +126,11 @@ describe('Query', function() {
   it('should allow unsetting refinement', () => {
     const query = new Query('refinements')
       .withSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' }, { type: 'Range', navigationName: 'price', low: 20, high: 40 });
-    expect(query.build().refinements.length).to.eq(2);
+    expect(query.build().refinements.size).to.eq(2);
 
     query.withoutSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' });
     const request = query.build();
-    expect(request.refinements.length).to.eq(1);
+    expect(request.refinements.size).to.eq(1);
     expect(request.refinements[0].type).to.eq('Range');
   });
 

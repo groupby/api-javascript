@@ -47,7 +47,7 @@ export class Query {
     this.request.sort = [];
     this.request.fields = [];
     this.request.orFields = [];
-    this.request.refinements = [];
+    this.request.refinements = new Set<SelectedRefinement>();
     this.request.customUrlParams = [];
     this.request.includedNavigations = [];
     this.request.excludedNavigations = [];
@@ -67,21 +67,18 @@ export class Query {
   }
 
   withSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
-    this.request.refinements.push(...refinements);
+    refinements.forEach((refinement) => this.request.refinements.add(refinement));
     return this;
   }
 
   withoutSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
-    refinements.forEach(refinement => {
-      const index = this.request.refinements.findIndex(ref => deepEql(ref, refinement));
-      if (index > -1) this.request.refinements.splice(index, 1);
-    });
+    refinements.forEach((refinement) => this.request.refinements.delete(refinement));
     return this;
   }
 
   withRefinements(navigationName: string, ...refinements: Array<ValueRefinement | RangeRefinement>): Query {
     const convert = (refinement: Refinement) => <SelectedRefinement>Object.assign(refinement, { navigationName });
-    this.request.refinements.push(...refinements.map(convert));
+    refinements.map(convert).forEach((refinement) => this.request.refinements.add(refinement));
     return this;
   }
 
@@ -221,8 +218,7 @@ export class Query {
 
   build(): Request {
     const builtRequest = this.raw;
-    builtRequest.refinements.push(...NavigationConverter.convert(this.unprocessedNavigations));
-
+    NavigationConverter.convert(this.unprocessedNavigations).forEach((navigation) => builtRequest.refinements.add(navigation))
     return this.clearEmptyArrays(builtRequest);
   }
 
