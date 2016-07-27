@@ -214,6 +214,10 @@ describe('Pager', function() {
       expect(new Pager(flux({ start: 70, total: 100 })).pageNumbers()).to.eql([6, 7, 8, 9, 10]);
     });
 
+    it('should handle limit higher than available pages', () => {
+      expect(new Pager(flux({ start: 132, total: 144, pageSize: 12 })).pageNumbers(13)).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    });
+
     it('should show smaller ranges', () => {
       expect(new Pager(flux({ start: 0, total: 47 })).pageNumbers()).to.eql([1, 2, 3, 4, 5]);
       expect(new Pager(flux({ start: 0, total: 33 })).pageNumbers()).to.eql([1, 2, 3, 4]);
