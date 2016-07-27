@@ -50,7 +50,7 @@ export class Pager {
     return (value: number): number => {
       // account for 0-indexed pages
       value++;
-      if (this.currentPage <= border) {
+      if ((this.currentPage <= border) || (this.finalPage + 1 - limit < 0)) {
         return value;
       } else if (this.currentPage > this.finalPage - border) {
         return value + this.finalPage + 1 - limit;
