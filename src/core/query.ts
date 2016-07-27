@@ -22,6 +22,7 @@ import {
   Navigation
 } from '../models/response';
 import { NavigationConverter } from '../utils/converter';
+import { StringySet } from '../utils/stringySet';
 
 export interface QueryConfiguration {
   userId?: string;
@@ -47,7 +48,7 @@ export class Query {
     this.request.sort = [];
     this.request.fields = [];
     this.request.orFields = [];
-    this.request.refinements = new Set<SelectedRefinement>();
+    this.request.refinements = new StringySet<SelectedRefinement>();
     this.request.customUrlParams = [];
     this.request.includedNavigations = [];
     this.request.excludedNavigations = [];
@@ -219,12 +220,14 @@ export class Query {
   build(): Request {
     const builtRequest = this.raw;
     NavigationConverter.convert(this.unprocessedNavigations).forEach((navigation) => builtRequest.refinements.add(navigation))
-    return this.clearEmptyArrays(builtRequest);
+    return this.clearEmpties(builtRequest);
   }
 
-  private clearEmptyArrays(request: Request): Request {
+  private clearEmpties(request: Request): Request {
     for (let key in request) {
       if (request[key] instanceof Array && request[key].length === 0) {
+        delete request[key];
+      } else if (request[key] instanceof StringySet && request[key].size === 0) {
         delete request[key];
       }
     }

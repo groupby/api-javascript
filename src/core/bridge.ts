@@ -59,7 +59,7 @@ export abstract class AbstractBridge {
       url: this.bridgeUrl,
       method: 'post',
       params: queryParams,
-      data: Object.assign(this.augmentRequest(body), body.refinements ? { refinements: Array.from(body.refinements) } : {}),
+      data: Object.assign(this.augmentRequest(body), body.refinements ? { refinements: body.refinements.toArray() } : {}),
       responseType: 'json',
       timeout: 1500
     };

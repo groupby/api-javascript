@@ -119,8 +119,7 @@ describe('Query', function() {
       .refineByValue('rating', '****', true)
       .refineByRange('price', 122, 413)
       .build();
-
-    expect(request.refinements).to.eql(CombinedRefinements);
+    expect(request.refinements.toArray()).to.eql(CombinedRefinements);
   });
 
   it('should allow unsetting refinement', () => {
@@ -131,7 +130,7 @@ describe('Query', function() {
     query.withoutSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' });
     const request = query.build();
     expect(request.refinements.size).to.eq(1);
-    expect(request.refinements[0].type).to.eq('Range');
+    expect(request.refinements.toArray()[0].type).to.eq('Range');
   });
 
   it('should convert custom URL params', () => {

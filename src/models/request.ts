@@ -1,9 +1,10 @@
 import { Refinement, RefinementType, ValueRefinement, RangeRefinement } from './response';
+import { StringySet } from '../utils/stringySet';
 
 export class Request {
   // query parameters
   query: string;
-  refinements: Set<SelectedRefinement>;
+  refinements: StringySet<SelectedRefinement>;
 
   // query configuration
   fields: string[];
