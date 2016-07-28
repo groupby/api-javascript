@@ -248,7 +248,7 @@ describe('FluxCapacitor', function() {
         .withSelectedRefinements(refinement);
       mock.post(SEARCH_URL, (req, res) => {
         const body = JSON.parse(req.body());
-        expect(body.skip).to.not.be.ok;
+        expect(body.skip).to.eql(0);
         expect(body.sort).to.eql([{ field: 'price', order: 'Ascending' }]);
         expect(body.refinements).to.eql([refinement]);
         done();
