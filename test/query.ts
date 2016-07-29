@@ -2,6 +2,7 @@
 
 import { expect } from 'chai';
 import { Query } from '../src/core/query';
+import { SelectedValueRefinement } from '../src/models/request';
 import {
   ComplexRequest,
   CombinedRefinements,
@@ -121,6 +122,13 @@ describe('Query', function() {
       .build();
 
     expect(request.refinements).to.eql(CombinedRefinements);
+  });
+
+  it('should not allow setting the same refinement multiple times', () => {
+    const refinement: SelectedValueRefinement = { type: 'Value', navigationName: 'brand', value: 'DeWalt' };
+    const query = new Query('refinements')
+      .withSelectedRefinements(refinement, refinement);
+    expect(query.build().refinements.length).to.eq(1);
   });
 
   it('should allow unsetting refinement', () => {

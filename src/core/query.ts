@@ -1,5 +1,6 @@
 import qs = require('qs');
 import deepEql = require('deep-equal');
+import filterObject = require('filter-object');
 import {
   Request,
   SelectedValueRefinement,
@@ -67,7 +68,7 @@ export class Query {
   }
 
   withSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
-    this.request.refinements.push(...refinements);
+    refinements.forEach((ref) => this.addRefinement(ref, this.request.refinements));
     return this;
   }
 
@@ -80,9 +81,20 @@ export class Query {
   }
 
   withRefinements(navigationName: string, ...refinements: Array<ValueRefinement | RangeRefinement>): Query {
-    const convert = (refinement: Refinement) => <SelectedRefinement>Object.assign(refinement, { navigationName });
-    this.request.refinements.push(...refinements.map(convert));
+    const convert = (refinement: Refinement) => Object.assign(refinement, { navigationName });
+    refinements.map(convert).forEach((ref) => this.addRefinement(ref, this.request.refinements));
     return this;
+  }
+
+  private addRefinement(refinement, refinements: SelectedRefinement[]): void {
+    if (!refinements.find((ref) => this.refinementMatches(ref, refinement))) {
+      refinements.push(refinement);
+    }
+  }
+
+  private refinementMatches(target: SelectedRefinement, original: SelectedRefinement) {
+    const refinementMask = '{navigationName,value,low,high}';
+    return deepEql(filterObject(target, refinementMask), filterObject(original, refinementMask));
   }
 
   withNavigations(...navigations: Navigation[]): Query {
@@ -120,7 +132,7 @@ export class Query {
   }
 
   withoutSorts(...sorts: Sort[]): Query {
-    this.request.sort = this.request.sort.filter(oldSort => sorts.findIndex(sort => sort.field === oldSort.field) === -1);
+    this.request.sort = this.request.sort.filter(oldSort => !sorts.find(sort => sort.field === oldSort.field));
     return this;
   }
 
@@ -221,7 +233,7 @@ export class Query {
 
   build(): Request {
     const builtRequest = this.raw;
-    builtRequest.refinements.push(...NavigationConverter.convert(this.unprocessedNavigations));
+    NavigationConverter.convert(this.unprocessedNavigations).forEach((ref) => this.addRefinement(ref, builtRequest.refinements));
 
     return this.clearEmptyArrays(builtRequest);
   }
@@ -234,5 +246,4 @@ export class Query {
     }
     return request;
   }
-
 }
