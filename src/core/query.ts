@@ -67,7 +67,7 @@ export class Query {
   }
 
   withSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
-    refinements.forEach(this.addRefinement);
+    refinements.forEach((ref) => this.addRefinement(ref, this.request.refinements));
     return this;
   }
 
@@ -81,14 +81,14 @@ export class Query {
 
   withRefinements(navigationName: string, ...refinements: Array<ValueRefinement | RangeRefinement>): Query {
     const convert = (refinement: Refinement) => <SelectedRefinement>Object.assign(refinement, { navigationName });
-    refinements.map(convert).forEach(this.addRefinement);
+    refinements.map(convert).forEach((ref) => this.addRefinement(ref, this.request.refinements));
     return this;
   }
 
-  private addRefinement(refinement: SelectedValueRefinement & SelectedRangeRefinement): void {
-    if (this.request.refinements.find((ref) => this.refinementMatches(ref, refinement))) {
-      this.request.refinements.push(refinement);
-    }
+  private addRefinement(refinement, refinements: SelectedRefinement[]): void {
+    // if (!this.request.refinements.find((ref) => this.refinementMatches(ref, refinement))) {
+    refinements.push(refinement);
+    // }
   }
 
   private refinementMatches(target, original) {
@@ -234,7 +234,7 @@ export class Query {
 
   build(): Request {
     const builtRequest = this.raw;
-    NavigationConverter.convert(this.unprocessedNavigations).forEach(this.addRefinement);
+    NavigationConverter.convert(this.unprocessedNavigations).forEach((ref) => this.addRefinement(ref, builtRequest.refinements));
 
     return this.clearEmptyArrays(builtRequest);
   }
