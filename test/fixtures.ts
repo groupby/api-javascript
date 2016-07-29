@@ -68,26 +68,54 @@ export let CombinedRefinements = [
     value: 'Nike',
     exclude: true
   },
-  { type: 'Value', value: 'wool', navigationName: 'material' },
   {
+    navigationName: 'material',
+    type: 'Value',
+    value: 'wool'
+  },
+  {
+    navigationName: 'year',
     type: 'Range',
     low: 2000,
     high: 2009,
-    exclude: false,
-    navigationName: 'year'
+    exclude: false
   },
-  { type: 'Range', low: 2010, high: 2011, navigationName: 'year' },
-  { type: 'Value', value: '****', navigationName: 'rating', exclude: true },
+  {
+    navigationName: 'year',
+    type: 'Range',
+    low: 2010,
+    high: 2011
+  },
+  {
+    navigationName: 'rating',
+    type: 'Value',
+    value: '****',
+    exclude: true
+  },
   {
     navigationName: 'price',
     low: 122,
     high: 413,
-    exclude: false,
-    type: 'Range'
+    type: 'Range',
+    exclude: false
   },
-  { type: 'Value', value: '***', navigationName: 'rating' },
-  { type: 'Range', low: 31, high: 44, navigationName: 'price' },
-  { type: 'Range', low: 89, high: 100, navigationName: 'price' }
+  {
+    navigationName: 'rating',
+    type: 'Value',
+    value: '***'
+  },
+  {
+    navigationName: 'price',
+    type: 'Range',
+    low: 31,
+    high: 44
+  },
+  {
+    navigationName: 'price',
+    type: 'Range',
+    low: 89,
+    high: 100
+  }
 ]
 
 export let CustomParamsFromString = [
