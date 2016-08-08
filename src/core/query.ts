@@ -24,6 +24,8 @@ import {
 } from '../models/response';
 import { NavigationConverter } from '../utils/converter';
 
+const REFINEMENT_MASK = '{navigationName,value,low,high}';
+
 export interface QueryConfiguration {
   userId?: string;
   language?: string;
@@ -62,8 +64,8 @@ export class Query {
     return this;
   }
 
-  withConfiguration(configuration: QueryConfiguration): Query {
-    Object.assign(this.request, configuration);
+  withConfiguration(configuration: QueryConfiguration, mask: string = '*'): Query {
+    Object.assign(this.request, filterObject(configuration, mask));
     return this;
   }
 
@@ -93,8 +95,7 @@ export class Query {
   }
 
   private refinementMatches(target: SelectedRefinement, original: SelectedRefinement) {
-    const refinementMask = '{navigationName,value,low,high}';
-    return deepEql(filterObject(target, refinementMask), filterObject(original, refinementMask));
+    return deepEql(filterObject(target, REFINEMENT_MASK), filterObject(original, REFINEMENT_MASK));
   }
 
   withNavigations(...navigations: Navigation[]): Query {

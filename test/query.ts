@@ -77,6 +77,30 @@ describe('Query', function() {
     expect(request).to.eql(ComplexRequest);
   });
 
+  describe('withConfiguration() behaviour', () => {
+    it('should allow all properties through', () => {
+      const request = query.withConfiguration({
+        some: 'invalid',
+        properties: 'are these'
+      }).build();
+      expect(request).to.eql({
+        query: 'test',
+        wildcardSearchEnabled: false,
+        pruneRefinements: true,
+        some: 'invalid',
+        properties: 'are these'
+      });
+    });
+
+    it('should allow a custom mask', () => {
+      const request = query.withConfiguration({
+        some: 'invalid',
+        properties: 'are these'
+      }, '{query,other}').build();
+      expect(request).to.not.have.keys('some', 'properties');
+    });
+  });
+
   it('should allow multiple methods of setting refinements', () => {
     const request = new Query('refinements')
       .withSelectedRefinements(
