@@ -25,7 +25,7 @@ export abstract class AbstractBridge {
 
   protected abstract augmentRequest(request: any): any;
 
-  search(query: string | Query | Request, callback: (Error?, Results?) => void = undefined): Promise<Results> {
+  search(query: string | Query | Request, callback: (err?: Error, res?: Results) => void = undefined): Promise<Results> {
     let [request, queryParams] = this.extractRequest(query);
     if (request === null) return this.generateError('query was not of a recognised type', callback);
 
@@ -48,7 +48,7 @@ export abstract class AbstractBridge {
     }
   }
 
-  private generateError(error: string, callback: (Error) => void): Promise<any> {
+  private generateError(error: string, callback: (err: Error) => void): Promise<any> {
     const err = new Error(error);
     if (callback) callback(err);
     else return Promise.reject(err);

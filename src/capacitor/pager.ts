@@ -45,7 +45,7 @@ export class Pager {
     return Array.from(Array(Math.min(this.finalPage + 1, limit)).keys()).map(this.transformPages(limit));
   }
 
-  private transformPages(limit: number): (number) => number {
+  private transformPages(limit: number): (value: number) => number {
     const border = Math.floor(limit / 2);
     return (value: number): number => {
       // account for 0-indexed pages
