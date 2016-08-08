@@ -25,10 +25,10 @@ export class FluxCapacitor extends EventEmitter {
   bridge: BrowserBridge;
   results: Results;
 
-  constructor(endpoint: string, config: QueryConfiguration & any = {}) {
+  constructor(endpoint: string, config: QueryConfiguration & any = {}, mask?: string) {
     super();
     this.bridge = new BrowserBridge(endpoint);
-    this.query = new Query().withConfiguration(config);
+    this.query = new Query().withConfiguration(config, mask);
   }
 
   get page() {
