@@ -3,6 +3,7 @@
   "version": false,
   "globalDependencies": {
     "axios": "registry:dt/axios#0.9.1+20160317120654",
+    "clone": "registry:dt/clone#0.1.11+20160317120654",
     "deep-equal": "registry:dt/deep-equal#0.0.0+20160316155526",
     "es6-shim": "registry:dt/es6-shim#0.31.2+20160317120654",
     "eventemitter3": "registry:dt/eventemitter3#1.1.1+20151208234524",
