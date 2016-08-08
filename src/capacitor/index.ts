@@ -1,5 +1,6 @@
 import EventEmitter = require('eventemitter3');
 import filterObject = require('filter-object');
+import deepEqual = require('deep-equal');
 import { Query, QueryConfiguration } from '../core/query';
 import { BrowserBridge } from '../core/bridge';
 import { Results, Navigation } from '../models/response';
@@ -10,6 +11,7 @@ export namespace Events {
   export const RESULTS = 'results';
   export const REFINEMENTS_CHANGED = 'refinements_changed';
   export const PAGE_CHANGED = 'page_changed';
+  export const REQUEST_CHANGED = 'request_changed';
   export const RESET = 'reset';
   export const REWRITE_QUERY = 'rewrite_query';
   export const SORT = 'sort';
@@ -21,6 +23,7 @@ export type FluxRefinement = SelectedValueRefinement | SelectedRangeRefinement;
 
 export class FluxCapacitor extends EventEmitter {
   private originalQuery: string = '';
+  private originalRefinements: any[] = [];
   query: Query;
   bridge: BrowserBridge;
   results: Results;
@@ -35,13 +38,16 @@ export class FluxCapacitor extends EventEmitter {
     return new Pager(this);
   }
 
-  search(query: string = this.originalQuery): Promise<Results> {
-    return this.bridge.search(this.query.withQuery(query))
-      .then(res => {
-        this.results = res;
-        this.originalQuery = query;
-        this.emit(Events.RESULTS, res);
-        return res;
+  search(originalQuery: string = this.originalQuery): Promise<Results> {
+    return this.bridge.search(this.query.withQuery(originalQuery))
+      .then((results) => {
+        const originalRefinements = this.query.raw.refinements;
+        if (originalQuery !== this.originalQuery || deepEqual(originalRefinements, this.originalRefinements)) {
+          this.emit(Events.REQUEST_CHANGED)
+        }
+        Object.assign(this, { results, originalQuery, originalRefinements });
+        this.emit(Events.RESULTS, results);
+        return results;
       });
   }
 
@@ -55,7 +61,7 @@ export class FluxCapacitor extends EventEmitter {
     this.query = new Query().withConfiguration(this.filteredRequest);
     this.emit(Events.PAGE_CHANGED, { pageIndex: 0, finalPage: this.page.finalPage })
     return this.search(query)
-      .then(res => this.emit(Events.RESET, res))
+      .then((res) => this.emit(Events.RESET, res))
       .then(() => query);
   }
 
@@ -94,6 +100,11 @@ export class FluxCapacitor extends EventEmitter {
         if (res.records.length) this.emit(Events.DETAILS, res.records[0]);
         return res;
       });
+  }
+
+  switchCollection(collection: string): Promise<Results> {
+    this.query.withConfiguration({ collection })
+    return this.search();
   }
 
   private get filteredRequest() {

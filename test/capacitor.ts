@@ -39,7 +39,7 @@ describe('FluxCapacitor', function() {
   });
 
   describe('search behaviour', () => {
-    it('should make a search request', done => {
+    it('should make a search request', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).query).to.eq('testing');
         done();
@@ -48,16 +48,40 @@ describe('FluxCapacitor', function() {
     });
 
     describe('events', () => {
-      it('should emit a results event', done => {
+      it('should emit a results event', (done) => {
         mock.post(SEARCH_URL, (req, res) => res.body('ok'));
         flux.on(Events.RESULTS, () => done());
         flux.search('');
+      });
+
+      it('should not emit a request_changed event on subsequent equivalent requests', () => {
+        mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+        flux.on(Events.REQUEST_CHANGED, () => expect.fail());
+
+        flux.search('');
+        flux.search('');
+      });
+
+      it('should emit a request_changed event on changing the query', (done) => {
+        mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+        flux.on(Events.REQUEST_CHANGED, () => done());
+
+        flux.search('');
+        flux.search('other');
+      });
+
+      it('should emit a request_changed event on changing the refinements', (done) => {
+        mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+        flux.on(Events.REQUEST_CHANGED, () => done());
+
+        flux.search('');
+        flux.refine({ navigationName: 'brand', type: 'Value', value: 'a' });
       });
     });
   });
 
   describe('refinement behaviour', () => {
-    it('should make a request on refinement', done => {
+    it('should make a request on refinement', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).refinements.length).to.eq(1);
         done();
@@ -65,7 +89,7 @@ describe('FluxCapacitor', function() {
       flux.refine(SELECTED_REFINEMENT);
     });
 
-    it('should make a request on un-refinement', done => {
+    it('should make a request on un-refinement', (done) => {
       flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).refinements).to.not.be.ok;
@@ -74,7 +98,7 @@ describe('FluxCapacitor', function() {
       flux.unrefine(SELECTED_REFINEMENT);
     });
 
-    it('should un-refine with deep equality', done => {
+    it('should un-refine with deep equality', (done) => {
       flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).refinements).to.not.be.ok;
@@ -85,7 +109,7 @@ describe('FluxCapacitor', function() {
       flux.unrefine({ type: 'Value', navigationName: 'brand', value: 'DeWalt' });
     });
 
-    it('should reset paging on refinement', done => {
+    it('should reset paging on refinement', (done) => {
       mock.post(SEARCH_URL, (req, res) => res.body('ok'));
 
       flux.refine(SELECTED_REFINEMENT)
@@ -95,7 +119,7 @@ describe('FluxCapacitor', function() {
         });
     });
 
-    it('should reset paging on un-refinement', done => {
+    it('should reset paging on un-refinement', (done) => {
       flux.query.skip(20);
       flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
       mock.post(SEARCH_URL, (req, res) => res.body('ok'));
@@ -337,5 +361,17 @@ describe('FluxCapacitor', function() {
       });
       flux.details('14830');
     });
+  });
+
+  it('should switch collection', (done) => {
+    const collection = 'other';
+    mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+
+    flux.query.withConfiguration({ collection: 'something' });
+    flux.switchCollection(collection)
+      .then(() => {
+        expect(flux.query.raw.collection).to.eq(collection);
+        done();
+      });
   });
 });
