@@ -30,6 +30,14 @@ describe('FluxCapacitor', function() {
     expect(flux.results).to.not.be.ok;
   });
 
+  it('should accept a mask for configuration', () => {
+    flux = new FluxCapacitor(CUSTOMER_ID, { a: 'something', b: 'Ascending' });
+    expect(flux.query.raw).to.contain.keys('a', 'b');
+
+    flux = new FluxCapacitor(CUSTOMER_ID, { a: 'something', b: 'Ascending' }, '{refinements,area}');
+    expect(flux.query.raw).to.not.contain.keys('a', 'b');
+  });
+
   describe('search behaviour', () => {
     it('should make a search request', done => {
       mock.post(SEARCH_URL, (req, res) => {
