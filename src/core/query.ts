@@ -1,6 +1,7 @@
 import qs = require('qs');
 import deepEql = require('deep-equal');
 import filterObject = require('filter-object');
+import clone = require('clone');
 import {
   Request,
   SelectedValueRefinement,
@@ -225,7 +226,7 @@ export class Query {
   }
 
   get raw(): Request {
-    return Object.assign(new Request(), this.request);
+    return clone(this.request, false);
   }
 
   get rawNavigations(): Navigation[] {

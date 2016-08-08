@@ -42,13 +42,17 @@ export class FluxCapacitor extends EventEmitter {
     return this.bridge.search(this.query.withQuery(originalQuery))
       .then((results) => {
         const originalRefinements = this.query.raw.refinements;
-        if (originalQuery !== this.originalQuery || deepEqual(originalRefinements, this.originalRefinements)) {
-          this.emit(Events.REQUEST_CHANGED)
-        }
+        this.testForChange(originalQuery, originalRefinements);
         Object.assign(this, { results, originalQuery, originalRefinements });
         this.emit(Events.RESULTS, results);
         return results;
       });
+  }
+
+  private testForChange(query: string, refinements: any[]) {
+    if (query !== this.originalQuery || !deepEqual(refinements, this.originalRefinements)) {
+      this.emit(Events.REQUEST_CHANGED);
+    }
   }
 
   rewrite(query: string): Promise<string> {
@@ -115,8 +119,8 @@ export class FluxCapacitor extends EventEmitter {
     return reset ? this.page.reset() : this.search();
   }
 
-  private doRefinement(config: RefinementConfig): Promise<NavigationInfo> {
-    return this.resetPaging(config.reset)
+  private doRefinement({ reset }: RefinementConfig): Promise<NavigationInfo> {
+    return this.resetPaging(reset)
       .then(() => this.emit(Events.REFINEMENTS_CHANGED, this.navigationInfo))
       .then(() => this.navigationInfo);
   }
