@@ -9,14 +9,9 @@ gulp.task('typings:install', function(cb) {
     .on('finish', cb);
 });
 
-gulp.task('typings:vendor:copy', function() {
+gulp.task('typings:copy', function() {
   gulp.src([paths.typings + '/**/*'])
     .pipe(gulp.dest(paths.dist.typings));
 });
 
-gulp.task('typings:custom:copy', function() {
-  gulp.src([paths.customTypings + '/**/*'])
-    .pipe(gulp.dest(paths.dist.customTypings));
-});
-
-gulp.task('typings:copy', ['typings:vendor:copy', 'typings:custom:copy']);
+gulp.task('typings:copy', ['typings:copy']);

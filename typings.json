@@ -11,6 +11,7 @@
     "qs": "registry:dt/qs#0.0.0+20160317120654"
   },
   "dependencies": {
+    "filter-object": "registry:npm/filter-object#2.1.0+20160809052819",
     "xhr-mock": "github:effervescentia/typed-xhr-mock#c3fea91aaeede6982f59dea2a6f6ad5291a5256b"
   },
   "globalDevDependencies": {
