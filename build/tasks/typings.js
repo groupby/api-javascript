@@ -13,5 +13,3 @@ gulp.task('typings:copy', function() {
   gulp.src([paths.typings + '/**/*'])
     .pipe(gulp.dest(paths.dist.typings));
 });
-
-gulp.task('typings:copy', ['typings:copy']);
