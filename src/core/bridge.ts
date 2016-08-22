@@ -22,6 +22,7 @@ export interface RawRecord extends Record {
 
 export abstract class AbstractBridge {
   protected bridgeUrl: string;
+  headers: any = {};
 
   protected abstract augmentRequest(request: any): any;
 
@@ -60,6 +61,7 @@ export abstract class AbstractBridge {
       method: 'post',
       params: queryParams,
       data: this.augmentRequest(body),
+      headers: this.headers,
       responseType: 'json',
       timeout: 1500
     };

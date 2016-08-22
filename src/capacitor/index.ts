@@ -21,6 +21,10 @@ export namespace Events {
 export { Pager };
 export type FluxRefinement = SelectedValueRefinement | SelectedRangeRefinement;
 
+export interface FluxConfiguration extends QueryConfiguration {
+  headers: any;
+}
+
 export class FluxCapacitor extends EventEmitter {
   private originalQuery: string = '';
   private originalRefinements: any[] = [];
@@ -28,10 +32,11 @@ export class FluxCapacitor extends EventEmitter {
   bridge: BrowserBridge;
   results: Results;
 
-  constructor(endpoint: string, config: QueryConfiguration & any = {}, mask?: string) {
+  constructor(endpoint: string, config: FluxConfiguration & any = {}, mask?: string) {
     super();
     this.bridge = new BrowserBridge(endpoint);
-    this.query = new Query().withConfiguration(config, mask);
+    if (config.headers) this.bridge.headers = config.headers;
+    this.query = new Query().withConfiguration(filterObject(config, ['*', '!{headers}']), mask);
   }
 
   get page() {

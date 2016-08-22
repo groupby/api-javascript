@@ -38,6 +38,17 @@ describe('FluxCapacitor', function() {
     expect(flux.query.raw).to.not.contain.keys('a', 'b');
   });
 
+  it('should strip fields from configuration', () => {
+    flux = new FluxCapacitor(CUSTOMER_ID, { a: 'something', b: 'Ascending', headers: { c: 'd' } });
+    expect(flux.query.raw).to.not.contain.keys('headers');
+  });
+
+  it('should set headers on bridge', () => {
+    const headers = { c: 'd' };
+    flux = new FluxCapacitor(CUSTOMER_ID, { headers });
+    expect(flux.bridge.headers).to.eq(headers);
+  });
+
   describe('search behaviour', () => {
     it('should make a search request', (done) => {
       mock.post(SEARCH_URL, (req, res) => {

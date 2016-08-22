@@ -130,4 +130,19 @@ describe('Bridge', () => {
       });
   });
 
+  it('should include headers', done => {
+    const headers = { a: 'b' };
+    mock.post(`http://ecomm.groupbycloud.com/semanticSearch/${CUSTOMER_ID}`, (req, res) => {
+      expect(req['_headers']).to.include.keys('a');
+      return res.status(200).body('success');
+    });
+
+    query = new Query('shoes');
+
+    Object.assign(new BrowserBridge(CUSTOMER_ID), { headers })
+      .search(query, (err, results) => {
+        expect(results).to.eq('success');
+        done();
+      });
+  });
 });
