@@ -60,9 +60,14 @@ export class FluxCapacitor extends EventEmitter {
     }
   }
 
-  rewrite(query: string): Promise<string> {
-    return this.search(query)
-      .then(() => this.emit(Events.REWRITE_QUERY, query))
+  rewrite(query: string, config: RewriteConfig = {}): Promise<string> {
+    let search;
+    if (config.skipSearch) {
+      search = Promise.resolve(this.query.withQuery(this.originalQuery = query));
+    } else {
+      search = this.search(query);
+    }
+    return search.then(() => this.emit(Events.REWRITE_QUERY, query))
       .then(() => query);
   }
 
@@ -149,5 +154,9 @@ export interface NavigationInfo {
 
 export interface RefinementConfig {
   reset?: boolean;
+  skipSearch?: boolean;
+}
+
+export interface RewriteConfig {
   skipSearch?: boolean;
 }
