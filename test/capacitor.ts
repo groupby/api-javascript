@@ -244,18 +244,12 @@ describe('FluxCapacitor', function() {
 
   describe('reset behaviour', () => {
     it('should reset the query', done => {
-      flux.query
-        .withQuery('alabama')
-        .withPageSize(20)
-        .skip(34)
-        .withSelectedRefinements({ navigationName: 'a', value: 'b', type: 'Value' })
-        .withOrFields('boots', 'hats');
+      flux.query.withQuery('alabama');
+
+      flux.resetRecall = () => null;
+
       mock.post(SEARCH_URL, (req, res) => {
         const body = JSON.parse(req.body());
-        expect(body.pageSize).to.be.ok;
-        expect(body.orFields).to.be.ok;
-        expect(body.refinements).to.not.be.ok;
-        expect(body.skip).to.not.be.ok;
         expect(body.query).to.eq('');
         done();
       });
@@ -386,5 +380,23 @@ describe('FluxCapacitor', function() {
         expect(flux.query.raw.collection).to.eq(collection);
         done();
       });
+  });
+
+  it('should reset recall', () => {
+    flux.query
+      .withQuery('alabama')
+      .withPageSize(20)
+      .skip(34)
+      .withSelectedRefinements({ navigationName: 'a', value: 'b', type: 'Value' })
+      .withOrFields('boots', 'hats');
+
+    flux.resetRecall();
+
+    const request = flux.query.raw;
+    expect(request.pageSize).to.be.ok;
+    expect(request.orFields).to.be.ok;
+    expect(request.refinements).to.eql([]);
+    expect(request.skip).to.not.be.ok;
+    expect(request.query).to.eq('');
   });
 });

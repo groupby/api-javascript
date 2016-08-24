@@ -66,8 +66,12 @@ export class FluxCapacitor extends EventEmitter {
       .then(() => query);
   }
 
-  reset(query: string = this.originalQuery): Promise<string> {
+  resetRecall() {
     this.query = new Query().withConfiguration(this.filteredRequest);
+  }
+
+  reset(query: string = this.originalQuery): Promise<string> {
+    this.resetRecall();
     this.emit(Events.PAGE_CHANGED, { pageIndex: 0, finalPage: this.page.finalPage })
     return this.search(query)
       .then((res) => this.emit(Events.RESET, res))
