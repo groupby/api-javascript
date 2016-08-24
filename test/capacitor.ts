@@ -144,7 +144,7 @@ describe('FluxCapacitor', function() {
         });
     });
 
-    it('should skip reset paging on refinement', done => {
+    it('should skip reset paging on refinement', (done) => {
       flux.query.skip(20);
       mock.post(SEARCH_URL, (req, res) => res.body('ok'));
 
@@ -156,7 +156,7 @@ describe('FluxCapacitor', function() {
     });
 
     describe('events', () => {
-      it('should emit refinements_changed event on refinement', done => {
+      it('should emit refinements_changed event on refinement', (done) => {
         mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
 
         flux.on(Events.REFINEMENTS_CHANGED, data => {
@@ -167,7 +167,7 @@ describe('FluxCapacitor', function() {
         flux.refine(SELECTED_REFINEMENT);
       });
 
-      it('should emit refinements_changed event on un-refinement', done => {
+      it('should emit refinements_changed event on un-refinement', (done) => {
         flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
         mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
 
@@ -187,7 +187,7 @@ describe('FluxCapacitor', function() {
       flux.results = <Results>{ totalRecordCount: 300 };
     });
 
-    it('should reset paging', done => {
+    it('should reset paging', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(0);
         done();
@@ -195,7 +195,7 @@ describe('FluxCapacitor', function() {
       flux.page.reset();
     });
 
-    it('should page forward', done => {
+    it('should page forward', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(30);
         done();
@@ -203,7 +203,7 @@ describe('FluxCapacitor', function() {
       flux.page.next();
     });
 
-    it('should page backward', done => {
+    it('should page backward', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(10);
         done();
@@ -211,7 +211,7 @@ describe('FluxCapacitor', function() {
       flux.page.prev();
     });
 
-    it('should advance to last page', done => {
+    it('should advance to last page', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(290);
         done();
@@ -221,7 +221,7 @@ describe('FluxCapacitor', function() {
   });
 
   describe('resizing behaviour', () => {
-    it('should resize the page and keep offset', done => {
+    it('should resize the page and keep offset', (done) => {
       flux.query.skip(20);
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(20);
@@ -231,7 +231,7 @@ describe('FluxCapacitor', function() {
       flux.resize(30);
     });
 
-    it('should resize the page', done => {
+    it('should resize the page', (done) => {
       flux.query.skip(20);
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(0);
@@ -242,8 +242,54 @@ describe('FluxCapacitor', function() {
     });
   });
 
+  describe('rewrite behaviour', () => {
+    it('should rewrite the query', () => {
+      const newQuery = 'montana';
+      flux.query.withQuery('alabama');
+
+      flux.search = (query): any => Promise.resolve(expect(query).to.eq(newQuery));
+      flux.rewrite(newQuery);
+    });
+
+    it('should rewrite the query but not perform a search', () => {
+      const newQuery = 'montana';
+      flux.query.withQuery('alabama');
+
+      flux.search = (query): any => expect.fail();
+      flux.rewrite(newQuery, { skipSearch: true });
+      expect(flux.query.raw.query).to.eq(newQuery);
+    });
+
+    it('should emit a rewrite_query event on search', (done) => {
+      const newQuery = 'montana';
+      flux.query.withQuery('alabama');
+
+      flux.search = (query): any => ({ then: (cb) => cb() });
+      flux.emit = (event, data): any => {
+        expect(event).to.eq('rewrite_query');
+        expect(data).to.eq(newQuery);
+        done();
+      };
+
+      flux.rewrite(newQuery);
+    });
+
+    it('should emit a rewrite_query event when not searching', (done) => {
+      const newQuery = 'montana';
+      flux.query.withQuery('alabama');
+
+      flux.emit = (event, data): any => {
+        expect(event).to.eq('rewrite_query');
+        expect(data).to.eq(newQuery);
+        done();
+      };
+
+      flux.rewrite(newQuery, { skipSearch: true });
+    });
+  });
+
   describe('reset behaviour', () => {
-    it('should reset the query', done => {
+    it('should reset the query', (done) => {
       flux.query.withQuery('alabama');
 
       flux.resetRecall = () => null;
@@ -256,7 +302,7 @@ describe('FluxCapacitor', function() {
       flux.reset();
     });
 
-    it('should accept a new query on reset', done => {
+    it('should accept a new query on reset', (done) => {
       flux.query.withQuery('alabama');
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).query).to.eq('texas');
@@ -266,7 +312,7 @@ describe('FluxCapacitor', function() {
     });
 
     describe('events', () => {
-      it('should emit events', done => {
+      it('should emit events', (done) => {
         mock.post(SEARCH_URL, (req, res) => res.body('ok'));
 
         let count = 0;
