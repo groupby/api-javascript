@@ -28,7 +28,6 @@ This will install the project and run all tests.
 
 
 ### Add this library as a dependency to your project:
-The Uber JAR must be used to ensure shaded dependencies are included correctly.
 
 #### NPM
 
