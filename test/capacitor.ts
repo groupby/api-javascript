@@ -59,10 +59,37 @@ describe('FluxCapacitor', function() {
     });
 
     describe('events', () => {
+      it('should emit a search event before searching', (done) => {
+        flux.bridge.search = (): any => expect.fail();
+        flux.on(Events.SEARCH, (query) => {
+          expect(query.query).to.eq('danish');
+          done();
+        });
+
+        flux.search('danish');
+      });
+
       it('should emit a results event', (done) => {
         mock.post(SEARCH_URL, (req, res) => res.body('ok'));
         flux.on(Events.RESULTS, () => done());
         flux.search('');
+      });
+
+      it('should not emit a redirect event', (done) => {
+        flux.bridge.search = (): any => ({ then: (cb) => cb({}) });
+        flux.on(Events.REDIRECT, () => expect.fail());
+
+        flux.search('');
+        done();
+      });
+
+      it('should emit a redirect event', (done) => {
+        const redirect = 'something.html';
+        flux.bridge.search = (): any => ({ then: (cb) => cb({ redirect }) });
+        flux.on(Events.REDIRECT, (url) => expect(url).to.eq(redirect));
+
+        flux.search('');
+        done();
       });
 
       it('should not emit a request_changed event on subsequent equivalent requests', (done) => {
