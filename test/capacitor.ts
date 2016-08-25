@@ -354,13 +354,22 @@ describe('FluxCapacitor', function() {
   });
 
   describe('sort behaviour', () => {
-    it('should reset paging but not refinements', (done) => {
+    it('should reset paging', (done) => {
+      flux.query.skip(30);
+      mock.post(SEARCH_URL, (req, res) => {
+        const body = JSON.parse(req.body());
+        expect(body.skip).to.eql(0);
+        done();
+      });
+      flux.sort({ field: 'price', order: 'Ascending' });
+    });
+
+    it('should not clear refinements', (done) => {
       const refinement: SelectedValueRefinement = { navigationName: 'brand', type: 'Value', value: 'DeWalt' };
       flux.query.skip(30)
         .withSelectedRefinements(refinement);
       mock.post(SEARCH_URL, (req, res) => {
         const body = JSON.parse(req.body());
-        expect(body.skip).to.not.be.ok;
         expect(body.sort).to.eql([{ field: 'price', order: 'Ascending' }]);
         expect(body.refinements).to.eql([refinement]);
         done();
