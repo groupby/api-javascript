@@ -8,6 +8,7 @@ import { Pager } from './pager';
 import { SelectedValueRefinement, SelectedRangeRefinement, Sort } from '../models/request';
 
 export namespace Events {
+  export const SEARCH = 'search';
   export const RESULTS = 'results';
   export const REFINEMENTS_CHANGED = 'refinements_changed';
   export const PAGE_CHANGED = 'page_changed';
@@ -16,6 +17,7 @@ export namespace Events {
   export const REWRITE_QUERY = 'rewrite_query';
   export const SORT = 'sort';
   export const DETAILS = 'details';
+  export const REDIRECT = 'redirect';
 }
 
 export { Pager };
@@ -44,8 +46,11 @@ export class FluxCapacitor extends EventEmitter {
   }
 
   search(originalQuery: string = this.originalQuery): Promise<Results> {
-    return this.bridge.search(this.query.withQuery(originalQuery))
+    this.query.withQuery(originalQuery);
+    this.emit(Events.SEARCH, this.query.raw);
+    return this.bridge.search(this.query)
       .then((results) => {
+        if (results.redirect) this.emit(Events.REDIRECT, results.redirect);
         const originalRefinements = this.query.raw.refinements;
         this.testForChange(originalQuery, originalRefinements);
         Object.assign(this, { results, originalQuery, originalRefinements });
