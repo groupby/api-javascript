@@ -4,23 +4,6 @@ var gulp = require('gulp'),
 require('git-guppy')(gulp);
 require('require-dir')('build/tasks');
 
-gulp.task('docs', () => {
-  return gulp.src(['src/*.ts'])
-   .pipe(typedoc({
-     module: 'commonjs',
-     target: 'es5',
-     includeDeclarations: true,
-
-     out: './docs',
-     includeDeclarations: false,
-
-     name: 'groupby-api',
-     ignoreCompilerErrors: true,
-     excludeExternals: true,
-     version: true
-   }));
-});
-
 /**
  * Default
  */
