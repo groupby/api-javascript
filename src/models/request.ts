@@ -1,4 +1,4 @@
-import { Refinement, RefinementType, ValueRefinement, RangeRefinement } from './response';
+import { RangeRefinement, Refinement, ValueRefinement } from './response';
 
 export class Request {
   // query parameters
@@ -64,7 +64,6 @@ export interface RestrictNavigation {
 export type BiasStrength = 'Absolute_Increase' | 'Strong_Increase' |
   'Medium_Increase' | 'Weak_Increase' | 'Leave_Unchanged' | 'Weak_Decrease' |
   'Medium_Decrease' | 'Strong_Decrease' | 'Absolute_Decrease';
-
 
 export interface Bias {
   name: string;

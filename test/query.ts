@@ -1,19 +1,10 @@
-/// <reference path="../typings/index.d.ts" />
-
-import { expect } from 'chai';
 import { Query } from '../src/core/query';
 import { SelectedValueRefinement } from '../src/models/request';
-import {
-  ComplexRequest,
-  CombinedRefinements,
-  CustomParamsFromString
-} from './fixtures';
-
-const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
-const CUSTOMER_ID = 'services';
+import { COMBINED_REFINEMENTS, COMPLEX_REQUEST, CUSTOM_PARAMS_FROM_STRING } from './fixtures';
+import { expect } from 'chai';
 
 describe('Query', function() {
-  let query;
+  let query: Query;
 
   beforeEach(() => {
     query = new Query('test');
@@ -74,12 +65,12 @@ describe('Query', function() {
       .disableBinaryPayload()
       .build();
 
-    expect(request).to.eql(ComplexRequest);
+    expect(request).to.eql(COMPLEX_REQUEST);
   });
 
   describe('withConfiguration() behaviour', () => {
     it('should allow all properties through', () => {
-      const request = query.withConfiguration({
+      const request = query.withConfiguration(<any>{
         some: 'invalid',
         properties: 'are these'
       }).build();
@@ -93,7 +84,7 @@ describe('Query', function() {
     });
 
     it('should allow a custom mask', () => {
-      const request = query.withConfiguration({
+      const request = query.withConfiguration(<any>{
         some: 'invalid',
         properties: 'are these'
       }, '{query,other}').build();
@@ -145,18 +136,18 @@ describe('Query', function() {
       .refineByRange('price', 122, 413)
       .build();
 
-    expect(request.refinements).to.eql(CombinedRefinements);
+    expect(request.refinements).to.eql(COMBINED_REFINEMENTS);
   });
 
   it('should not allow setting the same refinement multiple times', () => {
     const refinement: SelectedValueRefinement = { type: 'Value', navigationName: 'brand', value: 'DeWalt' };
-    const query = new Query('refinements')
+    query.withQuery('refinements')
       .withSelectedRefinements(refinement, refinement);
     expect(query.build().refinements.length).to.eq(1);
   });
 
   it('should allow unsetting refinement', () => {
-    const query = new Query('refinements')
+    query.withQuery('refinements')
       .withSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' }, { type: 'Range', navigationName: 'price', low: 20, high: 40 });
     expect(query.build().refinements.length).to.eq(2);
 
@@ -173,11 +164,11 @@ describe('Query', function() {
       .withCustomUrlParams('others=&something=as_well')
       .build();
 
-    expect(request.customUrlParams).to.eql(CustomParamsFromString);
+    expect(request.customUrlParams).to.eql(CUSTOM_PARAMS_FROM_STRING);
   });
 
   it('should expose a copy of the raw request', () => {
-    const query = new Query('raw request')
+    query.withQuery('raw request')
       .skip(10)
       .withPageSize(300);
     const rawRequest = query.raw;
@@ -190,7 +181,7 @@ describe('Query', function() {
   });
 
   it('should expose a copy of the raw navigations', () => {
-    const query = new Query('raw request')
+    query.withQuery('raw request')
       .skip(10)
       .withPageSize(300);
     const rawRequest = query.raw;
@@ -203,7 +194,7 @@ describe('Query', function() {
   });
 
   it('should allow sorts to be unselected', () => {
-    const query = new Query('')
+    query.withQuery('')
       .withSorts({ field: 'this', order: 'Ascending' }, { field: 'that', order: 'Descending' });
     expect(query.raw.sort.length).to.eq(2);
     query.withoutSorts({ field: 'that', order: 'Ascending' });

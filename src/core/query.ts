@@ -3,25 +3,21 @@ import deepEql = require('deep-equal');
 import filterObject = require('filter-object');
 import clone = require('clone');
 import {
+  Biasing,
+  CustomUrlParam,
+  MatchStrategy,
   Request,
-  SelectedValueRefinement,
+  RestrictNavigation,
   SelectedRangeRefinement,
   SelectedRefinement,
-  CustomUrlParam,
-  RestrictNavigation,
-  Sort,
-  MatchStrategy,
-  Biasing,
-  Bias
+  SelectedValueRefinement,
+  Sort
 } from '../models/request';
 import {
-  Results,
-  Record,
-  ValueRefinement,
+  Navigation,
   RangeRefinement,
   Refinement,
-  RefinementType,
-  Navigation
+  ValueRefinement
 } from '../models/response';
 import { NavigationConverter } from '../utils/converter';
 
@@ -38,9 +34,10 @@ export interface QueryConfiguration {
 }
 
 export class Query {
+
+  queryParams: any;
   private request: Request;
   private unprocessedNavigations: Navigation[];
-  queryParams: any;
 
   constructor(query: string = '') {
     this.request = <Request>{};
@@ -76,8 +73,8 @@ export class Query {
   }
 
   withoutSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
-    refinements.forEach(refinement => {
-      const index = this.request.refinements.findIndex(ref => deepEql(ref, refinement));
+    refinements.forEach((refinement) => {
+      const index = this.request.refinements.findIndex((ref) => deepEql(ref, refinement));
       if (index > -1) this.request.refinements.splice(index, 1);
     });
     return this;
@@ -87,16 +84,6 @@ export class Query {
     const convert = (refinement: Refinement) => Object.assign(refinement, { navigationName });
     refinements.map(convert).forEach((ref) => this.addRefinement(ref, this.request.refinements));
     return this;
-  }
-
-  private addRefinement(refinement, refinements: SelectedRefinement[]): void {
-    if (!refinements.find((ref) => this.refinementMatches(ref, refinement))) {
-      refinements.push(refinement);
-    }
-  }
-
-  private refinementMatches(target: SelectedRefinement, original: SelectedRefinement) {
-    return deepEql(filterObject(target, REFINEMENT_MASK), filterObject(original, REFINEMENT_MASK));
   }
 
   withNavigations(...navigations: Navigation[]): Query {
@@ -111,11 +98,6 @@ export class Query {
       this.request.customUrlParams.push(...customUrlParams);
     }
     return this;
-  }
-
-  private convertParamString(customUrlParams: string): CustomUrlParam[] {
-    const parsed = qs.parse(customUrlParams);
-    return Object.keys(parsed).reduce((converted, key) => converted.concat({ key, value: parsed[key] }), []);
   }
 
   withFields(...fields: string[]): Query {
@@ -134,7 +116,7 @@ export class Query {
   }
 
   withoutSorts(...sorts: Sort[]): Query {
-    this.request.sort = this.request.sort.filter(oldSort => !sorts.find(sort => sort.field === oldSort.field));
+    this.request.sort = this.request.sort.filter((oldSort) => !sorts.find((sort) => sort.field === oldSort.field));
     return this;
   }
 
@@ -155,10 +137,6 @@ export class Query {
       case 'object':
         return Object.assign(this, { queryParams });
     }
-  }
-
-  private convertQueryString(queryParams: string): any {
-    return qs.parse(queryParams);
   }
 
   refineByValue(navigationName: string, value: string, exclude: boolean = false): Query {
@@ -225,6 +203,13 @@ export class Query {
     return this;
   }
 
+  build(): Request {
+    const builtRequest = this.raw;
+    NavigationConverter.convert(this.unprocessedNavigations).forEach((ref) => this.addRefinement(ref, builtRequest.refinements));
+
+    return this.clearEmptyArrays(builtRequest);
+  }
+
   get raw(): Request {
     return clone(this.request, false);
   }
@@ -233,11 +218,23 @@ export class Query {
     return Object.create(this.unprocessedNavigations);
   }
 
-  build(): Request {
-    const builtRequest = this.raw;
-    NavigationConverter.convert(this.unprocessedNavigations).forEach((ref) => this.addRefinement(ref, builtRequest.refinements));
+  private addRefinement(refinement: SelectedRefinement, refinements: SelectedRefinement[]): void {
+    if (!refinements.find((ref) => this.refinementMatches(ref, refinement))) {
+      refinements.push(refinement);
+    }
+  }
 
-    return this.clearEmptyArrays(builtRequest);
+  private refinementMatches(target: SelectedRefinement, original: SelectedRefinement) {
+    return deepEql(filterObject(target, REFINEMENT_MASK), filterObject(original, REFINEMENT_MASK));
+  }
+
+  private convertParamString(customUrlParams: string): CustomUrlParam[] {
+    const parsed = qs.parse(customUrlParams);
+    return Object.keys(parsed).reduce((converted, key) => converted.concat({ key, value: parsed[key] }), []);
+  }
+
+  private convertQueryString(queryParams: string): any {
+    return qs.parse(queryParams);
   }
 
   private clearEmptyArrays(request: Request): Request {

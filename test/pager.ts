@@ -1,23 +1,13 @@
-/// <reference path="../typings/index.d.ts" />
-
-import { expect } from 'chai';
-import { FluxCapacitor, Query, Events } from '../src/index';
 import { Pager } from '../src/capacitor/pager';
-import {
-  ComplexRequest,
-  CombinedRefinements,
-  CustomParamsFromString
-} from './fixtures';
-
-const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
-const CUSTOMER_ID = 'services';
+import { Events, FluxCapacitor, Query } from '../src/index';
+import { expect } from 'chai';
 
 describe('Pager', function() {
   function flux(opts: { start: number, total?: number, pageSize?: number } | number, search?: Function): FluxCapacitor {
     const recordStart = typeof opts === 'number' ? opts : opts.start;
-    const totalRecordCount = typeof opts === 'object' && new Number(opts.total) >= 0 ? opts.total : 30;
-    const pageSize = typeof opts === 'object' && new Number(opts.pageSize) >= 0 ? opts.pageSize : 10;
-    return <FluxCapacitor>{
+    const totalRecordCount = typeof opts === 'object' && Number(opts.total) >= 0 ? opts.total : 30;
+    const pageSize = typeof opts === 'object' && Number(opts.pageSize) >= 0 ? opts.pageSize : 10;
+    return <any>{
       query: new Query()
         .skip(recordStart)
         .withPageSize(pageSize),
@@ -25,10 +15,10 @@ describe('Pager', function() {
       emit: (event: string) => null,
       search
     };
-  };
+  }
 
   it('should be defined', () => {
-    expect(new Pager(<FluxCapacitor>{})).to.be.ok;
+    expect(new Pager(<any>{})).to.be.ok;
   });
 
   it('first step', (done) => {
@@ -182,7 +172,7 @@ describe('Pager', function() {
 
     it('should return no pages', () => {
       expect(new Pager(flux({ start: 0, total: 0 })).finalPage).to.eq(0);
-    })
+    });
   });
 
   describe('pages behaviour', () => {
@@ -299,16 +289,16 @@ describe('Pager', function() {
 
   describe('error states', () => {
     it('should throw error if paging too low', (done) => {
-      new Pager(flux(0, () => { })).prev()
-        .catch(err => {
+      new Pager(flux(0, () => null)).prev()
+        .catch((err) => {
           expect(err.message).to.eq('already on first page');
           done();
         });
     });
 
     it('should throw error if paging too high', (done) => {
-      new Pager(flux(24, () => { })).next()
-        .catch(err => {
+      new Pager(flux(24, () => null)).next()
+        .catch((err) => {
           expect(err.message).to.eq('already on last page');
           done();
         });

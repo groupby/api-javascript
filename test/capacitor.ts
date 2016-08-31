@@ -1,8 +1,6 @@
-/// <reference path="../typings/index.d.ts" />
-
+import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../src/index';
 import { expect } from 'chai';
 import mock = require('xhr-mock');
-import { FluxCapacitor, Results, Events, SelectedValueRefinement, Sort } from '../src/index';
 
 const CUSTOMER_ID = 'services';
 const SEARCH_URL = `http://ecomm.groupbycloud.com/semanticSearch/${CUSTOMER_ID}`;
@@ -186,7 +184,7 @@ describe('FluxCapacitor', function() {
       it('should emit refinements_changed event on refinement', (done) => {
         mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
 
-        flux.on(Events.REFINEMENTS_CHANGED, data => {
+        flux.on(Events.REFINEMENTS_CHANGED, (data) => {
           expect(data.available).to.eq('a');
           expect(data.selected).to.eq('b');
           done();
@@ -198,7 +196,7 @@ describe('FluxCapacitor', function() {
         flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
         mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
 
-        flux.on(Events.REFINEMENTS_CHANGED, data => {
+        flux.on(Events.REFINEMENTS_CHANGED, (data) => {
           expect(data.available).to.eq('a');
           expect(data.selected).to.eq('b');
           done();
@@ -435,7 +433,7 @@ describe('FluxCapacitor', function() {
     it('should emit details event', (done) => {
       mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(DETAILS_RESULT)));
 
-      flux.on(Events.DETAILS, data => {
+      flux.on(Events.DETAILS, (data) => {
         expect(data).to.be.ok;
         done();
       });

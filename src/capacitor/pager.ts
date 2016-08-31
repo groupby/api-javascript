@@ -1,5 +1,5 @@
 import { Results } from '../models/response';
-import { FluxCapacitor, Events } from './index';
+import { Events, FluxCapacitor } from './index';
 
 export class Pager {
   constructor(private flux: FluxCapacitor) { }
@@ -7,13 +7,13 @@ export class Pager {
   next(realign: boolean = false): Promise<Results> {
     return realign ?
       this.jump(Math.min(this.currentPage + 1, this.finalPage)) :
-      this.pageTo(this.step(true), this.hasNext, 'already on last page');
+      this.paginate(true, this.hasNext);
   }
 
   prev(realign: boolean = false): Promise<Results> {
     return realign ?
       this.jump(Math.max(this.currentPage - 1, 0)) :
-      this.pageTo(this.step(false), this.hasPrevious, 'already on first page');
+      this.paginate(false, this.hasPrevious);
   }
 
   last(): Promise<Results> {
@@ -45,6 +45,18 @@ export class Pager {
     return Array.from(Array(Math.min(this.finalPage + 1, limit)).keys()).map(this.transformPages(limit));
   }
 
+  pageFromOffset(offset: number): number {
+    return Math.floor(offset / this.pageSize);
+  }
+
+  get hasNext(): boolean {
+    return this.step(true) < this.totalRecords;
+  }
+
+  get hasPrevious(): boolean {
+    return this.lastStep !== 0;
+  }
+
   private transformPages(limit: number): (value: number) => number {
     const border = Math.floor(limit / 2);
     return (value: number): number => {
@@ -60,15 +72,7 @@ export class Pager {
         // pages end at last page
         return value + this.currentPage - border;
       }
-    }
-  }
-
-  get hasNext(): boolean {
-    return this.step(true) < this.totalRecords;
-  }
-
-  get hasPrevious(): boolean {
-    return this.lastStep !== 0;
+    };
   }
 
   private paginate(forward: boolean, predicate: boolean): Promise<Results | void> {
@@ -102,10 +106,6 @@ export class Pager {
 
   private get totalRecords(): number {
     return this.flux.results ? this.flux.results.totalRecordCount : -1;
-  }
-
-  pageFromOffset(offset: number): number {
-    return Math.floor(offset / this.pageSize);
   }
 
 }

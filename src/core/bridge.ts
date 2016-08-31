@@ -1,17 +1,12 @@
-import axios = require('axios');
 import { Request } from '../models/request';
-import { Results, Record } from '../models/response';
+import { Record, Results } from '../models/response';
 import { Query } from './query';
+import axios = require('axios');
 
 const SEARCH = '/search';
 const REFINEMENTS = '/refinements';
 const REFINEMENT_SEARCH = '/refinement';
 const CLUSTER = '/cluster';
-const BIASING_DEFAULTS = {
-  biases: [],
-  bringToTop: [],
-  augmentBiases: false
-};
 
 export interface RawRecord extends Record {
   _id: string;
@@ -21,10 +16,9 @@ export interface RawRecord extends Record {
 }
 
 export abstract class AbstractBridge {
-  protected bridgeUrl: string;
-  headers: any = {};
 
-  protected abstract augmentRequest(request: any): any;
+  headers: any = {};
+  protected bridgeUrl: string;
 
   search(query: string | Query | Request, callback: (err?: Error, res?: Results) => void = undefined): Promise<Results> {
     let [request, queryParams] = this.extractRequest(query);
@@ -32,27 +26,30 @@ export abstract class AbstractBridge {
 
     const response = this.fireRequest(this.bridgeUrl, request, queryParams);
     if (callback) {
-      response.then(res => callback(undefined, res))
-        .catch(err => callback(err));
+      response.then((res) => callback(undefined, res))
+        .catch((err) => callback(err));
     } else {
       return response;
     }
   }
 
+  protected abstract augmentRequest(request: any): any;
+
   private extractRequest(query: any): [Request, any] {
     switch (typeof query) {
       case 'string': return [new Query(<string>query).build(), {}];
-      case 'object':
-        if (query instanceof Query) return [query.build(), query.queryParams];
-        else return [query, {}];
+      case 'object': return query instanceof Query ? [query.build(), query.queryParams] : [query, {}];
       default: return [null, null];
     }
   }
 
   private generateError(error: string, callback: (err: Error) => void): Promise<any> {
     const err = new Error(error);
-    if (callback) callback(err);
-    else return Promise.reject(err);
+    if (callback) {
+      callback(err);
+    } else {
+      return Promise.reject(err);
+    }
   }
 
   private fireRequest(url: string, body: Request | any, queryParams: any): Axios.IPromise<Results> {
@@ -66,13 +63,15 @@ export abstract class AbstractBridge {
       timeout: 1500
     };
     return axios(options)
-      .then(res => res.data)
-      .then(res => res.records ? Object.assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
+      .then((res) => res.data)
+      .then((res) => res.records ? Object.assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
   }
 
   private convertRecordFields(record: RawRecord): Record | RawRecord {
     const converted = Object.assign(record, { id: record._id, url: record._u, title: record._t });
-    delete converted._id, converted._u, converted._t;
+    delete converted._id;
+    delete converted._u;
+    delete converted._t;
 
     if (record._snippet) {
       converted.snippet = record._snippet;

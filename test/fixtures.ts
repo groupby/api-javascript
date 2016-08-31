@@ -1,4 +1,4 @@
-export let ComplexRequest = {
+export let COMPLEX_REQUEST = {
   query: 'complex',
   sort: [
     { field: 'price', order: 'Ascending' },
@@ -34,9 +34,9 @@ export let ComplexRequest = {
   },
   disableAutocorrection: true,
   returnBinary: false
-}
+};
 
-export let BulkRequest = {
+export let BULK_REQUEST = {
   query: 'bulk',
   sort: [
     { field: 'price', order: 'Ascending' },
@@ -52,9 +52,9 @@ export let BulkRequest = {
   excludedNavigations: ['_meta', 'originalPrice'],
   wildcardSearchEnabled: false,
   pruneRefinements: true
-}
+};
 
-export let CombinedRefinements = [
+export let COMBINED_REFINEMENTS = [
   {
     navigationName: 'size',
     type: 'Range',
@@ -116,12 +116,12 @@ export let CombinedRefinements = [
     low: 89,
     high: 100
   }
-]
+];
 
-export let CustomParamsFromString = [
+export let CUSTOM_PARAMS_FROM_STRING = [
   { key: 'banner', value: 'nike_landing' },
   { key: 'style', value: 'branded' },
   { key: 'defaults', value: '' },
   { key: 'others', value: '' },
   { key: 'something', value: 'as_well' }
-]
+];

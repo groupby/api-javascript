@@ -1,11 +1,11 @@
+import { BrowserBridge } from '../core/bridge';
+import { Query, QueryConfiguration } from '../core/query';
+import { SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
+import { Navigation, Results } from '../models/response';
+import { Pager } from './pager';
 import EventEmitter = require('eventemitter3');
 import filterObject = require('filter-object');
 import deepEqual = require('deep-equal');
-import { Query, QueryConfiguration } from '../core/query';
-import { BrowserBridge } from '../core/bridge';
-import { Results, Navigation } from '../models/response';
-import { Pager } from './pager';
-import { SelectedValueRefinement, SelectedRangeRefinement, Sort } from '../models/request';
 
 export namespace Events {
   export const SEARCH = 'search';
@@ -28,11 +28,12 @@ export interface FluxConfiguration extends QueryConfiguration {
 }
 
 export class FluxCapacitor extends EventEmitter {
-  private originalQuery: string = '';
-  private originalRefinements: any[] = [];
+
   query: Query;
   bridge: BrowserBridge;
   results: Results;
+  private originalQuery: string = '';
+  private originalRefinements: any[] = [];
 
   constructor(endpoint: string, config: FluxConfiguration & any = {}, mask?: string) {
     super();
@@ -59,12 +60,6 @@ export class FluxCapacitor extends EventEmitter {
       });
   }
 
-  private testForChange(query: string, refinements: any[]) {
-    if (query !== this.originalQuery || !deepEqual(refinements, this.originalRefinements)) {
-      this.emit(Events.REQUEST_CHANGED);
-    }
-  }
-
   rewrite(query: string, config: RewriteConfig = {}): Promise<string> {
     let search;
     if (config.skipSearch) {
@@ -82,7 +77,7 @@ export class FluxCapacitor extends EventEmitter {
 
   reset(query: string = this.originalQuery): Promise<string> {
     this.resetRecall();
-    this.emit(Events.PAGE_CHANGED, { pageIndex: 0, finalPage: this.page.finalPage })
+    this.emit(Events.PAGE_CHANGED, { pageIndex: 0, finalPage: this.page.finalPage });
     return this.search(query)
       .then((res) => this.emit(Events.RESET, res))
       .then(() => query);
@@ -119,15 +114,21 @@ export class FluxCapacitor extends EventEmitter {
     return this.bridge.search(new Query()
       .withConfiguration(filterObject(this.query.raw, '{area,collection,language,fields}'))
       .withSelectedRefinements({ navigationName: 'id', type: 'Value', value: id }))
-      .then(res => {
+      .then((res) => {
         if (res.records.length) this.emit(Events.DETAILS, res.records[0]);
         return res;
       });
   }
 
   switchCollection(collection: string): Promise<Results> {
-    this.query.withConfiguration({ collection })
+    this.query.withConfiguration({ collection });
     return this.search();
+  }
+
+  private testForChange(query: string, refinements: any[]) {
+    if (query !== this.originalQuery || !deepEqual(refinements, this.originalRefinements)) {
+      this.emit(Events.REQUEST_CHANGED);
+    }
   }
 
   private get filteredRequest() {
@@ -153,8 +154,8 @@ export class FluxCapacitor extends EventEmitter {
 }
 
 export interface NavigationInfo {
-  available: Navigation[],
-  selected: Navigation[]
+  available: Navigation[];
+  selected: Navigation[];
 }
 
 export interface RefinementConfig {
