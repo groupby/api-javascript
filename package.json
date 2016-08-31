@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "gulp build && karma start",
-    "ci": "gulp clean:typings && gulp typings:install && karma start --singleRun=false"
+    "ci": "gulp clean:typings && gulp typings:install && karma start --singleRun=false",
+    "docs": "gulp clean:typings && gulp typings:install && gulp docs"
   },
   "repository": {
     "type": "git",
