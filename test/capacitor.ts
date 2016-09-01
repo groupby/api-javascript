@@ -47,6 +47,11 @@ describe('FluxCapacitor', function() {
     expect(flux.bridge.headers).to.eq(headers);
   });
 
+  it('should set HTTPS on bridge', () => {
+    flux = new FluxCapacitor(CUSTOMER_ID, { https: true });
+    expect(flux.bridge.baseUrl).to.eq('https://services-cors.groupbycloud.com:443/api/v1');
+  });
+
   describe('search behaviour', () => {
     it('should make a search request', (done) => {
       mock.post(SEARCH_URL, (req, res) => {

@@ -18,6 +18,7 @@ export interface RawRecord extends Record {
 export abstract class AbstractBridge {
 
   headers: any = {};
+  baseUrl: string;
   protected bridgeUrl: string;
 
   search(query: string | Query | Request, callback: (err?: Error, res?: Results) => void = undefined): Promise<Results> {
@@ -90,11 +91,11 @@ export class CloudBridge extends AbstractBridge {
 
   constructor(private clientKey: string, customerId: string) {
     super();
-    const baseUrl = `https://${customerId}.groupbycloud.com:443/api/v1`;
-    this.bridgeUrl = baseUrl + SEARCH;
-    this.bridgeRefinementsUrl = baseUrl + REFINEMENTS;
-    this.bridgeRefinementsSearchUrl = baseUrl + REFINEMENT_SEARCH;
-    this.bridgeClusterUrl = baseUrl + CLUSTER;
+    this.baseUrl = `https://${customerId}.groupbycloud.com:443/api/v1`;
+    this.bridgeUrl = this.baseUrl + SEARCH;
+    this.bridgeRefinementsUrl = this.baseUrl + REFINEMENTS;
+    this.bridgeRefinementsSearchUrl = this.baseUrl + REFINEMENT_SEARCH;
+    this.bridgeClusterUrl = this.baseUrl + CLUSTER;
   }
 
   protected augmentRequest(request: any): any {
@@ -107,8 +108,8 @@ export class BrowserBridge extends AbstractBridge {
     super();
     const scheme = https ? 'https' : 'http';
     const port = https ? ':443' : '';
-    const baseUrl = `${scheme}://${customerId}-cors.groupbycloud.com${port}/api/v1`;
-    this.bridgeUrl = baseUrl + SEARCH;
+    this.baseUrl = `${scheme}://${customerId}-cors.groupbycloud.com${port}/api/v1`;
+    this.bridgeUrl = this.baseUrl + SEARCH;
   }
 
   protected augmentRequest(request: any): any {
