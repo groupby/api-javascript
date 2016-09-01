@@ -103,9 +103,11 @@ export class CloudBridge extends AbstractBridge {
 }
 
 export class BrowserBridge extends AbstractBridge {
-  constructor(customerId: string) {
+  constructor(customerId: string, https: boolean = false) {
     super();
-    const baseUrl = `http://${customerId}-cors.groupbycloud.com/api/v1`;
+    const scheme = https ? 'https' : 'http';
+    const port = https ? ':443' : '';
+    const baseUrl = `${scheme}://${customerId}-cors.groupbycloud.com${port}/api/v1`;
     this.bridgeUrl = baseUrl + SEARCH;
   }
 
