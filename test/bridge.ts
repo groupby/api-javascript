@@ -113,33 +113,35 @@ describe('Bridge', () => {
     });
   });
 
-  it('should send requests to the CORS supported endpoint', (done) => {
-    mock.post(`http://ecomm.groupbycloud.com/semanticSearch/${CUSTOMER_ID}`, (req, res) => {
-      return res.status(200).body('success');
+  describe('BrowserBridge', () => {
+    it('should send requests to the CORS supported endpoint', (done) => {
+      mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
+        return res.status(200).body('success');
+      });
+
+      query = new Query('shoes');
+
+      new BrowserBridge(CUSTOMER_ID)
+        .search(query, (err, results) => {
+          expect(results).to.eq('success');
+          done();
+        });
     });
 
-    query = new Query('shoes');
-
-    new BrowserBridge(CUSTOMER_ID)
-      .search(query, (err, results) => {
-        expect(results).to.eq('success');
-        done();
+    it('should include headers', (done) => {
+      const headers = { a: 'b' };
+      mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
+        expect(req['_headers']).to.include.keys('a');
+        return res.status(200).body('success');
       });
-  });
 
-  it('should include headers', (done) => {
-    const headers = { a: 'b' };
-    mock.post(`http://ecomm.groupbycloud.com/semanticSearch/${CUSTOMER_ID}`, (req, res) => {
-      expect(req['_headers']).to.include.keys('a');
-      return res.status(200).body('success');
+      query = new Query('shoes');
+
+      Object.assign(new BrowserBridge(CUSTOMER_ID), { headers })
+        .search(query, (err, results) => {
+          expect(results).to.eq('success');
+          done();
+        });
     });
-
-    query = new Query('shoes');
-
-    Object.assign(new BrowserBridge(CUSTOMER_ID), { headers })
-      .search(query, (err, results) => {
-        expect(results).to.eq('success');
-        done();
-      });
   });
 });

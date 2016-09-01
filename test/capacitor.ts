@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import mock = require('xhr-mock');
 
 const CUSTOMER_ID = 'services';
-const SEARCH_URL = `http://ecomm.groupbycloud.com/semanticSearch/${CUSTOMER_ID}`;
+const SEARCH_URL = `http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`;
 const SELECTED_REFINEMENT: SelectedValueRefinement = { type: 'Value', navigationName: 'brand', value: 'DeWalt' };
 const REFINEMENT_RESULT = { availableNavigation: 'a', selectedNavigation: 'b' };
 const DETAILS_RESULT = { records: [{}] };

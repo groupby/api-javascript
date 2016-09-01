@@ -105,7 +105,8 @@ export class CloudBridge extends AbstractBridge {
 export class BrowserBridge extends AbstractBridge {
   constructor(customerId: string) {
     super();
-    this.bridgeUrl = `http://ecomm.groupbycloud.com/semanticSearch/${customerId}`;
+    const baseUrl = `http://${customerId}-cors.groupbycloud.com/api/v1`;
+    this.bridgeUrl = baseUrl + SEARCH;
   }
 
   protected augmentRequest(request: any): any {
