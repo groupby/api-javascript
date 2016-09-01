@@ -37,8 +37,8 @@ describe('FluxCapacitor', function() {
   });
 
   it('should strip fields from configuration', () => {
-    flux = new FluxCapacitor(CUSTOMER_ID, { a: 'something', b: 'Ascending', headers: { c: 'd' } });
-    expect(flux.query.raw).to.not.contain.keys('headers');
+    flux = new FluxCapacitor(CUSTOMER_ID, { a: 'something', b: 'Ascending', headers: { c: 'd' }, https: true });
+    expect(flux.query.raw).to.not.contain.keys('headers', 'https');
   });
 
   it('should set headers on bridge', () => {
