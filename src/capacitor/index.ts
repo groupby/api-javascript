@@ -25,6 +25,7 @@ export type FluxRefinement = SelectedValueRefinement | SelectedRangeRefinement;
 
 export interface FluxConfiguration extends QueryConfiguration {
   headers: any;
+  https: boolean;
 }
 
 export class FluxCapacitor extends EventEmitter {
@@ -37,9 +38,9 @@ export class FluxCapacitor extends EventEmitter {
 
   constructor(endpoint: string, config: FluxConfiguration & any = {}, mask?: string) {
     super();
-    this.bridge = new BrowserBridge(endpoint);
+    this.bridge = new BrowserBridge(endpoint, config.https);
     if (config.headers) this.bridge.headers = config.headers;
-    this.query = new Query().withConfiguration(filterObject(config, ['*', '!{headers}']), mask);
+    this.query = new Query().withConfiguration(filterObject(config, ['*', '!{headers,https}']), mask);
   }
 
   get page() {

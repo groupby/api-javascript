@@ -128,6 +128,17 @@ describe('Bridge', () => {
         });
     });
 
+    it('should send HTTPS request', (done) => {
+      mock.post(`https://${CUSTOMER_ID}-cors.groupbycloud.com:443/api/v1/search`, (req, res) => {
+        return res.status(200).body('success');
+      });
+
+      query = new Query('shoes');
+
+      new BrowserBridge(CUSTOMER_ID)
+        .search(query, (err, results) => done());
+    });
+
     it('should include headers', (done) => {
       const headers = { a: 'b' };
       mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
