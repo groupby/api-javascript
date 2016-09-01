@@ -105,7 +105,7 @@ export class CloudBridge extends AbstractBridge {
 export class BrowserBridge extends AbstractBridge {
   constructor(customerId: string) {
     super();
-    const baseUrl = `http://${customerId}.groupbycloud.com/api/v1`;
+    const baseUrl = `http://${customerId}-cors.groupbycloud.com/api/v1`;
     this.bridgeUrl = baseUrl + SEARCH;
   }
 

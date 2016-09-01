@@ -115,7 +115,7 @@ describe('Bridge', () => {
 
   describe('BrowserBridge', () => {
     it('should send requests to the CORS supported endpoint', (done) => {
-      mock.post(`http://${CUSTOMER_ID}.groupbycloud.com/api/v1/search`, (req, res) => {
+      mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
         return res.status(200).body('success');
       });
 
@@ -130,7 +130,7 @@ describe('Bridge', () => {
 
     it('should include headers', (done) => {
       const headers = { a: 'b' };
-      mock.post(`http://${CUSTOMER_ID}.groupbycloud.com/api/v1/search`, (req, res) => {
+      mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
         expect(req['_headers']).to.include.keys('a');
         return res.status(200).body('success');
       });
