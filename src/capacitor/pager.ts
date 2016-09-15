@@ -1,5 +1,6 @@
 import { Results } from '../models/response';
 import { Events, FluxCapacitor } from './index';
+import range = require('lodash.range');
 
 export class Pager {
   constructor(private flux: FluxCapacitor) { }
@@ -42,7 +43,8 @@ export class Pager {
   }
 
   pageNumbers(limit: number = 5): number[] {
-    return Array.from(Array(Math.min(this.finalPage + 1, limit)).keys()).map(this.transformPages(limit));
+    return range(0, Math.min(this.finalPage + 1, limit))
+      .map(this.transformPages(limit));
   }
 
   pageFromOffset(offset: number): number {

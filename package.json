@@ -2,7 +2,7 @@
   "name": "groupby-api",
   "version": "1.0.63",
   "description": "Client for the GroupBy Searchandiser API.",
-  "typings": "dist/index.d.ts",
+  "typings": "dist/src/index.d.ts",
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -11,7 +11,8 @@
     "postinstall": "[ ! -d src ] || typings install",
     "test": "karma start",
     "ci": "karma start --singleRun=false",
-    "docs": "rimraf docs && typedoc --excludeExternals --includeDeclarations --includes typings/* --mode file --out docs src",
+    "typings:copy": "rimraf all_typings && cp -R typings all_typings && cp custom_typings/* all_typings",
+    "docs": "rimraf docs && npm run typings:copy && typedoc --excludeExternals --includeDeclarations --includes typings/* --mode file --out docs src",
     "build": "rimraf dist && tsc"
   },
   "pre-commit": [
@@ -58,12 +59,16 @@
     "xhr-mock": "^1.6.0"
   },
   "dependencies": {
+    "array.prototype.find": "^2.0.0",
+    "array.prototype.findindex": "^2.0.0",
     "axios": "^0.12.0",
     "clone": "^1.0.2",
     "deep-equal": "^1.0.1",
-    "es6-shim": "^0.35.1",
+    "es6-object-assign": "^1.0.3",
+    "es6-promise": "^3.3.1",
     "eventemitter3": "^1.2.0",
     "filter-object": "^2.1.0",
+    "lodash.range": "^3.2.0",
     "qs": "^6.1.0"
   }
 }

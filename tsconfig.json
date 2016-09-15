@@ -6,13 +6,11 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "declaration": true,
-    "rootDir": "src",
     "outDir": "dist"
   },
   "exclude": [
     "node_modules",
-    "dist",
-    "test"
+    "dist"
   ],
   "atom": {
     "rewriteTsconfig": true,

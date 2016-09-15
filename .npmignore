@@ -3,6 +3,7 @@ coverage/
 test/
 typings/
 custom_typings/
+all_typings/
 src/
 
 *.json
@@ -11,3 +12,4 @@ src/
 *.config.js
 
 !dist/
+dist/test
