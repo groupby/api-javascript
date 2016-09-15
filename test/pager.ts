@@ -21,7 +21,23 @@ describe('Pager', function() {
     expect(new Pager(<any>{})).to.be.ok;
   });
 
-  it('first step', (done) => {
+  it('should be defined with defaults', () => {
+    const mockFlux = flux({ start: 0, total: 40, pageSize: 5 }, function() { });
+    const pager = new Pager(mockFlux);
+
+    expect(pager.currentPage).to.eq(1);
+    expect(pager.previousPage).to.eq(null);
+    expect(pager.nextPage).to.eq(2);
+    expect(pager.firstPage).to.eq(1);
+    expect(pager.finalPage).to.eq(8);
+    expect(pager.fromResult).to.eq(1);
+    expect(pager.toResult).to.eq(5);
+    expect(pager.totalRecords).to.eq(40);
+    expect(pager.pageNumbers()).to.eql([1, 2, 3, 4, 5]);
+    expect(mockFlux.query.build().pageSize).to.eq(5);
+  });
+
+  it('first page change', (done) => {
     const mockFlux = flux(0, function() {
       expect(this.query.raw.skip).to.eq(10);
       done();
@@ -30,28 +46,49 @@ describe('Pager', function() {
     new Pager(mockFlux).next();
   });
 
-  it('should step forward', (done) => {
-    new Pager(flux(10, function() {
+  it('should move skip forward', () => {
+    const pager = new Pager(flux(11, function() {
       expect(this.query.raw.skip).to.eq(20);
-      done();
-    })).next();
+    }));
+    pager.next();
+
+    expect(pager.currentPage).to.eq(3);
+    expect(pager.previousPage).to.eq(2);
+    expect(pager.nextPage).to.eq(null);
+    expect(pager.firstPage).to.eq(1);
+    expect(pager.finalPage).to.eq(3);
+    expect(pager.fromResult).to.eq(21);
+    expect(pager.toResult).to.eq(30);
+    expect(pager.totalRecords).to.eq(30);
+    expect(pager.pageNumbers()).to.eql([1, 2, 3]);
   });
 
-  it('should step backward', (done) => {
-    new Pager(flux(20, function() {
-      expect(this.query.raw.skip).to.eq(10);
-      done();
-    })).prev();
-  });
-
-  it('should step to 0 at the lowest', (done) => {
-    new Pager(flux(2, function() {
+  it('should move skip backward', () => {
+    const pager = new Pager(flux(11, function() {
       expect(this.query.raw.skip).to.eq(0);
-      done();
-    })).prev();
+    }));
+    pager.prev();
+
+    expect(pager.currentPage).to.eq(1);
+    expect(pager.previousPage).to.eq(null);
+    expect(pager.nextPage).to.eq(2);
+    expect(pager.firstPage).to.eq(1);
+    expect(pager.finalPage).to.eq(3);
+    expect(pager.fromResult).to.eq(1);
+    expect(pager.toResult).to.eq(10);
+    expect(pager.totalRecords).to.eq(30);
+    expect(pager.pageNumbers()).to.eql([1, 2, 3]);
   });
 
-  it('should reset the pagination to 0', (done) => {
+  it('should not change skip when cannot page backward', () => {
+    const mockFlux = flux(2, function() { });
+    const pager = new Pager(mockFlux);
+    expect(mockFlux.query.raw.skip).to.eq(2);
+    pager.prev();
+    expect(mockFlux.query.raw.skip).to.eq(2);
+  });
+
+  it('should reset the skip to 0', (done) => {
     new Pager(flux(2, function() {
       expect(this.query.raw.skip).to.eq(0);
       done();
@@ -59,89 +96,107 @@ describe('Pager', function() {
   });
 
   it('should step to the last page', (done) => {
-    new Pager(flux({ start: 30, total: 45 }, function() {
+    new Pager(flux({ start: 31, total: 45 }, function() {
       expect(this.query.raw.skip).to.eq(40);
       done();
     })).next();
   });
 
   it('should step down from last page', (done) => {
-    new Pager(flux({ start: 40, total: 45 }, function() {
+    new Pager(flux({ start: 41, total: 45 }, function() {
       expect(this.query.raw.skip).to.eq(30);
       done();
     })).prev();
   });
 
   it('should skip to the last page', (done) => {
-    new Pager(flux({ start: 0, total: 45 }, function() {
+    new Pager(flux({ start: 1, total: 45 }, function() {
       expect(this.query.raw.skip).to.eq(40);
       done();
     })).last();
   });
 
   describe('realigned paging behaviour', () => {
-    it('should not realign the pages on page next', () => {
-      new Pager(flux({ start: 13, total: 45 }, function() {
-        expect(this.query.raw.skip).to.eq(23);
-      })).next();
+    // it('should not realign the pages on page next', () => {
+    //   new Pager(flux({ start: 13, total: 45 }, function() {
+    //     expect(this.query.raw.skip).to.eq(23);
+    //   })).next();
+    // });
+    //
+    //   it('should realign the pages on page next', () => {
+    //     new Pager(flux({ start: 13, total: 45 }, function() {
+    //       expect(this.query.raw.skip).to.eq(20);
+    //     })).next(true);
+    //   });
+    //
+    //   it('should not skip past last page', () => {
+    //     new Pager(flux({ start: 43, total: 45 }, function() {
+    //       expect(this.query.raw.skip).to.eq(40);
+    //     })).next(true);
+    //   });
+    //
+    //   it('should not realign the pages on page previous', () => {
+    //     new Pager(flux({ start: 23, total: 45 }, function() {
+    //       expect(this.query.raw.skip).to.eq(13);
+    //     })).prev();
+    //   });
+    //
+    //   it('should realign the pages on page previous', () => {
+    //     new Pager(flux({ start: 23, total: 45 }, function() {
+    //       expect(this.query.raw.skip).to.eq(10);
+    //     })).prev(true);
+    //   });
+    //
+    //   it('should not realign to a negative value', () => {
+    //     new Pager(flux({ start: 3, total: 45 }, function() {
+    //       expect(this.query.raw.skip).to.eq(0);
+    //     })).prev(true);
+    //   });
+  });
+
+  describe('pageExists()', () => {
+    it('should return true', () => {
+      const pager = new Pager(flux({ start: 10, total: 200 }, function() { }));
+      expect(pager.pageExists(20)).to.be.true;
     });
 
-    it('should realign the pages on page next', () => {
-      new Pager(flux({ start: 13, total: 45 }, function() {
-        expect(this.query.raw.skip).to.eq(20);
-      })).next(true);
-    });
-
-    it('should not skip past last page', () => {
-      new Pager(flux({ start: 43, total: 45 }, function() {
-        expect(this.query.raw.skip).to.eq(40);
-      })).next(true);
-    });
-
-    it('should not realign the pages on page previous', () => {
-      new Pager(flux({ start: 23, total: 45 }, function() {
-        expect(this.query.raw.skip).to.eq(13);
-      })).prev();
-    });
-
-    it('should realign the pages on page previous', () => {
-      new Pager(flux({ start: 23, total: 45 }, function() {
-        expect(this.query.raw.skip).to.eq(10);
-      })).prev(true);
-    });
-
-    it('should not realign to a negative value', () => {
-      new Pager(flux({ start: 3, total: 45 }, function() {
-        expect(this.query.raw.skip).to.eq(0);
-      })).prev(true);
+    it('should return false', () => {
+      const pager = new Pager(flux({ start: 10, total: 200 }, function() { }));
+      expect(pager.pageExists(21)).to.be.false;
     });
   });
 
-  describe('jump behaviour', () => {
-    it('should jump to the first page', (done) => {
-      new Pager(flux({ start: 0, total: 200 }, function() {
+  describe('switchPage behaviour', () => {
+    it('should switchPage to the first page', () => {
+      const pager = new Pager(flux({ start: 10, total: 200 }, function() {
         expect(this.query.raw.skip).to.eq(0);
-        done();
-      })).jump(0);
+      }));
+      pager.switchPage(1);
+      expect(pager.currentPage).to.eq(1);
+      expect(pager.fromResult).to.eq(1);
+      expect(pager.toResult).to.eq(10);
     });
 
-    it('should jump to a page', (done) => {
-      new Pager(flux({ start: 0, total: 200 }, function() {
-        expect(this.query.raw.skip).to.eq(80);
-        done();
-      })).jump(8);
+    it('should switchPage to a page', () => {
+      const pager = new Pager(flux({ start: 1, total: 200 }, function() {
+        expect(this.query.raw.skip).to.eq(70);
+      }));
+      pager.switchPage(8);
+      expect(pager.currentPage).to.eq(8);
+      expect(pager.fromResult).to.eq(71);
+      expect(pager.toResult).to.eq(80);
     });
 
     describe('error states', () => {
-      it('should not jump past the results', (done) => {
-        new Pager(flux({ start: 0, total: 30 }))
-          .jump(8)
+      it('should not switchPage past the results', (done) => {
+        new Pager(flux({ start: 1, total: 30 }))
+          .switchPage(8)
           .catch(() => done());
       });
 
-      it('should not jump to lower than the first page', (done) => {
-        new Pager(flux(0))
-          .jump(-2)
+      it('should not switchPage to lower than the first page', (done) => {
+        new Pager(flux(1))
+          .switchPage(-2)
           .catch(() => done());
       });
     });
@@ -149,35 +204,35 @@ describe('Pager', function() {
 
   describe('current page behaviour', () => {
     it('should return the current page', () => {
-      expect(new Pager(flux(0)).currentPage).to.eq(0);
+      expect(new Pager(flux(1)).currentPage).to.eq(1);
     });
 
     it('should return from the middle', () => {
-      expect(new Pager(flux(45)).currentPage).to.eq(4);
+      expect(new Pager(flux(45)).currentPage).to.eq(5);
     });
 
     it('should change based on pageSize', () => {
-      expect(new Pager(flux({ start: 36, pageSize: 12 })).currentPage).to.eq(3);
+      expect(new Pager(flux({ start: 36, pageSize: 12 })).currentPage).to.eq(4);
     });
   });
 
   describe('total pages behaviour', () => {
     it('should return the total number of pages', () => {
-      expect(new Pager(flux({ start: 0, total: 457 })).finalPage).to.eq(45);
+      expect(new Pager(flux({ start: 1, total: 457 })).finalPage).to.eq(46);
     });
 
     it('should correctly cut off the last page', () => {
-      expect(new Pager(flux({ start: 0, total: 300 })).finalPage).to.eq(29);
+      expect(new Pager(flux({ start: 1, total: 300 })).finalPage).to.eq(30);
     });
 
-    it('should return no pages', () => {
-      expect(new Pager(flux({ start: 0, total: 0 })).finalPage).to.eq(0);
+    it('should return one page when no results', () => {
+      expect(new Pager(flux({ start: 1, total: 0 })).finalPage).to.eq(1);
     });
   });
 
   describe('pages behaviour', () => {
     it('should return an array of beginning at 1', () => {
-      expect(new Pager(flux({ start: 0, total: 100 })).pageNumbers()).to.eql([1, 2, 3, 4, 5]);
+      expect(new Pager(flux({ start: 1, total: 100 })).pageNumbers()).to.eql([1, 2, 3, 4, 5]);
     });
 
     it('should still begin at 1', () => {
@@ -185,11 +240,11 @@ describe('Pager', function() {
     });
 
     it('should start shifting the page range up', () => {
-      expect(new Pager(flux({ start: 30, total: 100 })).pageNumbers()).to.eql([2, 3, 4, 5, 6]);
+      expect(new Pager(flux({ start: 31, total: 100 })).pageNumbers()).to.eql([2, 3, 4, 5, 6]);
     });
 
     it('should return an array of pages', () => {
-      expect(new Pager(flux({ start: 50, total: 100 })).pageNumbers()).to.eql([4, 5, 6, 7, 8]);
+      expect(new Pager(flux({ start: 51, total: 100 })).pageNumbers()).to.eql([4, 5, 6, 7, 8]);
     });
 
     it('should return array ending at 10', () => {
@@ -201,55 +256,55 @@ describe('Pager', function() {
     });
 
     it('should start shifting the page range down', () => {
-      expect(new Pager(flux({ start: 70, total: 100 })).pageNumbers()).to.eql([6, 7, 8, 9, 10]);
+      expect(new Pager(flux({ start: 69, total: 100 })).pageNumbers()).to.eql([5, 6, 7, 8, 9]);
     });
 
     it('should handle limit higher than available pages', () => {
-      const pager = new Pager(flux({ start: 132, total: 144, pageSize: 12 }));
-      expect(pager.pageNumbers(13)).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+      expect(new Pager(flux({ start: 132, total: 144, pageSize: 12 }))
+        .pageNumbers(13)).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
     });
 
     it('should show smaller ranges', () => {
-      expect(new Pager(flux({ start: 0, total: 47 })).pageNumbers()).to.eql([1, 2, 3, 4, 5]);
-      expect(new Pager(flux({ start: 0, total: 33 })).pageNumbers()).to.eql([1, 2, 3, 4]);
-      expect(new Pager(flux({ start: 0, total: 25 })).pageNumbers()).to.eql([1, 2, 3]);
-      expect(new Pager(flux({ start: 0, total: 18 })).pageNumbers()).to.eql([1, 2]);
-      expect(new Pager(flux({ start: 0, total: 7 })).pageNumbers()).to.eql([1]);
+      expect(new Pager(flux({ start: 1, total: 47 })).pageNumbers()).to.eql([1, 2, 3, 4, 5]);
+      expect(new Pager(flux({ start: 1, total: 33 })).pageNumbers()).to.eql([1, 2, 3, 4]);
+      expect(new Pager(flux({ start: 1, total: 25 })).pageNumbers()).to.eql([1, 2, 3]);
+      expect(new Pager(flux({ start: 1, total: 18 })).pageNumbers()).to.eql([1, 2]);
+      expect(new Pager(flux({ start: 1, total: 7 })).pageNumbers()).to.eql([1]);
     });
   });
 
   it('should allow next', () => {
-    expect(new Pager(flux({ start: 0, total: 45 })).hasNext).to.be.true;
+    expect(new Pager(flux({ start: 1, total: 45 })).nextPage).to.not.be.null;
   });
 
   it('should not allow next', () => {
-    expect(new Pager(flux({ start: 43, total: 45 })).hasNext).to.be.false;
+    expect(new Pager(flux({ start: 43, total: 45 })).nextPage).to.be.null;
   });
 
   it('should allow previous', () => {
-    expect(new Pager(flux(12)).hasPrevious).to.be.true;
+    expect(new Pager(flux(12)).previousPage).to.not.be.null;
   });
 
   it('should not allow previous', () => {
-    expect(new Pager(flux(0)).hasPrevious).to.be.false;
+    expect(new Pager(flux(1)).previousPage).to.be.null;
   });
 
   describe('event behaviour', () => {
     it('should emit page_changed event on next', (done) => {
-      const mockflux = flux({ start: 0, total: 40 });
+      const mockflux = flux({ start: 1, total: 40 });
       mockflux.emit = (event, data) => {
         expect(event).to.eq(Events.PAGE_CHANGED);
-        expect(data).to.eql({ pageIndex: 1 });
+        expect(data).to.eql({ pageNumber: 2 });
         return done();
       };
       new Pager(mockflux).next();
     });
 
     it('should emit page_changed event on prev', (done) => {
-      const mockflux = flux({ start: 20, total: 40 });
+      const mockflux = flux({ start: 21, total: 40 });
       mockflux.emit = (event, data) => {
         expect(event).to.eq(Events.PAGE_CHANGED);
-        expect(data).to.eql({ pageIndex: 1 });
+        expect(data).to.eql({ pageNumber: 2 });
         return done();
       };
       new Pager(mockflux).prev();
@@ -259,17 +314,17 @@ describe('Pager', function() {
       const mockflux = flux({ start: 12, total: 40 });
       mockflux.emit = (event, data) => {
         expect(event).to.eq(Events.PAGE_CHANGED);
-        expect(data).to.eql({ pageIndex: 0 });
+        expect(data).to.eql({ pageNumber: 1 });
         return done();
       };
       new Pager(mockflux).reset();
     });
 
-    it('should emit page_changed event on reset', (done) => {
-      const mockflux = flux({ start: 0, total: 40 });
+    it('should emit page_changed event on last', (done) => {
+      const mockflux = flux({ start: 1, total: 40 });
       mockflux.emit = (event, data) => {
         expect(event).to.eq(Events.PAGE_CHANGED);
-        expect(data).to.eql({ pageIndex: 3 });
+        expect(data).to.eql({ pageNumber: 4 });
         return done();
       };
       new Pager(mockflux).last();
@@ -278,17 +333,17 @@ describe('Pager', function() {
 
   describe('error states', () => {
     it('should throw error if paging too low', (done) => {
-      new Pager(flux(0, () => null)).prev()
+      new Pager(flux(1, function() { })).switchPage(0)
         .catch((err) => {
-          expect(err.message).to.eq('already on first page');
+          expect(err.message).to.eq('page 0 does not exist');
           done();
         });
     });
 
     it('should throw error if paging too high', (done) => {
-      new Pager(flux(24, () => null)).next()
+      new Pager(flux(1, function() { })).switchPage(100)
         .catch((err) => {
-          expect(err.message).to.eq('already on last page');
+          expect(err.message).to.eq('page 100 does not exist');
           done();
         });
     });

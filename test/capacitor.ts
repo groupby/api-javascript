@@ -143,13 +143,13 @@ describe('FluxCapacitor', function() {
     });
 
     it('should reset paging on refinement', (done) => {
-      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+      flux.query.skip(20);
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(flux.query.build().skip).to.eq(0);
+        done();
+      });
 
-      flux.refine(SELECTED_REFINEMENT)
-        .then(() => {
-          expect(flux.query.build().skip).to.eq(0);
-          done();
-        });
+      flux.refine(SELECTED_REFINEMENT);
     });
 
     it('should skip reset paging on refinement', (done) => {
@@ -162,18 +162,18 @@ describe('FluxCapacitor', function() {
           done();
         });
     });
+  });
 
-    describe('events', () => {
-      it('should emit refinements_changed event on refinement', (done) => {
-        mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
+  describe('events', () => {
+    it('should emit refinements_changed event on refinement', (done) => {
+      mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
 
-        flux.on(Events.REFINEMENTS_CHANGED, (data) => {
-          expect(data.available).to.eq('a');
-          expect(data.selected).to.eq('b');
-          done();
-        });
-        flux.refine(SELECTED_REFINEMENT);
+      flux.on(Events.REFINEMENTS_CHANGED, (data) => {
+        expect(data.available).to.eq('a');
+        expect(data.selected).to.eq('b');
+        done();
       });
+      flux.refine(SELECTED_REFINEMENT);
     });
   });
 
@@ -265,7 +265,7 @@ describe('FluxCapacitor', function() {
   });
 
   describe('resizing behaviour', () => {
-    it('should resize the page and keep offset', (done) => {
+    it('should resize the page and keep skip', (done) => {
       flux.query.skip(20);
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(20);
@@ -282,7 +282,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).pageSize).to.eq(30);
         done();
       });
-      flux.resize(30, 0);
+      flux.resize(30, 1);
     });
   });
 
@@ -377,7 +377,7 @@ describe('FluxCapacitor', function() {
         .withSelectedRefinements(refinement);
       mock.post(SEARCH_URL, (req, res) => {
         const body = JSON.parse(req.body());
-        expect(body.skip).to.not.be.ok;
+        expect(body.skip).to.eq(0);
         expect(body.sort).to.eql([{ field: 'price', order: 'Ascending' }]);
         expect(body.refinements).to.eql([refinement]);
         done();

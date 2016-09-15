@@ -17,7 +17,7 @@ function reporters() {
 module.exports = function(config) {
   config.set({
     basePath: '',
-    frameworks: ['mocha', 'chai', 'source-map-support'],
+    frameworks: ['mocha', 'chai', 'source-map-support', 'sinon'],
     files: ['./karma.entry.ts'],
     preprocessors: {
       './karma.entry.ts': ['webpack']
