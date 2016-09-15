@@ -1,18 +1,13 @@
 .*
 coverage/
-build/
 test/
 typings/
 custom_typings/
 src/
-gulpfile.js
 
 *.json
 *.yml
 *.conf.js
+*.config.js
 
-dist/*
-!dist/commonjs
-
-dist/commonjs/**/*.d.ts
-!dist/commonjs/groupby-api.d.ts
+!dist/
