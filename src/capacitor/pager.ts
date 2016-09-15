@@ -82,10 +82,7 @@ export class Pager {
   private pageTo(offset: number, predicate: boolean, error?: string): Promise<Results | void> {
     if (predicate) {
       this.flux.query.skip(offset);
-      this.flux.emit(Events.PAGE_CHANGED, {
-        pageIndex: this.pageFromOffset(offset),
-        finalPage: this.finalPage
-      });
+      this.flux.emit(Events.PAGE_CHANGED, { pageIndex: this.pageFromOffset(offset) });
       return this.flux.search();
     }
     return Promise.reject(new Error(error));

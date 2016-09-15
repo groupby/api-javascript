@@ -238,10 +238,7 @@ describe('Pager', function() {
       const mockflux = flux({ start: 0, total: 40 });
       mockflux.emit = (event, data) => {
         expect(event).to.eq(Events.PAGE_CHANGED);
-        expect(data).to.eql({
-          pageIndex: 1,
-          finalPage: 3
-        });
+        expect(data).to.eql({ pageIndex: 1 });
         return done();
       };
       new Pager(mockflux).next();
@@ -251,10 +248,7 @@ describe('Pager', function() {
       const mockflux = flux({ start: 20, total: 40 });
       mockflux.emit = (event, data) => {
         expect(event).to.eq(Events.PAGE_CHANGED);
-        expect(data).to.eql({
-          pageIndex: 1,
-          finalPage: 3
-        });
+        expect(data).to.eql({ pageIndex: 1 });
         return done();
       };
       new Pager(mockflux).prev();
@@ -264,10 +258,7 @@ describe('Pager', function() {
       const mockflux = flux({ start: 12, total: 40 });
       mockflux.emit = (event, data) => {
         expect(event).to.eq(Events.PAGE_CHANGED);
-        expect(data).to.eql({
-          pageIndex: 0,
-          finalPage: 3
-        });
+        expect(data).to.eql({ pageIndex: 0 });
         return done();
       };
       new Pager(mockflux).reset();
@@ -277,10 +268,7 @@ describe('Pager', function() {
       const mockflux = flux({ start: 0, total: 40 });
       mockflux.emit = (event, data) => {
         expect(event).to.eq(Events.PAGE_CHANGED);
-        expect(data).to.eql({
-          pageIndex: 3,
-          finalPage: 3
-        });
+        expect(data).to.eql({ pageIndex: 3 });
         return done();
       };
       new Pager(mockflux).last();
