@@ -11,5 +11,5 @@ src/
 *.conf.js
 *.config.js
 
-!dist/
-dist/test
+dist/
+!dist/src
