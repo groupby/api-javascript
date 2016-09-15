@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "postinstall": "typings install",
+    "postinstall": "[ -d src ] && typings install",
     "test": "karma start",
     "ci": "karma start --singleRun=false",
     "docs": "rimraf docs && typedoc --mode file --out docs src",
