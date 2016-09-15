@@ -5,6 +5,7 @@ typings/
 custom_typings/
 src/
 
+*.json
 *.yml
 *.conf.js
 *.config.js
