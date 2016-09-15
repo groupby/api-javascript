@@ -11,8 +11,8 @@
     "postinstall": "[ ! -d src ] || typings install",
     "test": "karma start",
     "ci": "karma start --singleRun=false",
-    "docs": "rimraf docs && typedoc --mode file --out docs src",
-    "build": "rimraf dist && mkdir dist && tsc"
+    "docs": "rimraf docs && typedoc --excludeExternals --includeDeclarations --includes typings/* --mode file --out docs src",
+    "build": "rimraf dist && tsc"
   },
   "pre-commit": [
     "test"
