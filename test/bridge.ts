@@ -114,18 +114,37 @@ describe('Bridge', () => {
   });
 
   describe('BrowserBridge', () => {
-    it('should send requests to the CORS supported endpoint', (done) => {
-      mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
-        return res.status(200).body('success');
-      });
-
-      query = new Query('shoes');
-
-      new BrowserBridge(CUSTOMER_ID)
-        .search(query, (err, results) => {
-          expect(results).to.eq('success');
-          done();
+    describe('search()', () => {
+      it('should send requests to the CORS supported search endpoint', (done) => {
+        mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
+          return res.status(200).body('success');
         });
+
+        query = new Query('shoes');
+
+        new BrowserBridge(CUSTOMER_ID)
+          .search(query, (err, results) => {
+            expect(results).to.eq('success');
+            done();
+          });
+      });
+    });
+
+    describe('refinements()', () => {
+      it('should send requests to the CORS supported refinements endpoint', (done) => {
+        mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search/refinements`, (req, res) => {
+          expect(JSON.parse(req['_body'])).to.contain.all.keys('originalQuery', 'navigationName');
+          return res.status(200).body('success');
+        });
+
+        query = new Query('shoes');
+
+        new BrowserBridge(CUSTOMER_ID)
+          .refinements(query, 'brand', (err, results) => {
+            expect(results).to.eq('success');
+            done();
+          });
+      });
     });
 
     it('should send HTTPS request', (done) => {

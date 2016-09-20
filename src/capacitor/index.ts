@@ -1,7 +1,7 @@
 import { BrowserBridge } from '../core/bridge';
 import { Query, QueryConfiguration } from '../core/query';
 import { SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
-import { Navigation, Results } from '../models/response';
+import { Navigation, RefinementResults, Results } from '../models/response';
 import { Pager } from './pager';
 import EventEmitter = require('eventemitter3');
 import filterObject = require('filter-object');
@@ -10,6 +10,7 @@ import deepEqual = require('deep-equal');
 export namespace Events {
   export const SEARCH = 'search';
   export const RESULTS = 'results';
+  export const REFINEMENT_RESULTS = 'refinement_results';
   export const REFINEMENTS_CHANGED = 'refinements_changed';
   export const PAGE_CHANGED = 'page_changed';
   export const REQUEST_CHANGED = 'request_changed';
@@ -57,6 +58,14 @@ export class FluxCapacitor extends EventEmitter {
         this.testForChange(originalQuery, originalRefinements);
         Object.assign(this, { results, originalQuery, originalRefinements });
         this.emit(Events.RESULTS, results);
+        return results;
+      });
+  }
+
+  refinements(navigationName: string): Promise<RefinementResults> {
+    return this.bridge.refinements(this.query, navigationName)
+      .then((results) => {
+        this.emit(Events.REFINEMENT_RESULTS, results);
         return results;
       });
   }

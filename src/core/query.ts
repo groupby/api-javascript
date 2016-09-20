@@ -205,7 +205,8 @@ export class Query {
 
   build(): Request {
     const builtRequest = this.raw;
-    NavigationConverter.convert(this.unprocessedNavigations).forEach((ref) => this.addRefinement(ref, builtRequest.refinements));
+    NavigationConverter.convert(this.unprocessedNavigations)
+      .forEach((ref) => this.addRefinement(ref, builtRequest.refinements));
 
     return this.clearEmptyArrays(builtRequest);
   }
