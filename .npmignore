@@ -3,7 +3,6 @@ coverage/
 test/
 typings/
 custom_typings/
-all_typings/
 src/
 docs/
 
@@ -12,4 +11,5 @@ docs/
 *.conf.js
 *.config.js
 
+dist/karma.entry.ts
 dist/test

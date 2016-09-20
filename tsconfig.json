@@ -1,15 +1,15 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "target": "ES5",
     "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES5",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "declaration": true,
     "outDir": "dist"
   },
   "exclude": [
-    "all_typings",
     "node_modules",
     "dist"
   ],
