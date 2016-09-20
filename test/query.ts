@@ -121,11 +121,10 @@ describe('Query', function() {
         low: 2010,
         high: 2011
       })
-      .withNavigations(
-      {
+      .withNavigations(<any>{
         name: 'rating',
         refinements: [{ type: 'Value', value: '***' }]
-      }, {
+      }, <any>{
         name: 'price',
         refinements: [
           { type: 'Range', low: 31, high: 44 },
@@ -148,7 +147,9 @@ describe('Query', function() {
 
   it('should allow unsetting refinement', () => {
     query.withQuery('refinements')
-      .withSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' }, { type: 'Range', navigationName: 'price', low: 20, high: 40 });
+      .withSelectedRefinements(
+      { type: 'Value', navigationName: 'brand', value: 'DeWalt' },
+      { type: 'Range', navigationName: 'price', low: 20, high: 40 });
     expect(query.build().refinements.length).to.eq(2);
 
     query.withoutSelectedRefinements({ type: 'Value', navigationName: 'brand', value: 'DeWalt' });

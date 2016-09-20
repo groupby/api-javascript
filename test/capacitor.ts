@@ -4,6 +4,7 @@ import mock = require('xhr-mock');
 
 const CUSTOMER_ID = 'services';
 const SEARCH_URL = `http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`;
+const REFINEMENTS_URL = `${SEARCH_URL}/refinements`;
 const SELECTED_REFINEMENT: SelectedValueRefinement = { type: 'Value', navigationName: 'brand', value: 'DeWalt' };
 const REFINEMENT_RESULT = { availableNavigation: 'a', selectedNavigation: 'b' };
 const DETAILS_RESULT = { records: [{}] };
@@ -52,7 +53,7 @@ describe('FluxCapacitor', function() {
     expect(flux.bridge.baseUrl).to.eq('https://services-cors.groupbycloud.com:443/api/v1');
   });
 
-  describe('search behaviour', () => {
+  describe('search()', () => {
     it('should make a search request', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).query).to.eq('testing');
@@ -123,7 +124,25 @@ describe('FluxCapacitor', function() {
     });
   });
 
-  describe('refinement behaviour', () => {
+  describe('refinements()', () => {
+    it('should make a refinements request', (done) => {
+      mock.post(REFINEMENTS_URL, (req, res) => {
+        expect(JSON.parse(req.body()).navigationName).to.eq('brand');
+        done();
+      });
+      flux.refinements('brand');
+    });
+
+    describe('events', () => {
+      it('should emit a refinement_results event', (done) => {
+        mock.post(REFINEMENTS_URL, (req, res) => res.body('ok'));
+        flux.on(Events.REFINEMENT_RESULTS, () => done());
+        flux.refinements('');
+      });
+    });
+  });
+
+  describe('refine()', () => {
     it('should make a request on refinement', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).refinements.length).to.eq(1);
@@ -132,42 +151,10 @@ describe('FluxCapacitor', function() {
       flux.refine(SELECTED_REFINEMENT);
     });
 
-    it('should make a request on un-refinement', (done) => {
-      flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
-      mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).refinements).to.not.be.ok;
-        done();
-      });
-      flux.unrefine(SELECTED_REFINEMENT);
-    });
-
-    it('should un-refine with deep equality', (done) => {
-      flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
-      mock.post(SEARCH_URL, (req, res) => {
-        expect(JSON.parse(req.body()).refinements).to.not.be.ok;
-        done();
-      });
-
-      // intentionally not using SELECTED_REFINEMENT
-      flux.unrefine({ type: 'Value', navigationName: 'brand', value: 'DeWalt' });
-    });
-
     it('should reset paging on refinement', (done) => {
       mock.post(SEARCH_URL, (req, res) => res.body('ok'));
 
       flux.refine(SELECTED_REFINEMENT)
-        .then(() => {
-          expect(flux.query.build().skip).to.eq(0);
-          done();
-        });
-    });
-
-    it('should reset paging on un-refinement', (done) => {
-      flux.query.skip(20);
-      flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
-      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-
-      flux.unrefine(SELECTED_REFINEMENT)
         .then(() => {
           expect(flux.query.build().skip).to.eq(0);
           done();
@@ -196,7 +183,43 @@ describe('FluxCapacitor', function() {
         });
         flux.refine(SELECTED_REFINEMENT);
       });
+    });
+  });
 
+  describe('unrefine()', () => {
+    it('should make a request on un-refinement', (done) => {
+      flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).refinements).to.not.be.ok;
+        done();
+      });
+      flux.unrefine(SELECTED_REFINEMENT);
+    });
+
+    it('should un-refine with deep equality', (done) => {
+      flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).refinements).to.not.be.ok;
+        done();
+      });
+
+      // intentionally not using SELECTED_REFINEMENT
+      flux.unrefine({ type: 'Value', navigationName: 'brand', value: 'DeWalt' });
+    });
+
+    it('should reset paging on un-refinement', (done) => {
+      flux.query.skip(20);
+      flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
+      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+
+      flux.unrefine(SELECTED_REFINEMENT)
+        .then(() => {
+          expect(flux.query.build().skip).to.eq(0);
+          done();
+        });
+    });
+
+    describe('events', () => {
       it('should emit refinements_changed event on un-refinement', (done) => {
         flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
         mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
@@ -398,7 +421,11 @@ describe('FluxCapacitor', function() {
     });
 
     it('should remove all sorts', (done) => {
-      const sorts: Sort[] = [{ field: 'price', order: 'Descending' }, { field: 'other', order: 'Ascending' }, { field: 'type', order: 'Descending' }];
+      const sorts: Sort[] = [
+        { field: 'price', order: 'Descending' },
+        { field: 'other', order: 'Ascending' },
+        { field: 'type', order: 'Descending' }
+      ];
       flux.query.withSorts(...sorts);
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).sort).to.eql([{ field: 'price', order: 'Ascending' }]);

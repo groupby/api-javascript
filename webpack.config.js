@@ -1,6 +1,4 @@
-var pjson = require('./package.json');
-
-var isCi = process.env.NODE_ENV === 'ci';
+const isCi = process.env.NODE_ENV === 'ci';
 
 module.exports = {
   devtool: 'inline-source-map',

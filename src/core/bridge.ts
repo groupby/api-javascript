@@ -1,12 +1,12 @@
 import { Request } from '../models/request';
-import { Record, Results } from '../models/response';
+import { Record, RefinementResults, Results } from '../models/response';
 import { Query } from './query';
 import axios = require('axios');
 
 const SEARCH = '/search';
 const REFINEMENTS = '/refinements';
-const REFINEMENT_SEARCH = '/refinement';
-const CLUSTER = '/cluster';
+
+const INVALID_QUERY_ERROR = 'query was not of a recognised type';
 
 export interface RawRecord extends Record {
   _id: string;
@@ -15,17 +15,41 @@ export interface RawRecord extends Record {
   _snippet?: string;
 }
 
+export interface BridgeCallback {
+  (err?: Error, res?: Results): void;
+}
+
+export type BridgeQuery = string | Query | Request;
+
 export abstract class AbstractBridge {
 
   headers: any = {};
   baseUrl: string;
   protected bridgeUrl: string;
+  protected refinementsUrl: string;
 
-  search(query: string | Query | Request, callback: (err?: Error, res?: Results) => void = undefined): Promise<Results> {
-    let [request, queryParams] = this.extractRequest(query);
-    if (request === null) return this.generateError('query was not of a recognised type', callback);
+  search(query: BridgeQuery, callback?: BridgeCallback): Promise<Results> {
+    let { request, queryParams } = this.extractRequest(query);
+    if (request === null) return this.generateError(INVALID_QUERY_ERROR, callback);
 
-    const response = this.fireRequest(this.bridgeUrl, request, queryParams);
+    const response = this.fireRequest(this.bridgeUrl, request, queryParams)
+      .then((res) => res.records ? Object.assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
+    return this.handleResponse(response, callback);
+  }
+
+  refinements(query: BridgeQuery, navigationName: string, callback?: BridgeCallback): Promise<RefinementResults> {
+    let { request } = this.extractRequest(query);
+    if (request === null) return this.generateError(INVALID_QUERY_ERROR, callback);
+
+    const refinementsRequest = { originalQuery: request, navigationName };
+
+    const response = this.fireRequest(this.refinementsUrl, refinementsRequest);
+    return this.handleResponse(response, callback);
+  }
+
+  protected abstract augmentRequest(request: any): any;
+
+  private handleResponse<T>(response: Promise<T>, callback: Function): Promise<T> {
     if (callback) {
       response.then((res) => callback(undefined, res))
         .catch((err) => callback(err));
@@ -34,13 +58,13 @@ export abstract class AbstractBridge {
     }
   }
 
-  protected abstract augmentRequest(request: any): any;
-
-  private extractRequest(query: any): [Request, any] {
+  private extractRequest(query: any): { request: Request; queryParams: any; } {
     switch (typeof query) {
-      case 'string': return [new Query(<string>query).build(), {}];
-      case 'object': return query instanceof Query ? [query.build(), query.queryParams] : [query, {}];
-      default: return [null, null];
+      case 'string': return { request: new Query(<string>query).build(), queryParams: {} };
+      case 'object': return query instanceof Query
+        ? { request: query.build(), queryParams: query.queryParams }
+        : { request: query, queryParams: {} };
+      default: return { request: null, queryParams: null };
     }
   }
 
@@ -53,9 +77,9 @@ export abstract class AbstractBridge {
     }
   }
 
-  private fireRequest(url: string, body: Request | any, queryParams: any): Axios.IPromise<Results> {
+  private fireRequest(url: string, body: Request | any, queryParams: any = {}): Axios.IPromise<any> {
     const options = {
-      url: this.bridgeUrl,
+      url,
       method: 'post',
       params: queryParams,
       data: this.augmentRequest(body),
@@ -64,8 +88,7 @@ export abstract class AbstractBridge {
       timeout: 1500
     };
     return axios(options)
-      .then((res) => res.data)
-      .then((res) => res.records ? Object.assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
+      .then((res) => res.data);
   }
 
   private convertRecordFields(record: RawRecord): Record | RawRecord {
@@ -85,17 +108,11 @@ export abstract class AbstractBridge {
 
 export class CloudBridge extends AbstractBridge {
 
-  private bridgeRefinementsUrl: string = null;
-  private bridgeRefinementsSearchUrl: string = null;
-  private bridgeClusterUrl: string = null;
-
   constructor(private clientKey: string, customerId: string) {
     super();
     this.baseUrl = `https://${customerId}.groupbycloud.com:443/api/v1`;
     this.bridgeUrl = this.baseUrl + SEARCH;
-    this.bridgeRefinementsUrl = this.baseUrl + REFINEMENTS;
-    this.bridgeRefinementsSearchUrl = this.baseUrl + REFINEMENT_SEARCH;
-    this.bridgeClusterUrl = this.baseUrl + CLUSTER;
+    this.refinementsUrl = this.bridgeUrl + REFINEMENTS;
   }
 
   protected augmentRequest(request: any): any {
@@ -110,6 +127,7 @@ export class BrowserBridge extends AbstractBridge {
     const port = https ? ':443' : '';
     this.baseUrl = `${scheme}://${customerId}-cors.groupbycloud.com${port}/api/v1`;
     this.bridgeUrl = this.baseUrl + SEARCH;
+    this.refinementsUrl = this.bridgeUrl + REFINEMENTS;
   }
 
   protected augmentRequest(request: any): any {

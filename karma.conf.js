@@ -1,9 +1,9 @@
-var webpackConfig = require('./webpack.config');
+const webpackConfig = require('./webpack.config');
 
-var isCi = process.env.NODE_ENV === 'ci';
+const isCi = process.env.NODE_ENV === 'ci';
 
 function reporters() {
-  var coverageReporters = [{
+  const coverageReporters = [{
     type: 'json',
     subdir: '.',
     file: 'coverage.json'
