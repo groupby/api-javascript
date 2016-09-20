@@ -1,5 +1,7 @@
 import { RangeRefinement, Refinement, ValueRefinement } from './response';
 
+export type SortOrder = 'Ascending' | 'Descending';
+
 export class Request {
   // query parameters
   query: string;
@@ -33,8 +35,6 @@ export class Request {
   disableAutocorrection: boolean;
   wildcardSearchEnabled: boolean;
 }
-
-export type SortOrder = 'Ascending' | 'Descending';
 
 export interface Sort {
   field: string;

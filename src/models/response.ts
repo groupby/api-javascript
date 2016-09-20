@@ -1,3 +1,6 @@
+export type RefinementType = 'Value' | 'Range';
+export type SortType = 'Count_Ascending' | 'Count_Descending' | 'Value_Ascending' | 'Value_Descending';
+
 export interface Results {
 
   query: string;
@@ -53,11 +56,15 @@ export interface Record {
 
 export interface Navigation {
   name: string;
-  refinements: Array<ValueRefinement | RangeRefinement>;
+  displayName: string;
+  type: RefinementType;
+  range?: boolean;
+  or?: boolean;
   ignored?: boolean;
+  sort?: SortType;
+  refinements: Array<ValueRefinement | RangeRefinement>;
+  metadata: any[];
 }
-
-export type RefinementType = 'Value' | 'Range';
 
 export interface Refinement {
   exclude?: boolean;
@@ -71,4 +78,8 @@ export interface ValueRefinement extends Refinement {
 export interface RangeRefinement extends Refinement {
   low: number;
   high: number;
+}
+
+export interface RefinementResults {
+  navigation: Navigation;
 }
