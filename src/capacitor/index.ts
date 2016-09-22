@@ -5,7 +5,6 @@ import { Navigation, RefinementResults, Results } from '../models/response';
 import { Pager } from './pager';
 import EventEmitter = require('eventemitter3');
 import filterObject = require('filter-object');
-import deepEqual = require('deep-equal');
 
 export namespace Events {
   export const SEARCH = 'search';
@@ -13,7 +12,7 @@ export namespace Events {
   export const REFINEMENT_RESULTS = 'refinement_results';
   export const REFINEMENTS_CHANGED = 'refinements_changed';
   export const PAGE_CHANGED = 'page_changed';
-  export const REQUEST_CHANGED = 'request_changed';
+  export const QUERY_CHANGED = 'query_changed';
   export const RESET = 'reset';
   export const REWRITE_QUERY = 'rewrite_query';
   export const SORT = 'sort';
@@ -35,7 +34,6 @@ export class FluxCapacitor extends EventEmitter {
   bridge: BrowserBridge;
   results: Results;
   private originalQuery: string = '';
-  private originalRefinements: any[] = [];
 
   constructor(endpoint: string, config: FluxConfiguration & any = {}, mask?: string) {
     super();
@@ -55,7 +53,7 @@ export class FluxCapacitor extends EventEmitter {
       .then((results) => {
         if (results.redirect) this.emit(Events.REDIRECT, results.redirect);
         const originalRefinements = this.query.raw.refinements;
-        this.testForChange(originalQuery, originalRefinements);
+        this.emitQueryChanged(originalQuery, originalRefinements);
         Object.assign(this, { results, originalQuery, originalRefinements });
         this.emit(Events.RESULTS, results);
         return results;
@@ -135,10 +133,8 @@ export class FluxCapacitor extends EventEmitter {
     return this.search();
   }
 
-  private testForChange(query: string, refinements: any[]) {
-    if (query !== this.originalQuery || !deepEqual(refinements, this.originalRefinements)) {
-      this.emit(Events.REQUEST_CHANGED);
-    }
+  private emitQueryChanged(query: string, refinements: any[]) {
+    if (query !== this.originalQuery) this.emit(Events.QUERY_CHANGED);
   }
 
   private get filteredRequest() {

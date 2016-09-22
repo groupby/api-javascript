@@ -1,5 +1,5 @@
 import qs = require('qs');
-import deepEql = require('deep-equal');
+import deepEqual = require('deep-equal');
 import filterObject = require('filter-object');
 import clone = require('clone');
 import {
@@ -74,7 +74,7 @@ export class Query {
 
   withoutSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
     refinements.forEach((refinement) => {
-      const index = this.request.refinements.findIndex((ref) => deepEql(ref, refinement));
+      const index = this.request.refinements.findIndex((ref) => deepEqual(ref, refinement));
       if (index > -1) this.request.refinements.splice(index, 1);
     });
     return this;
@@ -226,7 +226,7 @@ export class Query {
   }
 
   private refinementMatches(target: SelectedRefinement, original: SelectedRefinement) {
-    return deepEql(filterObject(target, REFINEMENT_MASK), filterObject(original, REFINEMENT_MASK));
+    return deepEqual(filterObject(target, REFINEMENT_MASK), filterObject(original, REFINEMENT_MASK));
   }
 
   private convertParamString(customUrlParams: string): CustomUrlParam[] {
