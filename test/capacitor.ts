@@ -473,16 +473,39 @@ describe('FluxCapacitor', function() {
     });
   });
 
-  it('should switch collection', (done) => {
-    const collection = 'other';
-    mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+  describe('switchCollection()', () => {
+    it('should switch collection', (done) => {
+      const collection = 'other';
+      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
 
-    flux.query.withConfiguration({ collection: 'something' });
-    flux.switchCollection(collection)
-      .then(() => {
-        expect(flux.query.raw.collection).to.eq(collection);
-        done();
-      });
+      flux.query.withConfiguration({ collection: 'something' });
+
+      flux.switchCollection(collection)
+        .then(() => {
+          expect(flux.query.raw.collection).to.eq(collection);
+          done();
+        });
+    });
+
+    it('should reset paging, sort and refinements on switch collection', (done) => {
+      const collection = 'other';
+      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+
+      flux.query.withConfiguration({ collection: 'something' })
+        .withSelectedRefinements({ navigationName: 'brand', type: 'Value', value: 'Nike' })
+        .withSorts({ field: 'price', order: 'Descending' })
+        .skip(30);
+
+      flux.switchCollection(collection)
+        .then(() => {
+          const rawQuery = flux.query.raw;
+          expect(rawQuery.collection).to.eq(collection);
+          expect(rawQuery.skip).to.eq(0);
+          expect(rawQuery.sort).to.be.empty;
+          expect(rawQuery.refinements).to.be.empty;
+          done();
+        });
+    });
   });
 
   it('should reset recall', () => {
