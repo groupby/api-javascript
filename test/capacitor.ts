@@ -96,30 +96,21 @@ describe('FluxCapacitor', function() {
         done();
       });
 
-      it('should not emit a request_changed event on subsequent equivalent requests', (done) => {
+      it('should not emit a query_changed event on subsequent equivalent requests', (done) => {
         mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-        flux.on(Events.REQUEST_CHANGED, () => expect.fail());
+        flux.on(Events.QUERY_CHANGED, () => expect.fail());
 
         flux.search('')
           .then(() => flux.search(''))
           .then(() => done());
       });
 
-      it('should emit a request_changed event on changing the query', (done) => {
+      it('should emit a query_changed event on changing the query', (done) => {
         mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-        flux.on(Events.REQUEST_CHANGED, () => done());
+        flux.on(Events.QUERY_CHANGED, () => done());
 
         flux.search('')
           .then(() => flux.search('other'));
-      });
-
-      it('should emit a request_changed event on changing the refinements', (done) => {
-        mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-        flux.on(Events.REQUEST_CHANGED, () => done());
-
-        // flux.search('').then(() => done());
-        flux.search('')
-          .then(() => flux.refine({ navigationName: 'brand', type: 'Value', value: 'a' }));
       });
     });
   });
