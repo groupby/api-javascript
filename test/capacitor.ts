@@ -286,7 +286,7 @@ describe('FluxCapacitor', function() {
     });
   });
 
-  describe('rewrite behaviour', () => {
+  describe('rewrite()', () => {
     it('should rewrite the query', () => {
       const newQuery = 'montana';
       flux.query.withQuery('alabama');
@@ -304,13 +304,12 @@ describe('FluxCapacitor', function() {
       expect(flux.query.raw.query).to.eq(newQuery);
     });
 
-    it('should emit a rewrite_query event on search', (done) => {
+    it('should emit events on search', (done) => {
       const newQuery = 'montana';
       flux.query.withQuery('alabama');
 
       flux.search = (query): any => ({ then: (cb) => cb() });
       flux.emit = (event, data): any => {
-        expect(event).to.eq('rewrite_query');
         expect(data).to.eq(newQuery);
         done();
       };
@@ -318,14 +317,19 @@ describe('FluxCapacitor', function() {
       flux.rewrite(newQuery);
     });
 
-    it('should emit a rewrite_query event when not searching', (done) => {
+    it('should emit events when not searching', () => {
       const newQuery = 'montana';
-      flux.query.withQuery('alabama');
 
+      flux.query.withQuery('alabama');
       flux.emit = (event, data): any => {
-        expect(event).to.eq('rewrite_query');
-        expect(data).to.eq(newQuery);
-        done();
+        switch (event) {
+          case Events.REWRITE_QUERY:
+            return expect(data).to.eq(newQuery);
+          case Events.QUERY_CHANGED:
+            break;
+          default:
+            expect.fail();
+        }
       };
 
       flux.rewrite(newQuery, { skipSearch: true });
