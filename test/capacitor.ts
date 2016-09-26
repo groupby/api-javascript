@@ -274,23 +274,25 @@ describe('FluxCapacitor', function() {
 
   describe('resizing behaviour', () => {
     it('should resize the page and keep skip', (done) => {
+      flux.query.withPageSize(10);
       flux.query.skip(20);
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(20);
-        expect(JSON.parse(req.body()).pageSize).to.eq(30);
+        expect(JSON.parse(req.body()).pageSize).to.eq(20);
         done();
       });
-      flux.resize(30);
+      flux.resize(20, false);
     });
 
-    it('should resize the page', (done) => {
+    it('should resize the page and bring skip to 0', (done) => {
+      flux.query.withPageSize(10);
       flux.query.skip(20);
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(0);
         expect(JSON.parse(req.body()).pageSize).to.eq(30);
         done();
       });
-      flux.resize(30, 1);
+      flux.resize(30, true);
     });
   });
 
