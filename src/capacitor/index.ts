@@ -57,9 +57,11 @@ export class FluxCapacitor extends EventEmitter {
       .then((results) => {
         if (results.redirect) this.emit(Events.REDIRECT, results.redirect);
         this.emitQueryChanged(originalQuery);
+
+        // must be in this order
+        Object.assign(this, { results, originalQuery });
         this.emit(Events.RESULTS, results);
 
-        Object.assign(this, { results, originalQuery });
         return results;
       });
   }
