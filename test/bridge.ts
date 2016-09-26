@@ -26,6 +26,20 @@ describe('Bridge', () => {
     expect(bridge).to.be.ok;
   });
 
+  it('should have default values', () => {
+    expect(bridge.config).to.eql({
+      timeout: 1500
+    });
+  });
+
+  it('should accept configuration', () => {
+    bridge = new CloudBridge(CLIENT_KEY, CUSTOMER_ID, { timeout: 4000 });
+
+    expect(bridge.config).to.eql({
+      timeout: 4000
+    });
+  });
+
   it('should handle invalid query types', (done) => {
     bridge.search(12331)
       .catch((err) => expect(err.message).to.eq('query was not of a recognised type'))

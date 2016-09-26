@@ -30,26 +30,34 @@ describe('FluxCapacitor', function() {
   });
 
   it('should accept a mask for configuration', () => {
-    flux = new FluxCapacitor(CUSTOMER_ID, { a: 'something', b: 'Ascending' });
+    const config: any = { a: 'something', b: 'Ascending' };
+    flux = new FluxCapacitor(CUSTOMER_ID, config);
     expect(flux.query.raw).to.contain.keys('a', 'b');
 
-    flux = new FluxCapacitor(CUSTOMER_ID, { a: 'something', b: 'Ascending' }, '{refinements,area}');
+    flux = new FluxCapacitor(CUSTOMER_ID, config, '{refinements,area}');
     expect(flux.query.raw).to.not.contain.keys('a', 'b');
   });
 
   it('should strip fields from configuration', () => {
-    flux = new FluxCapacitor(CUSTOMER_ID, { a: 'something', b: 'Ascending', headers: { c: 'd' }, https: true });
-    expect(flux.query.raw).to.not.contain.keys('headers', 'https');
+    flux = new FluxCapacitor(CUSTOMER_ID, <any>{
+      a: 'something',
+      b: 'Ascending',
+      bridge: {
+        headers: { c: 'd' },
+        https: true
+      }
+    });
+    expect(flux.query.raw).to.not.contain.keys('bridge');
   });
 
   it('should set headers on bridge', () => {
     const headers = { c: 'd' };
-    flux = new FluxCapacitor(CUSTOMER_ID, { headers });
+    flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { headers } });
     expect(flux.bridge.headers).to.eq(headers);
   });
 
   it('should set HTTPS on bridge', () => {
-    flux = new FluxCapacitor(CUSTOMER_ID, { https: true });
+    flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { https: true } });
     expect(flux.bridge.baseUrl).to.eq('https://services-cors.groupbycloud.com:443/api/v1');
   });
 

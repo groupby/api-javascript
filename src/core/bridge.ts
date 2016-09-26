@@ -21,12 +21,21 @@ export interface BridgeCallback {
 
 export type BridgeQuery = string | Query | Request;
 
+export const DEFAULT_CONFIG: BridgeConfig = {
+  timeout: 1500
+};
+
 export abstract class AbstractBridge {
 
+  config: BridgeConfig;
   headers: any = {};
   baseUrl: string;
   protected bridgeUrl: string;
   protected refinementsUrl: string;
+
+  constructor(config: BridgeConfig) {
+    this.config = Object.assign({}, DEFAULT_CONFIG, config);
+  }
 
   search(query: BridgeQuery, callback?: BridgeCallback): Promise<Results> {
     let { request, queryParams } = this.extractRequest(query);
@@ -85,7 +94,7 @@ export abstract class AbstractBridge {
       data: this.augmentRequest(body),
       headers: this.headers,
       responseType: 'json',
-      timeout: 1500
+      timeout: this.config.timeout
     };
     return axios(options)
       .then((res) => res.data);
@@ -108,8 +117,8 @@ export abstract class AbstractBridge {
 
 export class CloudBridge extends AbstractBridge {
 
-  constructor(private clientKey: string, customerId: string) {
-    super();
+  constructor(private clientKey: string, customerId: string, config: BridgeConfig = {}) {
+    super(config);
     this.baseUrl = `https://${customerId}.groupbycloud.com:443/api/v1`;
     this.bridgeUrl = this.baseUrl + SEARCH;
     this.refinementsUrl = this.bridgeUrl + REFINEMENTS;
@@ -121,8 +130,8 @@ export class CloudBridge extends AbstractBridge {
 }
 
 export class BrowserBridge extends AbstractBridge {
-  constructor(customerId: string, https: boolean = false) {
-    super();
+  constructor(customerId: string, https: boolean = false, config: BridgeConfig = {}) {
+    super(config);
     const scheme = https ? 'https' : 'http';
     const port = https ? ':443' : '';
     this.baseUrl = `${scheme}://${customerId}-cors.groupbycloud.com${port}/api/v1`;
@@ -133,4 +142,8 @@ export class BrowserBridge extends AbstractBridge {
   protected augmentRequest(request: any): any {
     return request;
   }
+}
+
+export interface BridgeConfig {
+  timeout?: number;
 }
