@@ -33,6 +33,7 @@ export class FluxCapacitor extends EventEmitter {
   query: Query;
   bridge: BrowserBridge;
   results: Results;
+  page: Pager;
   private originalQuery: string = '';
 
   constructor(endpoint: string, config: FluxConfiguration & any = {}, mask?: string) {
@@ -40,10 +41,7 @@ export class FluxCapacitor extends EventEmitter {
     this.bridge = new BrowserBridge(endpoint, config.https);
     if (config.headers) this.bridge.headers = config.headers;
     this.query = new Query().withConfiguration(filterObject(config, ['*', '!{headers,https}']), mask);
-  }
-
-  get page() {
-    return new Pager(this);
+    this.page = new Pager(this);
   }
 
   search(originalQuery: string = this.originalQuery): Promise<Results> {
@@ -85,7 +83,7 @@ export class FluxCapacitor extends EventEmitter {
 
   reset(query: string = this.originalQuery): Promise<string> {
     this.resetRecall();
-    this.emit(Events.PAGE_CHANGED, { pageIndex: 0 });
+    this.emit(Events.PAGE_CHANGED, { pageNumber: 1 });
     return this.search(query)
       .then((res) => this.emit(Events.RESET, res))
       .then(() => query);
@@ -94,8 +92,8 @@ export class FluxCapacitor extends EventEmitter {
   resize(pageSize: number, offset?: number): Promise<number> {
     this.query.withConfiguration({ pageSize });
     if (offset !== undefined) {
-      this.query.skip(offset);
-      this.emit(Events.PAGE_CHANGED, { pageIndex: this.page.pageFromOffset(offset) });
+      this.query.skip(offset - 1);
+      this.emit(Events.PAGE_CHANGED, { pageNumber: this.page.currentPage });
     }
     return this.search()
       .then(() => pageSize);

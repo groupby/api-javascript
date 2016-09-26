@@ -3,73 +3,91 @@ import { Events, FluxCapacitor } from './index';
 import range = require('lodash.range');
 
 export class Pager {
+
   constructor(private flux: FluxCapacitor) { }
 
-  next(realign: boolean = false): Promise<Results> {
-    return realign ?
-      this.jump(Math.min(this.currentPage + 1, this.finalPage)) :
-      this.paginate(true, this.hasNext);
+  next(): Promise<Results> {
+    return this.switchPage(this.nextPage);
   }
 
-  prev(realign: boolean = false): Promise<Results> {
-    return realign ?
-      this.jump(Math.max(this.currentPage - 1, 0)) :
-      this.paginate(false, this.hasPrevious);
+  prev(): Promise<Results> {
+    return this.switchPage(this.previousPage);
   }
 
   last(): Promise<Results> {
-    return this.jump(this.finalPage);
+    return this.switchPage(this.finalPage);
   }
 
   reset(): Promise<Results> {
-    return this.pageTo(0, true);
+    return this.switchPage(this.firstPage);
   }
 
   get currentPage(): number {
-    return this.pageFromOffset(this.lastStep);
+    return Math.ceil(this.fromResult / this.pageSize);
   }
 
-  jump(page: number): Promise<Results> {
-    const offset = this.pageSize * page;
-    return this.pageTo(offset, offset >= 0 && offset < this.totalRecords, `page ${page} does not exist`);
+  get previousPage(): number | null {
+    return (this.currentPage - 1 >= this.firstPage) ? this.currentPage - 1 : null;
+  }
+
+  get nextPage(): number | null {
+    return (this.currentPage + 1 <= this.finalPage) ? this.currentPage + 1 : null;
+  }
+
+  get firstPage(): number {
+    return 1;
   }
 
   get finalPage(): number {
-    if (this.totalRecords > 0) {
-      const total = Math.floor(this.totalRecords / this.pageSize);
-      return this.totalRecords % this.pageSize === 0 ? Math.max(total - 1, 0) : total;
+    return Math.max(Math.ceil(this.totalRecords / this.pageSize), 1);
+  }
+
+  get fromResult(): number {
+    return this.flux.query.build().skip + 1 || 1;
+  }
+
+  get toResult(): number {
+    if ((this.currentPage * this.pageSize) > this.totalRecords) {
+      return ((this.currentPage - 1) * this.pageSize) + (this.totalRecords % this.currentPage);
+    } else {
+      return this.currentPage * this.pageSize;
     }
-    return 0;
+  }
+
+  get totalRecords(): number {
+    return this.flux.results ? this.flux.results.totalRecordCount : 0;
+  }
+
+  pageExists(page: number): boolean {
+    return page <= this.finalPage && page >= this.firstPage;
   }
 
   pageNumbers(limit: number = 5): number[] {
-    return range(0, Math.min(this.finalPage + 1, limit))
+    return range(1, Math.min(this.finalPage + 1, limit + 1))
       .map(this.transformPages(limit));
   }
 
-  pageFromOffset(offset: number): number {
-    return Math.floor(offset / this.pageSize);
-  }
-
-  get hasNext(): boolean {
-    return this.step(true) < this.totalRecords;
-  }
-
-  get hasPrevious(): boolean {
-    return this.lastStep !== 0;
+  switchPage(page: number): Promise<Results | void> {
+    if (this.pageExists(page)) {
+      const skip = (page - 1) * this.pageSize;
+      this.flux.query.skip(skip);
+      this.flux.emit(Events.PAGE_CHANGED, { pageNumber: page });
+      return this.flux.search();
+    } else {
+      return Promise.reject(new Error(`page ${page} does not exist`));
+    }
   }
 
   private transformPages(limit: number): (value: number) => number {
-    const border = Math.floor(limit / 2);
+    const border = Math.ceil(limit / 2);
     return (value: number): number => {
       // account for 0-indexed pages
-      value++;
       if (this.currentPage <= border || limit > this.finalPage) {
         // pages start at beginning
         return value;
       } else if (this.currentPage > this.finalPage - border) {
         // pages start and end in the middle
-        return value + this.finalPage + 1 - limit;
+        return value + this.finalPage - limit;
       } else {
         // pages end at last page
         return value + this.currentPage - border;
@@ -77,34 +95,7 @@ export class Pager {
     };
   }
 
-  private paginate(forward: boolean, predicate: boolean): Promise<Results | void> {
-    return this.pageTo(this.step(forward), predicate, `already on ${forward ? 'last' : 'first'} page`);
-  }
-
-  private pageTo(offset: number, predicate: boolean, error?: string): Promise<Results | void> {
-    if (predicate) {
-      this.flux.query.skip(offset);
-      this.flux.emit(Events.PAGE_CHANGED, { pageIndex: this.pageFromOffset(offset) });
-      return this.flux.search();
-    }
-    return Promise.reject(new Error(error));
-  }
-
-  private step(add: boolean): number {
-    const skip = this.lastStep + (add ? this.pageSize : -this.pageSize);
-    return skip >= 0 ? skip : 0;
-  }
-
-  private get lastStep(): number {
-    return this.flux.query.build().skip || 0;
-  }
-
   private get pageSize(): number {
     return this.flux.query.build().pageSize || 10;
   }
-
-  private get totalRecords(): number {
-    return this.flux.results ? this.flux.results.totalRecordCount : -1;
-  }
-
 }
