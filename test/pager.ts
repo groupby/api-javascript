@@ -22,7 +22,7 @@ describe('Pager', function() {
   });
 
   it('should be defined with defaults', () => {
-    const mockFlux = flux({ start: 0, total: 40, pageSize: 5 }, function() { });
+    const mockFlux = flux({ start: 0, total: 40, pageSize: 5 }, () => null);
     const pager = new Pager(mockFlux);
 
     expect(pager.currentPage).to.eq(1);
@@ -81,7 +81,7 @@ describe('Pager', function() {
   });
 
   it('should not change skip when cannot page backward', () => {
-    const mockFlux = flux(2, function() { });
+    const mockFlux = flux(2, () => null);
     const pager = new Pager(mockFlux);
     expect(mockFlux.query.raw.skip).to.eq(2);
     pager.prev();
@@ -156,12 +156,12 @@ describe('Pager', function() {
 
   describe('pageExists()', () => {
     it('should return true', () => {
-      const pager = new Pager(flux({ start: 10, total: 200 }, function() { }));
+      const pager = new Pager(flux({ start: 10, total: 200 }, () => null));
       expect(pager.pageExists(20)).to.be.true;
     });
 
     it('should return false', () => {
-      const pager = new Pager(flux({ start: 10, total: 200 }, function() { }));
+      const pager = new Pager(flux({ start: 10, total: 200 }, () => null));
       expect(pager.pageExists(21)).to.be.false;
     });
   });
@@ -333,7 +333,7 @@ describe('Pager', function() {
 
   describe('error states', () => {
     it('should throw error if paging too low', (done) => {
-      new Pager(flux(1, function() { })).switchPage(0)
+      new Pager(flux(1, () => null)).switchPage(0)
         .catch((err) => {
           expect(err.message).to.eq('page 0 does not exist');
           done();
@@ -341,7 +341,7 @@ describe('Pager', function() {
     });
 
     it('should throw error if paging too high', (done) => {
-      new Pager(flux(1, function() { })).switchPage(100)
+      new Pager(flux(1, () => null)).switchPage(100)
         .catch((err) => {
           expect(err.message).to.eq('page 100 does not exist');
           done();
