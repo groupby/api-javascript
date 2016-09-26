@@ -3,7 +3,7 @@ import { Query, QueryConfiguration } from '../core/query';
 import { SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
 import { Navigation, RefinementResults, Results } from '../models/response';
 import { Pager } from './pager';
-import EventEmitter = require('eventemitter3');
+import * as EventEmitter from 'eventemitter3';
 import filterObject = require('filter-object');
 
 export namespace Events {

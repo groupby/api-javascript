@@ -1,7 +1,3 @@
-import qs = require('qs');
-import deepEqual = require('deep-equal');
-import filterObject = require('filter-object');
-import clone = require('clone');
 import {
   Biasing,
   CustomUrlParam,
@@ -20,6 +16,10 @@ import {
   ValueRefinement
 } from '../models/response';
 import { NavigationConverter } from '../utils/converter';
+import * as clone from 'clone';
+import * as deepEqual from 'deep-equal';
+import filterObject = require('filter-object');
+import * as qs from 'qs';
 
 const REFINEMENT_MASK = '{navigationName,value,low,high}';
 

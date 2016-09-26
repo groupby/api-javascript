@@ -1,6 +1,6 @@
 import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../src/index';
 import { expect } from 'chai';
-import mock = require('xhr-mock');
+import * as mock from 'xhr-mock';
 
 const CUSTOMER_ID = 'services';
 const SEARCH_URL = `http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`;

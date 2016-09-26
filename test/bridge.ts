@@ -1,7 +1,7 @@
 import { BrowserBridge, CloudBridge } from '../src/core/bridge';
 import { Query } from '../src/core/query';
 import { expect } from 'chai';
-import mock = require('xhr-mock');
+import * as mock from 'xhr-mock';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
