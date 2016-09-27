@@ -2,6 +2,8 @@ import { Results } from '../models/response';
 import { Events, FluxCapacitor } from './index';
 import range = require('lodash.range');
 
+const MAX_RECORDS = 10000;
+
 export class Pager {
 
   constructor(private flux: FluxCapacitor) { }
@@ -23,7 +25,7 @@ export class Pager {
   }
 
   get currentPage(): number {
-    return Math.ceil(this.fromResult / this.pageSize);
+    return this.getPage(this.fromResult);
   }
 
   get previousPage(): number | null {
@@ -39,7 +41,7 @@ export class Pager {
   }
 
   get finalPage(): number {
-    return Math.max(Math.ceil(this.totalRecords / this.pageSize), 1);
+    return Math.max(this.getPage(this.restrictTotalRecords(this.totalRecords, this.pageSize)), 1);
   }
 
   get fromResult(): number {
@@ -76,6 +78,24 @@ export class Pager {
     } else {
       return Promise.reject(new Error(`page ${page} does not exist`));
     }
+  }
+
+  restrictTotalRecords(total: number, pageSize: number): number {
+    if (total > MAX_RECORDS) {
+      return MAX_RECORDS - (MAX_RECORDS % pageSize);
+    } else if ((total + pageSize) > MAX_RECORDS) {
+      if (MAX_RECORDS % pageSize === 0) {
+        return MAX_RECORDS;
+      } else {
+        return total - (total % pageSize);
+      }
+    } else {
+      return total;
+    }
+  }
+
+  getPage(record: number): number {
+    return Math.ceil(record / this.pageSize);
   }
 
   private transformPages(limit: number): (value: number) => number {

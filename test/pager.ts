@@ -88,6 +88,14 @@ describe('Pager', function() {
     expect(mockFlux.query.raw.skip).to.eq(2);
   });
 
+  it('should not change skip when cannot page forward', () => {
+    const mockFlux = flux(29, () => null);
+    const pager = new Pager(mockFlux);
+    expect(mockFlux.query.raw.skip).to.eq(29);
+    pager.next();
+    expect(mockFlux.query.raw.skip).to.eq(29);
+  });
+
   it('should reset the skip to 0', (done) => {
     new Pager(flux(2, function() {
       expect(this.query.raw.skip).to.eq(0);
@@ -116,42 +124,11 @@ describe('Pager', function() {
     })).last();
   });
 
-  describe('realigned paging behaviour', () => {
-    // it('should not realign the pages on page next', () => {
-    //   new Pager(flux({ start: 13, total: 45 }, function() {
-    //     expect(this.query.raw.skip).to.eq(23);
-    //   })).next();
-    // });
-    //
-    //   it('should realign the pages on page next', () => {
-    //     new Pager(flux({ start: 13, total: 45 }, function() {
-    //       expect(this.query.raw.skip).to.eq(20);
-    //     })).next(true);
-    //   });
-    //
-    //   it('should not skip past last page', () => {
-    //     new Pager(flux({ start: 43, total: 45 }, function() {
-    //       expect(this.query.raw.skip).to.eq(40);
-    //     })).next(true);
-    //   });
-    //
-    //   it('should not realign the pages on page previous', () => {
-    //     new Pager(flux({ start: 23, total: 45 }, function() {
-    //       expect(this.query.raw.skip).to.eq(13);
-    //     })).prev();
-    //   });
-    //
-    //   it('should realign the pages on page previous', () => {
-    //     new Pager(flux({ start: 23, total: 45 }, function() {
-    //       expect(this.query.raw.skip).to.eq(10);
-    //     })).prev(true);
-    //   });
-    //
-    //   it('should not realign to a negative value', () => {
-    //     new Pager(flux({ start: 3, total: 45 }, function() {
-    //       expect(this.query.raw.skip).to.eq(0);
-    //     })).prev(true);
-    //   });
+  it('max skip should not go beyond 10000 records', (done) => {
+    new Pager(flux({ start: 1, total: 14000 }, function() {
+      expect(this.query.raw.skip).to.eq(9990);
+      done();
+    })).last();
   });
 
   describe('pageExists()', () => {
@@ -166,7 +143,7 @@ describe('Pager', function() {
     });
   });
 
-  describe('switchPage behaviour', () => {
+  describe('switchPage() behaviour', () => {
     it('should switchPage to the first page', () => {
       const pager = new Pager(flux({ start: 10, total: 200 }, function() {
         expect(this.query.raw.skip).to.eq(0);
@@ -202,6 +179,19 @@ describe('Pager', function() {
     });
   });
 
+  describe('restrictTotalRecords()', () => {
+    it('should return total records that is less than MAX_RECORDS', () => {
+      const pager = new Pager(<any>{});
+      expect(pager.restrictTotalRecords(20000, 10)).to.eq(10000);
+      expect(pager.restrictTotalRecords(20000, 12)).to.eq(9996);
+      expect(pager.restrictTotalRecords(20000, 24)).to.eq(9984);
+      expect(pager.restrictTotalRecords(20000, 50)).to.eq(10000);
+      expect(pager.restrictTotalRecords(9999, 13)).to.eq(9997);
+      expect(pager.restrictTotalRecords(9960, 50)).to.eq(10000);
+      expect(pager.restrictTotalRecords(100, 20)).to.eq(100);
+    });
+  });
+
   describe('current page behaviour', () => {
     it('should return the current page', () => {
       expect(new Pager(flux(1)).currentPage).to.eq(1);
@@ -230,7 +220,7 @@ describe('Pager', function() {
     });
   });
 
-  describe('pages behaviour', () => {
+  describe('page numbers behaviour', () => {
     it('should return an array of beginning at 1', () => {
       expect(new Pager(flux({ start: 1, total: 100 })).pageNumbers()).to.eql([1, 2, 3, 4, 5]);
     });
