@@ -55,12 +55,14 @@ export class FluxCapacitor extends EventEmitter {
     this.emit(Events.SEARCH, this.query.raw);
     return this.bridge.search(this.query)
       .then((results) => {
-        if (results.redirect) this.emit(Events.REDIRECT, results.redirect);
-        this.emitQueryChanged(originalQuery);
-
-        // must be in this order
+        const oldQuery = this.originalQuery;
         Object.assign(this, { results, originalQuery });
+
+        if (results.redirect) {
+          this.emit(Events.REDIRECT, results.redirect);
+        }
         this.emit(Events.RESULTS, results);
+        this.emitQueryChanged(oldQuery, originalQuery);
 
         return results;
       });
@@ -77,7 +79,7 @@ export class FluxCapacitor extends EventEmitter {
   rewrite(query: string, config: RewriteConfig = {}): Promise<string> {
     let search;
     if (config.skipSearch) {
-      this.emitQueryChanged(query);
+      this.emitQueryChanged(this.originalQuery, query);
       search = Promise.resolve(this.query.withQuery(this.originalQuery = query));
     } else {
       search = this.search(query);
@@ -138,8 +140,10 @@ export class FluxCapacitor extends EventEmitter {
     return this.search();
   }
 
-  private emitQueryChanged(query: string) {
-    if (query !== this.originalQuery) this.emit(Events.QUERY_CHANGED);
+  private emitQueryChanged(oldQuery: string, newQuery: string) {
+    if (oldQuery.toLowerCase() !== newQuery.toLowerCase()) {
+      this.emit(Events.QUERY_CHANGED);
+    }
   }
 
   private get filteredRequest() {

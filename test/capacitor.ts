@@ -82,7 +82,8 @@ describe('FluxCapacitor', function() {
       });
 
       it('should emit a results event', (done) => {
-        mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+        flux.bridge.search = (): any => Promise.resolve('ok');
+        // mock.post(SEARCH_URL, (req, res) => res.body('ok'));
         flux.on(Events.RESULTS, () => done());
         flux.search('');
       });
@@ -105,20 +106,29 @@ describe('FluxCapacitor', function() {
       });
 
       it('should not emit a query_changed event on subsequent equivalent requests', (done) => {
-        mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-        flux.on(Events.QUERY_CHANGED, () => expect.fail());
+        flux.bridge.search = (): any => Promise.resolve('ok');
 
-        flux.search('')
-          .then(() => flux.search(''))
+        flux.search('apple')
+          .then(() => flux.on(Events.QUERY_CHANGED, () => expect.fail()))
+          .then(() => flux.search('apple'))
           .then(() => done());
       });
 
       it('should emit a query_changed event on changing the query', (done) => {
-        mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-        flux.on(Events.QUERY_CHANGED, () => done());
+        flux.bridge.search = (): any => Promise.resolve('ok');
 
-        flux.search('')
+        flux.search('shoes')
+          .then(() => flux.on(Events.QUERY_CHANGED, () => done()))
           .then(() => flux.search('other'));
+      });
+
+      it('should emit a query_changed with case insensitivity', (done) => {
+        flux.bridge.search = (): any => Promise.resolve('ok');
+
+        flux.search('apple')
+          .then(() => flux.on(Events.QUERY_CHANGED, () => expect.fail()))
+          .then(() => flux.search('ApPle'))
+          .then(() => done());
       });
     });
   });
