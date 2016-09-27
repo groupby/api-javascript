@@ -118,7 +118,10 @@ describe('FluxCapacitor', function() {
         flux.bridge.search = (): any => Promise.resolve('ok');
 
         flux.search('shoes')
-          .then(() => flux.on(Events.QUERY_CHANGED, () => done()))
+          .then(() => flux.on(Events.QUERY_CHANGED, (query) => {
+            expect(query).to.eq('other');
+            done();
+          }))
           .then(() => flux.search('other'));
       });
 

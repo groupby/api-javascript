@@ -142,7 +142,7 @@ export class FluxCapacitor extends EventEmitter {
 
   private emitQueryChanged(oldQuery: string, newQuery: string) {
     if (oldQuery.toLowerCase() !== newQuery.toLowerCase()) {
-      this.emit(Events.QUERY_CHANGED);
+      this.emit(Events.QUERY_CHANGED, newQuery);
     }
   }
 
