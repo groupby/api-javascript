@@ -289,6 +289,19 @@ describe('FluxCapacitor', function() {
     it('should resize the page and keep skip', (done) => {
       flux.query.withPageSize(10);
       flux.query.skip(20);
+      flux.page.pageExists = () => true;
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).skip).to.eq(20);
+        expect(JSON.parse(req.body()).pageSize).to.eq(20);
+        done();
+      });
+      flux.resize(20, false);
+    });
+
+    it('should resize the page and keep skip on the same page', (done) => {
+      flux.query.withPageSize(10);
+      flux.query.skip(30);
+      flux.page.pageExists = () => true;
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(20);
         expect(JSON.parse(req.body()).pageSize).to.eq(20);
@@ -300,12 +313,37 @@ describe('FluxCapacitor', function() {
     it('should resize the page and bring skip to 0', (done) => {
       flux.query.withPageSize(10);
       flux.query.skip(20);
+      flux.page.pageExists = () => true;
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).skip).to.eq(0);
         expect(JSON.parse(req.body()).pageSize).to.eq(30);
         done();
       });
       flux.resize(30, true);
+    });
+
+    it('should resize from smaller to larger and keep skip when total near max', (done) => {
+      flux.query.withPageSize(12);
+      flux.query.skip(9984);
+      flux.page.pageExists = () => true;
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).skip).to.eq(9960);
+        expect(JSON.parse(req.body()).pageSize).to.eq(24);
+        done();
+      });
+      flux.resize(24, false);
+    });
+
+    it('should resize from larger to smaller and keep skip when total near max', (done) => {
+      flux.query.withPageSize(50);
+      flux.query.skip(9950);
+      flux.page.pageExists = () => true;
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).skip).to.eq(9947);
+        expect(JSON.parse(req.body()).pageSize).to.eq(49);
+        done();
+      });
+      flux.resize(49, false);
     });
   });
 
