@@ -426,7 +426,7 @@ describe('FluxCapacitor', function() {
 
         let count = 0;
         const checkComplete = () => {
-          if (++count === 2) done();
+          if (++count === 2) done(); // tslint:disable-line:no-constant-condition
         };
         flux.on(Events.RESET, checkComplete);
         flux.on(Events.PAGE_CHANGED, checkComplete);
