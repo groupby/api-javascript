@@ -426,7 +426,7 @@ describe('FluxCapacitor', function() {
 
         let count = 0;
         const checkComplete = () => {
-          if (++count === 2) done();
+          if (++count === 2) done(); // tslint:disable-line:no-constant-condition
         };
         flux.on(Events.RESET, checkComplete);
         flux.on(Events.PAGE_CHANGED, checkComplete);
@@ -498,6 +498,16 @@ describe('FluxCapacitor', function() {
         done();
       });
       flux.details('14830');
+    });
+
+    it('should refine by specified field', (done) => {
+      const navigationName = 'variants.id';
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).refinements).to.eql([{ navigationName, type: 'Value', value: '14830' }]);
+        done();
+      });
+
+      flux.details('14830', navigationName);
     });
 
     it('should persist area, collection, language, fields', (done) => {
