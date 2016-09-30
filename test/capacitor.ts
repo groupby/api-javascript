@@ -500,6 +500,16 @@ describe('FluxCapacitor', function() {
       flux.details('14830');
     });
 
+    it('should refine by specified field', (done) => {
+      const navigationName = 'variants.id';
+      mock.post(SEARCH_URL, (req, res) => {
+        expect(JSON.parse(req.body()).refinements).to.eql([{ navigationName, type: 'Value', value: '14830' }]);
+        done();
+      });
+
+      flux.details('14830', navigationName);
+    });
+
     it('should persist area, collection, language, fields', (done) => {
       flux.query.withConfiguration({
         area: 'nonProd',
