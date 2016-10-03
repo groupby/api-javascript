@@ -491,7 +491,7 @@ describe('FluxCapacitor', function() {
     });
   });
 
-  describe('details behaviour', () => {
+  describe('details()', () => {
     it('should refine by id', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
         expect(JSON.parse(req.body()).refinements).to.eql([{ navigationName: 'id', type: 'Value', value: '14830' }]);
@@ -522,6 +522,7 @@ describe('FluxCapacitor', function() {
         expect(body.area).to.eq('nonProd');
         expect(body.collection).to.eq('offbrand');
         expect(body.language).to.eq('zh');
+        expect(body.pageSize).to.eq(1);
         expect(body.fields).to.eql(['title', 'price']);
         done();
       });
