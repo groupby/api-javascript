@@ -1,6 +1,7 @@
 GroupBy Search API
 ========
 
+[![CircleCI](https://circleci.com/gh/groupby/api-javascript.svg?style=svg)](https://circleci.com/gh/groupby/api-javascript)
 ![license](https://img.shields.io/github/license/groupby/api-javascript.svg)
 [![npm](https://img.shields.io/npm/dm/groupby-api.svg)](https://www.npmjs.com/package/groupby-api)
 [![npm](https://img.shields.io/npm/v/groupby-api.svg)](https://www.npmjs.com/package/groupby-api)
