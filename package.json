@@ -20,10 +20,12 @@
     "coverage:codacy": "cat ./coverage/lcov.info | codacy-coverage",
     "build": "rimraf dist && tsc",
     "ci": "NODE_ENV=ci karma start --singleRun=false",
-    "docs": "rimraf docs && typedoc --options ./typedoc.json ./src ./custom_typings ./typings"
+    "docs": "rimraf docs && typedoc --options ./typedoc.json ./src ./custom_typings ./typings",
+    "license": "node licenseChecker.js"
   },
   "pre-commit": [
-    "test"
+    "test",
+    "license"
   ],
   "repository": {
     "type": "git",
@@ -43,14 +45,15 @@
     "awesome-typescript-loader": "^2.2.4",
     "chai": "^3.2.0",
     "codacy-coverage": "^2.0.0",
+    "gb-license-check": "^1.0.1",
     "karma": "^0.13.22",
     "karma-chai": "^0.1.0",
     "karma-coverage": "^1.1.1",
     "karma-mocha": "^1.0.1",
     "karma-mocha-reporter": "^2.0.4",
     "karma-phantomjs-launcher": "^1.0.0",
-    "karma-source-map-support": "^1.2.0",
     "karma-sinon": "^1.0.5",
+    "karma-source-map-support": "^1.2.0",
     "karma-webpack": "^1.7.0",
     "mocha": "^2.2.5",
     "object-assign": "^4.1.0",
@@ -58,8 +61,8 @@
     "pre-commit": "^1.1.3",
     "remap-istanbul": "^0.6.4",
     "rimraf": "^2.5.4",
-    "sourcemap-istanbul-instrumenter-loader": "^0.2.0",
     "sinon": "^1.17.6",
+    "sourcemap-istanbul-instrumenter-loader": "^0.2.0",
     "tslint-eslint-rules": "^1.3.0",
     "tslint-loader": "^2.1.5",
     "typedoc": "^0.4.5",
