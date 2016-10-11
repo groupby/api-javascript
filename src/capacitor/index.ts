@@ -28,6 +28,7 @@ export interface FluxConfiguration extends QueryConfiguration {
     headers?: any;
     https?: boolean;
     timeout?: number;
+    queryParams?: any;
   };
 }
 
