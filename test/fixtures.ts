@@ -6,6 +6,10 @@ export let COMPLEX_REQUEST = {
   ],
   fields: ['title', 'description'],
   orFields: ['brand', 'colour'],
+  customUrlParams: [
+    { key: 'banner', value: 'nike_landing' },
+    { key: 'style', value: 'branded' }
+  ],
   includedNavigations: ['brand', 'size'],
   excludedNavigations: ['_meta', 'originalPrice'],
   wildcardSearchEnabled: true,
@@ -40,6 +44,10 @@ export let BULK_REQUEST = {
   ],
   fields: ['title', 'description'],
   orFields: ['brand', 'colour'],
+  customUrlParams: [
+    { key: 'banner', value: 'nike_landing' },
+    { key: 'style', value: 'branded' }
+  ],
   includedNavigations: ['brand', 'size'],
   excludedNavigations: ['_meta', 'originalPrice'],
   wildcardSearchEnabled: false,
@@ -108,4 +116,12 @@ export let COMBINED_REFINEMENTS = [
     low: 89,
     high: 100
   }
+];
+
+export let CUSTOM_PARAMS_FROM_STRING = [
+  { key: 'banner', value: 'nike_landing' },
+  { key: 'style', value: 'branded' },
+  { key: 'defaults', value: '' },
+  { key: 'others', value: '' },
+  { key: 'something', value: 'as_well' }
 ];

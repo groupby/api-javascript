@@ -68,12 +68,11 @@ export abstract class AbstractBridge {
   }
 
   private extractRequest(query: any): { request: Request; queryParams: any; } {
-    const queryParams = Object.assign({}, this.config.queryParams);
     switch (typeof query) {
-      case 'string': return { request: new Query(<string>query).build(), queryParams };
+      case 'string': return { request: new Query(<string>query).build(), queryParams: {} };
       case 'object': return query instanceof Query
-        ? { request: query.build(), queryParams: Object.assign(queryParams, query.queryParams) }
-        : { request: query, queryParams };
+        ? { request: query.build(), queryParams: query.queryParams }
+        : { request: query, queryParams: {} };
       default: return { request: null, queryParams: null };
     }
   }
@@ -147,5 +146,4 @@ export class BrowserBridge extends AbstractBridge {
 
 export interface BridgeConfig {
   timeout?: number;
-  queryParams?: any;
 }
