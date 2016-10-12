@@ -50,7 +50,7 @@ describe('Bridge', () => {
       }));
   });
 
-  it('should be accept a direct query string', (done) => {
+  it('should accept a direct query string', (done) => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       const body = JSON.parse(req.body());
       expect(body.query).to.eq('skirts');
@@ -63,7 +63,7 @@ describe('Bridge', () => {
       .then(() => done());
   });
 
-  it('should be accept a raw request', (done) => {
+  it('should accept a raw request', (done) => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       const body = JSON.parse(req.body());
       expect(body.fields).to.eql(['title', 'description']);
@@ -95,14 +95,14 @@ describe('Bridge', () => {
   });
 
   it('should send a search query and return a promise', (done) => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&syle=branded&other=`, (req, res) => {
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&style=branded&other=`, (req, res) => {
       return res.status(200).body('success');
     });
 
     query = new Query('skirts')
       .withQueryParams({
         size: 20,
-        syle: 'branded',
+        style: 'branded',
         other: ''
       });
 
@@ -182,6 +182,21 @@ describe('Bridge', () => {
       query = new Query('shoes');
 
       Object.assign(new BrowserBridge(CUSTOMER_ID), { headers })
+        .search(query, (err, results) => {
+          expect(results).to.eq('success');
+          done();
+        });
+    });
+
+    it('should include queryParams', (done) => {
+      const queryParams = { thing: 'thingy' };
+      mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search?thing=thingy`, (req, res) => {
+        return res.status(200).body('success');
+      });
+
+      query = new Query('shoes');
+
+      new BrowserBridge(CUSTOMER_ID, false, <any>{ queryParams })
         .search(query, (err, results) => {
           expect(results).to.eq('success');
           done();

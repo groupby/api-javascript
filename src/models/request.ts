@@ -13,7 +13,6 @@ export class Request {
   includedNavigations: string[];
   excludedNavigations: string[];
   sort: Sort[];
-  customUrlParams: CustomUrlParam[];
   restrictNavigation: RestrictNavigation;
   biasing: Biasing;
   matchStrategy: MatchStrategy;
@@ -39,11 +38,6 @@ export class Request {
 export interface Sort {
   field: string;
   order: SortOrder;
-}
-
-export interface CustomUrlParam {
-  key: string;
-  value: string;
 }
 
 export interface SelectedRefinement extends Refinement {

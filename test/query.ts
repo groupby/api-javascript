@@ -1,6 +1,6 @@
 import { Query } from '../src/core/query';
 import { SelectedValueRefinement } from '../src/models/request';
-import { COMBINED_REFINEMENTS, COMPLEX_REQUEST, CUSTOM_PARAMS_FROM_STRING } from './fixtures';
+import { COMBINED_REFINEMENTS, COMPLEX_REQUEST } from './fixtures';
 import { expect } from 'chai';
 
 describe('Query', function() {
@@ -36,7 +36,6 @@ describe('Query', function() {
         area: 'Development',
         biasingProfile: 'boost top brands'
       })
-      .withCustomUrlParams([{ key: 'banner', value: 'nike_landing' }, { key: 'style', value: 'branded' }])
       .withFields('title', 'description')
       .withOrFields('brand', 'colour')
       .withIncludedNavigations('brand', 'size')
@@ -156,16 +155,6 @@ describe('Query', function() {
     const request = query.build();
     expect(request.refinements.length).to.eq(1);
     expect(request.refinements[0].type).to.eq('Range');
-  });
-
-  it('should convert custom URL params', () => {
-    const request = new Query('parameters')
-      .withCustomUrlParams('banner=nike_landing&style=branded')
-      .withCustomUrlParams('defaults')
-      .withCustomUrlParams('others=&something=as_well')
-      .build();
-
-    expect(request.customUrlParams).to.eql(CUSTOM_PARAMS_FROM_STRING);
   });
 
   it('should expose a copy of the raw request', () => {
