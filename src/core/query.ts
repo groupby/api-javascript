@@ -1,5 +1,6 @@
 import {
   Biasing,
+  CustomUrlParam,
   MatchStrategy,
   Request,
   RestrictNavigation,
@@ -48,6 +49,7 @@ export class Query {
     this.request.fields = [];
     this.request.orFields = [];
     this.request.refinements = [];
+    this.request.customUrlParams = [];
     this.request.includedNavigations = [];
     this.request.excludedNavigations = [];
 
@@ -86,6 +88,15 @@ export class Query {
 
   withNavigations(...navigations: Navigation[]): Query {
     this.unprocessedNavigations.push(...navigations);
+    return this;
+  }
+
+  withCustomUrlParams(customUrlParams: CustomUrlParam[] | string): Query {
+    if (typeof customUrlParams === 'string') {
+      this.request.customUrlParams.push(...this.convertParamString(customUrlParams));
+    } else if (customUrlParams instanceof Array) {
+      this.request.customUrlParams.push(...customUrlParams);
+    }
     return this;
   }
 
@@ -216,6 +227,11 @@ export class Query {
 
   private refinementMatches(target: SelectedRefinement, original: SelectedRefinement) {
     return deepEqual(filterObject(target, REFINEMENT_MASK), filterObject(original, REFINEMENT_MASK));
+  }
+
+  private convertParamString(customUrlParams: string): CustomUrlParam[] {
+    const parsed = qs.parse(customUrlParams);
+    return Object.keys(parsed).reduce((converted, key) => converted.concat({ key, value: parsed[key] }), []);
   }
 
   private convertQueryString(queryParams: string): any {
