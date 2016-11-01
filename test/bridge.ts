@@ -6,7 +6,7 @@ import * as mock from 'xhr-mock';
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
 
-describe.only('Bridge', () => {
+describe('Bridge', () => {
   let bridge;
   let query;
 
@@ -168,6 +168,22 @@ describe.only('Bridge', () => {
     };
 
     bridge.search(query);
+  });
+
+  it('should invoke any configured errorHandler on error and allow downstream promise catching', (done) => {
+    const errorHandler = bridge.errorHandler = sinon.spy();
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      return res.status(400).body('error');
+    });
+    query = new Query('shoes');
+
+    bridge.search(query)
+      .catch((err) => {
+        expect(err.data).to.eq('error');
+        expect(err.status).to.eq(400);
+        expect(errorHandler.calledWith(err)).to.be.true;
+        done();
+      });
   });
 
   describe('BrowserBridge', () => {
