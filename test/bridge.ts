@@ -6,7 +6,7 @@ import * as mock from 'xhr-mock';
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
 
-describe('Bridge', () => {
+describe.only('Bridge', () => {
   let bridge;
   let query;
 
@@ -125,6 +125,49 @@ describe('Bridge', () => {
       expect(results).to.eq('success');
       done();
     });
+  });
+
+  it('should be able to handle errors in promise chain', (done) => {
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      return res.status(400).body('error');
+    });
+
+    query = new Query('shoes');
+
+    bridge.search(query)
+      .catch((err) => {
+        expect(err.data).to.eq('error');
+        expect(err.status).to.eq(400);
+        done();
+      });
+  });
+
+  it('should be able to handle errors in callback', (done) => {
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      return res.status(400).body('error');
+    });
+
+    query = new Query('shoes');
+
+    bridge.search(query, (err) => {
+      expect(err.data).to.eq('error');
+      expect(err.status).to.eq(400);
+      done();
+    });
+  });
+
+  it('should invoke any configured errorHandler on error', (done) => {
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      return res.status(400).body('error');
+    });
+    query = new Query('shoes');
+    bridge.errorHandler = (err) => {
+      expect(err.data).to.eq('error');
+      expect(err.status).to.eq(400);
+      done();
+    };
+
+    bridge.search(query);
   });
 
   describe('BrowserBridge', () => {
