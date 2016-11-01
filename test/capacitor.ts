@@ -61,6 +61,12 @@ describe('FluxCapacitor', function() {
     expect(flux.bridge.baseUrl).to.eq('https://services-cors.groupbycloud.com:443/api/v1');
   });
 
+  it('should set errorHandler on bridge', () => {
+    const errorHandler = () => null;
+    flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { errorHandler } });
+    expect(flux.bridge.errorHandler).to.eq(errorHandler);
+  });
+
   describe('search()', () => {
     it('should make a search request', (done) => {
       mock.post(SEARCH_URL, (req, res) => {
