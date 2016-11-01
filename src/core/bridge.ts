@@ -30,6 +30,7 @@ export abstract class AbstractBridge {
   config: BridgeConfig;
   headers: any = {};
   baseUrl: string;
+  errorHandler: (error: Error) => void;
   protected bridgeUrl: string;
   protected refinementsUrl: string;
 
@@ -60,8 +61,7 @@ export abstract class AbstractBridge {
 
   private handleResponse<T>(response: Promise<T>, callback: Function): Promise<T> {
     if (callback) {
-      response.then((res) => callback(undefined, res))
-        .catch((err) => callback(err));
+      response.then((res) => callback(undefined, res), (err) => callback(err));
     } else {
       return response;
     }
@@ -97,7 +97,13 @@ export abstract class AbstractBridge {
       timeout: this.config.timeout
     };
     return axios(options)
-      .then((res) => res.data);
+      .then((res) => res.data)
+      .catch((err) => {
+        if (this.errorHandler) {
+          this.errorHandler(err);
+        }
+        throw err;
+      });
   }
 
   private convertRecordFields(record: RawRecord): Record | RawRecord {

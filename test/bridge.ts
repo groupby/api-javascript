@@ -127,6 +127,65 @@ describe('Bridge', () => {
     });
   });
 
+  it('should be able to handle errors in promise chain', (done) => {
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      return res.status(400).body('error');
+    });
+
+    query = new Query('shoes');
+
+    bridge.search(query)
+      .catch((err) => {
+        expect(err.data).to.eq('error');
+        expect(err.status).to.eq(400);
+        done();
+      });
+  });
+
+  it('should be able to handle errors in callback', (done) => {
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      return res.status(400).body('error');
+    });
+
+    query = new Query('shoes');
+
+    bridge.search(query, (err) => {
+      expect(err.data).to.eq('error');
+      expect(err.status).to.eq(400);
+      done();
+    });
+  });
+
+  it('should invoke any configured errorHandler on error', (done) => {
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      return res.status(400).body('error');
+    });
+    query = new Query('shoes');
+    bridge.errorHandler = (err) => {
+      expect(err.data).to.eq('error');
+      expect(err.status).to.eq(400);
+      done();
+    };
+
+    bridge.search(query);
+  });
+
+  it('should invoke any configured errorHandler on error and allow downstream promise catching', (done) => {
+    const errorHandler = bridge.errorHandler = sinon.spy();
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
+      return res.status(400).body('error');
+    });
+    query = new Query('shoes');
+
+    bridge.search(query)
+      .catch((err) => {
+        expect(err.data).to.eq('error');
+        expect(err.status).to.eq(400);
+        expect(errorHandler.calledWith(err)).to.be.true;
+        done();
+      });
+  });
+
   describe('BrowserBridge', () => {
     describe('search()', () => {
       it('should send requests to the CORS supported search endpoint', (done) => {
