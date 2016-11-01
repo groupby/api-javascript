@@ -61,10 +61,34 @@ describe('FluxCapacitor', function() {
     expect(flux.bridge.baseUrl).to.eq('https://services-cors.groupbycloud.com:443/api/v1');
   });
 
-  it('should set errorHandler on bridge', () => {
-    const errorHandler = () => null;
+  it('should add default event listener', (done) => {
+    const error: any = { a: 'b' };
+    flux = new FluxCapacitor(CUSTOMER_ID);
+    flux.on(Events.ERROR_BRIDGE, (err) => {
+      expect(err).to.eq(error);
+      done();
+    });
+
+    expect(flux.bridge.errorHandler).to.be.a('function');
+
+    flux.bridge.errorHandler(error);
+  });
+
+  it('should set configured errorHandler on bridge', () => {
+    const errorHandler = sinon.spy();
     flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { errorHandler } });
-    expect(flux.bridge.errorHandler).to.eq(errorHandler);
+    const error: any = { a: 'b' };
+
+    flux.bridge.errorHandler(error);
+
+    expect(errorHandler.calledWith(error)).to.be.true;
+  });
+
+  it('should not override default errorHandler on bridge', (done) => {
+    flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { errorHandler: () => null } });
+    flux.on(Events.ERROR_BRIDGE, () => done());
+
+    flux.bridge.errorHandler(<any>{});
   });
 
   describe('search()', () => {
