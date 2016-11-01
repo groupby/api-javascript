@@ -24,11 +24,14 @@ export { Pager };
 export type FluxRefinement = SelectedValueRefinement | SelectedRangeRefinement;
 
 export interface FluxConfiguration extends QueryConfiguration {
-  bridge?: {
-    headers?: any;
-    https?: boolean;
-    timeout?: number;
-  };
+  bridge?: FluxBridgeConfig;
+}
+
+export interface FluxBridgeConfig {
+  headers?: { [key: string]: string };
+  https?: boolean;
+  timeout?: number;
+  errorHandler?: (error: Error) => void;
 }
 
 export class FluxCapacitor extends EventEmitter {
@@ -42,9 +45,10 @@ export class FluxCapacitor extends EventEmitter {
   constructor(endpoint: string, config: FluxConfiguration = {}, mask?: string) {
     super();
 
-    const bridgeConfig = config.bridge || {};
+    const bridgeConfig: FluxBridgeConfig = config.bridge || {};
     this.bridge = new BrowserBridge(endpoint, bridgeConfig.https, bridgeConfig);
     if (bridgeConfig.headers) this.bridge.headers = bridgeConfig.headers;
+    if (bridgeConfig.errorHandler) this.bridge.errorHandler = bridgeConfig.errorHandler;
 
     this.query = new Query().withConfiguration(filterObject(config, ['*', '!{bridge}']), mask);
     this.page = new Pager(this);
@@ -77,7 +81,7 @@ export class FluxCapacitor extends EventEmitter {
   }
 
   rewrite(query: string, config: RewriteConfig = {}): Promise<string> {
-    let search;
+    let search: Promise<any>;
     if (config.skipSearch) {
       this.emitQueryChanged(this.originalQuery, query);
       search = Promise.resolve(this.query.withQuery(this.originalQuery = query));
