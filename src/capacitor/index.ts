@@ -18,6 +18,7 @@ export namespace Events {
   export const SORT = 'sort';
   export const DETAILS = 'details';
   export const REDIRECT = 'redirect';
+  export const ERROR_BRIDGE = 'error:bridge';
 }
 
 export { Pager };
@@ -48,7 +49,10 @@ export class FluxCapacitor extends EventEmitter {
     const bridgeConfig: FluxBridgeConfig = config.bridge || {};
     this.bridge = new BrowserBridge(endpoint, bridgeConfig.https, bridgeConfig);
     if (bridgeConfig.headers) this.bridge.headers = bridgeConfig.headers;
-    if (bridgeConfig.errorHandler) this.bridge.errorHandler = bridgeConfig.errorHandler;
+    this.bridge.errorHandler = (err) => {
+      this.emit(Events.ERROR_BRIDGE, err);
+      if (bridgeConfig.errorHandler) bridgeConfig.errorHandler(err);
+    };
 
     this.query = new Query().withConfiguration(filterObject(config, ['*', '!{bridge}']), mask);
     this.page = new Pager(this);
