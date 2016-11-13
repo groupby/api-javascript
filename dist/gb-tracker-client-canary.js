@@ -88,6 +88,7 @@
 	  var customer             = {};
 	  var visit                = {customerData: {}};
 	  var invalidEventCallback = null;
+	  var strictMode           = false;
 	  overridenPixelUrl = overridePixelUrl || '';
 
 	  var MAX_QUERY_STRING_LENGTH = MAX_PATH_LENGTH - MAX_PATHNAME_LENGTH;
@@ -139,6 +140,10 @@
 
 	      self.__private.sendSessionChangeEvent({session: sessionEvent});
 	    }
+	  };
+
+	  self.setStrictMode = function (strict) {
+	    strictMode = strict;
 	  };
 
 	  /**
@@ -279,6 +284,10 @@
 	    var removedFields = self.__private.getRemovedFields(sanitizedEvent, event);
 
 	    if (removedFields.length > 0) {
+	      if (strictMode) {
+	        throw new Error('Unexpected fields ' + JSON.stringify(removedFields) + ' in eventType: ' + sanitizedEvent.eventType);
+	      }
+
 	      for (var i = 0; i < removedFields.length; i++) {
 	        console.warn('unexpected field: ' + removedFields[i] + ' is being dropped from eventType: ' + sanitizedEvent.eventType);
 	      }
@@ -335,6 +344,11 @@
 	    if (eventStringSegments.length > MAX_SEGMENT_COUNT) {
 	      console.error('cannot send: ' + eventStringSegments + ' event segments, as that exceeds the max of: ' + MAX_SEGMENT_COUNT);
 	      return;
+	    }
+
+	    if (window.DEBUG) {
+	      // eslint-disable-next-line
+	      console.log('Beaconing event: ' + JSON.stringify(event, null, 2));
 	    }
 
 	    for (var i = 0; i < eventStringSegments.length; i++) {
@@ -1257,7 +1271,7 @@
 					return;
 				}
 				if (typeof candidate === 'undefined') {
-					this.report('is missing and not optional');
+					this.report('is missing and not optional', null, 'optional');
 				}
 			},
 			type: function (schema, candidate) {
@@ -1271,7 +1285,7 @@
 				});
 				if (!typeIsValid) {
 					types = types.map(function (t) {return typeof t === 'function' ? 'and instance of ' + t.name : t; });
-					this.report('must be ' + types.join(' or ') + ', but is ' + _realType(candidate));
+					this.report('must be ' + types.join(' or ') + ', but is ' + _realType(candidate), null, 'type');
 				}
 			},
 			uniqueness: function (schema, candidate) {
@@ -1287,7 +1301,7 @@
 					var indexes = getIndexes(candidate, candidate[i]);
 					if (indexes.length > 1) {
 						reported.push(candidate[i]);
-						this.report('has value [' + candidate[i] + '] more than once at indexes [' + indexes.join(', ') + ']');
+						this.report('has value [' + candidate[i] + '] more than once at indexes [' + indexes.join(', ') + ']', null, 'uniqueness');
 					}
 				}
 			},
@@ -1312,12 +1326,12 @@
 					}
 				});
 				if (!matches) {
-					self.report('must match [' + regexs.join(' or ') + '], but is equal to "' + candidate + '"');
+					self.report('must match [' + regexs.join(' or ') + '], but is equal to "' + candidate + '"', null, 'pattern');
 				}
 			},
 			validDate: function (schema, candidate) {
 				if (String(schema.validDate) === 'true' && candidate instanceof Date && isNaN(candidate.getTime())) {
-					this.report('must be a valid date');
+					this.report('must be a valid date', null, 'validDate');
 				}
 			},
 			minLength: function (schema, candidate) {
@@ -1329,7 +1343,7 @@
 					return;
 				}
 				if (candidate.length < minLength) {
-					this.report('must be longer than ' + minLength + ' elements, but it has ' + candidate.length);
+					this.report('must be longer than ' + minLength + ' elements, but it has ' + candidate.length, null, 'minLength');
 				}
 			},
 			maxLength: function (schema, candidate) {
@@ -1341,7 +1355,7 @@
 					return;
 				}
 				if (candidate.length > maxLength) {
-					this.report('must be shorter than ' + maxLength + ' elements, but it has ' + candidate.length);
+					this.report('must be shorter than ' + maxLength + ' elements, but it has ' + candidate.length, null, 'maxLength');
 				}
 			},
 			exactLength: function (schema, candidate) {
@@ -1353,7 +1367,7 @@
 					return;
 				}
 				if (candidate.length !== exactLength) {
-					this.report('must have exactly ' + exactLength + ' elements, but it have ' + candidate.length);
+					this.report('must have exactly ' + exactLength + ' elements, but it have ' + candidate.length, null, 'exactLength');
 				}
 			},
 			lt: function (schema, candidate) {
@@ -1362,7 +1376,7 @@
 					return;
 				}
 				if (candidate >= limit) {
-					this.report('must be less than ' + limit + ', but is equal to "' + candidate + '"');
+					this.report('must be less than ' + limit + ', but is equal to "' + candidate + '"', null, 'lt');
 				}
 			},
 			lte: function (schema, candidate) {
@@ -1371,7 +1385,7 @@
 					return;
 				}
 				if (candidate > limit) {
-					this.report('must be less than or equal to ' + limit + ', but is equal to "' + candidate + '"');
+					this.report('must be less than or equal to ' + limit + ', but is equal to "' + candidate + '"', null, 'lte');
 				}
 			},
 			gt: function (schema, candidate) {
@@ -1380,7 +1394,7 @@
 					return;
 				}
 				if (candidate <= limit) {
-					this.report('must be greater than ' + limit + ', but is equal to "' + candidate + '"');
+					this.report('must be greater than ' + limit + ', but is equal to "' + candidate + '"', null, 'gt');
 				}
 			},
 			gte: function (schema, candidate) {
@@ -1389,7 +1403,7 @@
 					return;
 				}
 				if (candidate < limit) {
-					this.report('must be greater than or equal to ' + limit + ', but is equal to "' + candidate + '"');
+					this.report('must be greater than or equal to ' + limit + ', but is equal to "' + candidate + '"', null, 'gte');
 				}
 			},
 			eq: function (schema, candidate) {
@@ -1408,11 +1422,11 @@
 					}
 					this.report('must be equal to [' + limit.map(function (l) {
 						return '"' + l + '"';
-					}).join(' or ') + '], but is equal to "' + candidate + '"');
+					}).join(' or ') + '], but is equal to "' + candidate + '"', null, 'eq');
 				}
 				else {
 					if (candidate !== limit) {
-						this.report('must be equal to "' + limit + '", but is equal to "' + candidate + '"');
+						this.report('must be equal to "' + limit + '", but is equal to "' + candidate + '"', null, 'eq');
 					}
 				}
 			},
@@ -1427,14 +1441,14 @@
 				if (_typeIs.array(limit)) {
 					for (var i = 0; i < limit.length; i++) {
 						if (candidate === limit[i]) {
-							this.report('must not be equal to "' + limit[i] + '"');
+							this.report('must not be equal to "' + limit[i] + '"', null, 'ne');
 							return;
 						}
 					}
 				}
 				else {
 					if (candidate === limit) {
-						this.report('must not be equal to "' + limit + '"');
+						this.report('must not be equal to "' + limit + '"', null, 'ne');
 					}
 				}
 			},
@@ -1449,7 +1463,7 @@
 				if (!valid) {
 					this.report('must have at least key ' + _keys.map(function (i) {
 						return '"' + i + '"';
-					}).join(' or '));
+					}).join(' or '), null, 'someKeys');
 				}
 			},
 			strict: function (schema, candidate) {
@@ -1465,7 +1479,7 @@
 					if (intruder.length > 0) {
 						var msg = 'should not contains ' + (intruder.length > 1 ? 'properties' : 'property') +
 							' [' + intruder.map(function (i) { return '"' + i + '"'; }).join(', ') + ']';
-						self.report(msg);
+						self.report(msg, null, 'strict');
 					}
 				}
 			},
@@ -1632,9 +1646,10 @@
 			this._customFields = Object.keys(this._custom);
 			this.origin = null;
 
-			this.report = function (message, code) {
+			this.report = function (message, code, reason) {
 				var newErr = {
 					code: code || this.userCode || null,
+					reason: reason || 'unknown',
 					message: this.userError || message || 'is invalid',
 					property: this.userAlias ? (this.userAlias + ' (' + this._dumpStack() + ')') : this._dumpStack()
 				};
@@ -4293,7 +4308,7 @@
 
 	module.exports = {
 		"name": "gb-tracker-client",
-		"version": "3.1.0",
+		"version": "3.2.1",
 		"description": "GroupBy client-side event tracker",
 		"keywords": [
 			"groupby",
@@ -4315,28 +4330,28 @@
 			"chai": "^3.5.0",
 			"codacy-coverage": "^2.0.0",
 			"gulp": "^3.9.1",
-			"gulp-eslint": "^2.0.0",
-			"gulp-exec": "^2.1.2",
-			"gulp-if": "^2.0.1",
-			"gulp-istanbul": "^0.10.4",
-			"gulp-mocha": "^2.2.0",
+			"gulp-eslint": "^3.0.1",
+			"gulp-exec": "^2.1.3",
+			"gulp-if": "^2.0.2",
+			"gulp-istanbul": "^1.1.1",
+			"gulp-mocha": "^3.0.1",
 			"gulp-util": "^3.0.7",
 			"istanbul": "^0.4.3",
-			"lodash": "^4.15.0",
+			"lodash": "^4.16.6",
 			"stream-combiner2": "^1.1.1",
-			"stringify-object": "^2.4.0",
-			"supertest": "^1.2.0",
-			"supertest-as-promised": "^3.1.0",
-			"webpack": "^1.13.1",
+			"stringify-object": "^3.0.0",
+			"supertest": "^2.0.1",
+			"supertest-as-promised": "^4.0.2",
+			"webpack": "^1.13.3",
 			"webpack-stream": "^3.2.0"
 		},
 		"dependencies": {
 			"deep-diff": "^0.3.4",
 			"json-loader": "^0.5.4",
 			"lz-string": "^1.4.4",
-			"mocha": "^2.4.5",
-			"schema-inspector": "^1.6.4",
-			"uuid": "^2.0.2"
+			"mocha": "^3.1.2",
+			"schema-inspector": "^1.6.8",
+			"uuid": "^2.0.3"
 		}
 	};
 
