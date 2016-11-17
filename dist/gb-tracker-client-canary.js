@@ -90,6 +90,7 @@
 	  var invalidEventCallback = null;
 	  var strictMode           = false;
 	  overridenPixelUrl = overridePixelUrl || '';
+	  var disableWarnings      = false;
 
 	  var MAX_QUERY_STRING_LENGTH = MAX_PATH_LENGTH - MAX_PATHNAME_LENGTH;
 
@@ -102,6 +103,14 @@
 	  if (typeof area === 'string' && area.length > 0) {
 	    customer.area = area;
 	  }
+
+	  self.disableWarnings = function() {
+	    disableWarnings = true;
+	  };
+
+	  self.enableWarnings = function() {
+	    disableWarnings = false;
+	  };
 
 	  /**
 	   * Update visitor and session id's during login/logout
@@ -289,7 +298,9 @@
 	      }
 
 	      for (var i = 0; i < removedFields.length; i++) {
-	        console.warn('unexpected field: ' + removedFields[i] + ' is being dropped from eventType: ' + sanitizedEvent.eventType);
+	        if (!disableWarnings) {
+	          console.warn('unexpected field: ' + removedFields[i] + ' is being dropped from eventType: ' + sanitizedEvent.eventType);
+	        }
 	      }
 	    }
 
@@ -4308,7 +4319,7 @@
 
 	module.exports = {
 		"name": "gb-tracker-client",
-		"version": "3.2.3",
+		"version": "3.3.0",
 		"description": "GroupBy client-side event tracker",
 		"keywords": [
 			"groupby",
