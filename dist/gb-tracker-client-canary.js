@@ -4308,7 +4308,7 @@
 
 	module.exports = {
 		"name": "gb-tracker-client",
-		"version": "3.2.2",
+		"version": "3.2.3",
 		"description": "GroupBy client-side event tracker",
 		"keywords": [
 			"groupby",
