@@ -1,5 +1,5 @@
 import { Results } from '../models/response';
-import { Events, FluxCapacitor } from './index';
+import { Events, FluxCapacitor } from './capacitor';
 import range = require('lodash.range');
 
 const MAX_RECORDS = 10000;
