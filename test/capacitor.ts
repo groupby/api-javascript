@@ -31,10 +31,13 @@ describe('FluxCapacitor', function() {
 
   it('should accept a mask for configuration', () => {
     const config: any = { a: 'something', b: 'Ascending' };
+
     flux = new FluxCapacitor(CUSTOMER_ID, config);
+
     expect(flux.query.raw).to.contain.keys('a', 'b');
 
     flux = new FluxCapacitor(CUSTOMER_ID, config, '{refinements,area}');
+
     expect(flux.query.raw).to.not.contain.keys('a', 'b');
   });
 
@@ -47,17 +50,20 @@ describe('FluxCapacitor', function() {
         https: true
       }
     });
+
     expect(flux.query.raw).to.not.contain.keys('bridge');
   });
 
   it('should set headers on bridge', () => {
     const headers = { c: 'd' };
     flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { headers } });
+
     expect(flux.bridge.headers).to.eq(headers);
   });
 
   it('should set HTTPS on bridge', () => {
     flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { https: true } });
+
     expect(flux.bridge.baseUrl).to.eq('https://services-cors.groupbycloud.com:443/api/v1');
   });
 
@@ -97,6 +103,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).query).to.eq('testing');
         done();
       });
+
       flux.search('testing');
     });
 
@@ -115,6 +122,7 @@ describe('FluxCapacitor', function() {
         flux.bridge.search = (): any => Promise.resolve('ok');
         // mock.post(SEARCH_URL, (req, res) => res.body('ok'));
         flux.on(Events.RESULTS, () => done());
+
         flux.search('');
       });
 
@@ -172,6 +180,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).navigationName).to.eq('brand');
         done();
       });
+
       flux.refinements('brand');
     });
 
@@ -179,6 +188,7 @@ describe('FluxCapacitor', function() {
       it('should emit a refinement_results event', (done) => {
         mock.post(REFINEMENTS_URL, (req, res) => res.body('ok'));
         flux.on(Events.REFINEMENT_RESULTS, () => done());
+
         flux.refinements('');
       });
     });
@@ -190,6 +200,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).refinements.length).to.eq(1);
         done();
       });
+
       flux.refine(SELECTED_REFINEMENT);
     });
 
@@ -218,12 +229,12 @@ describe('FluxCapacitor', function() {
   describe('events', () => {
     it('should emit refinements_changed event on refinement', (done) => {
       mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
-
       flux.on(Events.REFINEMENTS_CHANGED, (data) => {
         expect(data.available).to.eq('a');
         expect(data.selected).to.eq('b');
         done();
       });
+
       flux.refine(SELECTED_REFINEMENT);
     });
   });
@@ -235,6 +246,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).refinements).to.not.be.ok;
         done();
       });
+
       flux.unrefine(SELECTED_REFINEMENT);
     });
 
@@ -265,12 +277,12 @@ describe('FluxCapacitor', function() {
       it('should emit refinements_changed event on un-refinement', (done) => {
         flux.query.withSelectedRefinements(SELECTED_REFINEMENT);
         mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(REFINEMENT_RESULT)));
-
         flux.on(Events.REFINEMENTS_CHANGED, (data) => {
           expect(data.available).to.eq('a');
           expect(data.selected).to.eq('b');
           done();
         });
+
         flux.unrefine(SELECTED_REFINEMENT);
       });
     });
@@ -287,6 +299,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).skip).to.eq(0);
         done();
       });
+
       flux.page.reset();
     });
 
@@ -295,6 +308,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).skip).to.eq(30);
         done();
       });
+
       flux.page.next();
     });
 
@@ -311,6 +325,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).skip).to.eq(290);
         done();
       });
+
       flux.page.last();
     });
   });
@@ -325,6 +340,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).pageSize).to.eq(20);
         done();
       });
+
       flux.resize(20, false);
     });
 
@@ -337,6 +353,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).pageSize).to.eq(20);
         done();
       });
+
       flux.resize(20, false);
     });
 
@@ -349,6 +366,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).pageSize).to.eq(30);
         done();
       });
+
       flux.resize(30, true);
     });
 
@@ -361,6 +379,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).pageSize).to.eq(24);
         done();
       });
+
       flux.resize(24, false);
     });
 
@@ -373,25 +392,28 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).pageSize).to.eq(49);
         done();
       });
+
       flux.resize(49, false);
     });
   });
 
   describe('rewrite()', () => {
-    it('should rewrite the query', () => {
+    it('should rewrite the query', (done) => {
       const newQuery = 'montana';
       flux.query.withQuery('alabama');
-
       flux.search = (query): any => Promise.resolve(expect(query).to.eq(newQuery));
-      flux.rewrite(newQuery);
+
+      flux.rewrite(newQuery)
+        .then(() => done());
     });
 
     it('should rewrite the query but not perform a search', () => {
       const newQuery = 'montana';
       flux.query.withQuery('alabama');
-
       flux.search = (query): any => expect.fail();
+
       flux.rewrite(newQuery, { skipSearch: true });
+
       expect(flux.query.raw.query).to.eq(newQuery);
     });
 
@@ -410,7 +432,6 @@ describe('FluxCapacitor', function() {
 
     it('should emit events when not searching', () => {
       const newQuery = 'montana';
-
       flux.query.withQuery('alabama');
       flux.emit = (event, data): any => {
         switch (event) {
@@ -430,14 +451,13 @@ describe('FluxCapacitor', function() {
   describe('reset behaviour', () => {
     it('should reset the query', (done) => {
       flux.query.withQuery('alabama');
-
       flux.resetRecall = () => null;
-
       mock.post(SEARCH_URL, (req, res) => {
         const body = JSON.parse(req.body());
         expect(body.query).to.eq('');
         done();
       });
+
       flux.reset();
     });
 
@@ -447,6 +467,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).query).to.eq('texas');
         done();
       });
+
       flux.reset('texas');
     });
 
@@ -465,7 +486,7 @@ describe('FluxCapacitor', function() {
     });
   });
 
-  describe('sort behaviour', () => {
+  describe('sort()', () => {
     it('should reset paging but not refinements', (done) => {
       const refinement: SelectedValueRefinement = { navigationName: 'brand', type: 'Value', value: 'DeWalt' };
       flux.query.skip(30)
@@ -477,6 +498,7 @@ describe('FluxCapacitor', function() {
         expect(body.refinements).to.eql([refinement]);
         done();
       });
+
       flux.sort({ field: 'price', order: 'Ascending' });
     });
 
@@ -485,6 +507,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).sort).to.eql([{ field: 'price', order: 'Ascending' }]);
         done();
       });
+
       flux.sort({ field: 'price', order: 'Ascending' });
     });
 
@@ -494,6 +517,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).sort.length).to.eq(2);
         done();
       });
+
       flux.sort({ field: 'price', order: 'Ascending' });
     });
 
@@ -503,6 +527,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).sort).to.eql([{ field: 'price', order: 'Ascending' }]);
         done();
       });
+
       flux.sort({ field: 'price', order: 'Ascending' });
     });
 
@@ -517,7 +542,19 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).sort).to.eql([{ field: 'price', order: 'Ascending' }]);
         done();
       });
+
       flux.sort({ field: 'price', order: 'Ascending' }, sorts);
+    });
+
+    it('should emit sort event', (done) => {
+      const sort: any = { field: 'price', order: 'Ascending' };
+      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+      flux.on(Events.SORT, (newSort) => {
+        expect(newSort).to.be.ok;
+        done();
+      });
+
+      flux.sort(sort);
     });
   });
 
@@ -527,6 +564,7 @@ describe('FluxCapacitor', function() {
         expect(JSON.parse(req.body()).refinements).to.eql([{ navigationName: 'id', type: 'Value', value: '14830' }]);
         done();
       });
+
       flux.details('14830');
     });
 
@@ -556,16 +594,17 @@ describe('FluxCapacitor', function() {
         expect(body.fields).to.eql(['title', 'price']);
         done();
       });
+
       flux.details('14830');
     });
 
     it('should emit details event', (done) => {
       mock.post(SEARCH_URL, (req, res) => res.body(JSON.stringify(DETAILS_RESULT)));
-
       flux.on(Events.DETAILS, (data) => {
         expect(data).to.be.ok;
         done();
       });
+
       flux.details('14830');
     });
   });
@@ -574,7 +613,6 @@ describe('FluxCapacitor', function() {
     it('should switch collection', (done) => {
       const collection = 'other';
       mock.post(SEARCH_URL, (req, res) => res.body('ok'));
-
       flux.query.withConfiguration({ collection: 'something' });
 
       flux.switchCollection(collection)
