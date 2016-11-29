@@ -7,18 +7,19 @@ import * as EventEmitter from 'eventemitter3';
 import filterObject = require('filter-object');
 
 export namespace Events {
-  export const SEARCH = 'search';
-  export const RESULTS = 'results';
-  export const REFINEMENT_RESULTS = 'refinement_results';
-  export const REFINEMENTS_CHANGED = 'refinements_changed';
+  export const COLLECTION_CHANGED = 'collection_changed';
+  export const DETAILS = 'details';
+  export const ERROR_BRIDGE = 'error:bridge';
   export const PAGE_CHANGED = 'page_changed';
   export const QUERY_CHANGED = 'query_changed';
-  export const RESET = 'reset';
-  export const REWRITE_QUERY = 'rewrite_query';
-  export const SORT = 'sort';
-  export const DETAILS = 'details';
   export const REDIRECT = 'redirect';
-  export const ERROR_BRIDGE = 'error:bridge';
+  export const REFINEMENT_RESULTS = 'refinement_results';
+  export const REFINEMENTS_CHANGED = 'refinements_changed';
+  export const RESET = 'reset';
+  export const RESULTS = 'results';
+  export const REWRITE_QUERY = 'rewrite_query';
+  export const SEARCH = 'search';
+  export const SORT = 'sort';
 }
 
 export { Pager };
@@ -153,7 +154,11 @@ export class FluxCapacitor extends EventEmitter {
 
   switchCollection(collection: string): Promise<Results> {
     this.query.withConfiguration(<any>{ collection, refinements: [], sort: [], skip: 0 });
-    return this.search();
+    return this.search()
+      .then((res) => {
+        this.emit(Events.COLLECTION_CHANGED, collection);
+        return res;
+      });
   }
 
   private emitQueryChanged(oldQuery: string, newQuery: string) {
