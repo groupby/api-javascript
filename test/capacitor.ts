@@ -641,6 +641,17 @@ describe('FluxCapacitor', function() {
           done();
         });
     });
+
+    it('should emit collection_changed event', (done) => {
+      const collection = 'support';
+      mock.post(SEARCH_URL, (req, res) => res.body('ok'));
+      flux.on(Events.COLLECTION_CHANGED, (coll) => {
+        expect(coll).to.eq(collection);
+        done();
+      });
+
+      flux.switchCollection(collection);
+    });
   });
 
   it('should reset recall', () => {
