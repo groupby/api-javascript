@@ -121,11 +121,11 @@
 	    visitorId = (visitorId && typeof visitorId === 'number') ? (visitorId + '') : visitorId;
 	    sessionId = (sessionId && typeof sessionId === 'number') ? (sessionId + '') : sessionId;
 
-	    if (typeof visitorId !== 'string') {
+	    if (typeof visitorId !== 'string' || visitorId.length === 0) {
 	      throw new Error('visitorId must be a string with length');
 	    }
 
-	    if (typeof sessionId !== 'string') {
+	    if (typeof sessionId !== 'string' || sessionId.length === 0) {
 	      throw new Error('sessionId must be a string with length');
 	    }
 
@@ -135,7 +135,7 @@
 	    visit.customerData.visitorId = visitorId;
 	    visit.customerData.sessionId = sessionId;
 
-	    if (prevVisitorId !== visitorId || prevSessionId !== sessionId) {
+	    if ((prevVisitorId && prevVisitorId !== visitorId) || (prevSessionId && prevSessionId !== sessionId)) {
 	      var sessionEvent = {
 	        newSessionId: visit.customerData.sessionId,
 	        newVisitorId: visit.customerData.visitorId
@@ -161,7 +161,7 @@
 	   * @param type
 	   */
 	  var prepareEvent = function (event, type) {
-	    if (!visit.customerData.sessionId || !visit.customerData.visitorId) {
+	    if (visit.customerData.sessionId == null || visit.customerData.visitorId == null) {
 	      throw new Error('visitorId and sessionId must be set using setVisitor() before an event is sent');
 	    }
 
@@ -4350,7 +4350,7 @@
 			"istanbul": "^0.4.3",
 			"lodash": "^4.16.6",
 			"stream-combiner2": "^1.1.1",
-			"stringify-object": "^3.0.0",
+			"stringify-object": "3.0.0",
 			"supertest": "^2.0.1",
 			"supertest-as-promised": "^4.0.2",
 			"webpack": "^1.13.3",
