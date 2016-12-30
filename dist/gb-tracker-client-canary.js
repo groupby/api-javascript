@@ -4340,7 +4340,7 @@
 	  return rv;
 	};
 
-	var startsWithOneOf = function(target, array) {
+	var startsWithOneOf = function (target, array) {
 	  var len = parseInt(array.length, 10) || 0;
 	  if (len === 0) {
 	    return false;
@@ -4348,7 +4348,7 @@
 
 	  var k = 0;
 
-	  var currentElement;
+	  var currentElement = null;
 	  while (k < len) {
 	    currentElement = array[k];
 	    if (target.startsWith && target.startsWith(currentElement)) {
@@ -4367,7 +4367,7 @@
 	  merge:                      merge,
 	  getInternetExplorerVersion: getInternetExplorerVersion,
 	  getUnique:                  getUnique,
-	  startsWithOneOf: startsWithOneOf
+	  startsWithOneOf:            startsWithOneOf
 	};
 
 /***/ },
@@ -4383,7 +4383,7 @@
 
 	module.exports = {
 		"name": "gb-tracker-client",
-		"version": "3.3.2",
+		"version": "3.3.3",
 		"description": "GroupBy client-side event tracker",
 		"keywords": [
 			"groupby",
