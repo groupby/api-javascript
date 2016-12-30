@@ -94,6 +94,11 @@
 
 	  var MAX_QUERY_STRING_LENGTH = MAX_PATH_LENGTH - MAX_PATHNAME_LENGTH;
 
+	  var IGNORED_FIELD_PREFIXES = [
+	    'search.records.[].allMeta',
+	    'search.template.zones'
+	  ];
+
 	  if (typeof customerId !== 'string' || customerId.length === 0) {
 	    throw new Error('customerId must be a string with length');
 	  } else {
@@ -104,11 +109,11 @@
 	    customer.area = area;
 	  }
 
-	  self.disableWarnings = function() {
+	  self.disableWarnings = function () {
 	    disableWarnings = true;
 	  };
 
-	  self.enableWarnings = function() {
+	  self.enableWarnings = function () {
 	    disableWarnings = false;
 	  };
 
@@ -209,7 +214,6 @@
 	    // Move search.id to the event object
 	    if (event && event.search && event.search.id && !event.responseId) {
 	      event.responseId = event.search.id;
-	      delete event.search.id;
 	    }
 
 	    self.__private.prepareAndSendEvent(event, 'search');
@@ -297,10 +301,19 @@
 	        throw new Error('Unexpected fields ' + JSON.stringify(removedFields) + ' in eventType: ' + sanitizedEvent.eventType);
 	      }
 
+	      if (!sanitizedEvent.metadata) {
+	        sanitizedEvent.metadata = [];
+	      }
+
 	      for (var i = 0; i < removedFields.length; i++) {
 	        if (!disableWarnings) {
 	          console.warn('unexpected field: ' + removedFields[i] + ' is being dropped from eventType: ' + sanitizedEvent.eventType);
 	        }
+
+	        sanitizedEvent.metadata.push({
+	          key:   'gbi-field-warning',
+	          value: removedFields[i]
+	        });
 	      }
 	    }
 
@@ -322,10 +335,23 @@
 	    var removedFields  = [];
 
 	    for (var i = 0; i < allDifferences.length; i++) {
+	      for (var j = 0; j < allDifferences[i].path.length; j++) {
+	        if (typeof allDifferences[i].path[j] === 'number') {
+	          // Remove array indices
+	          allDifferences[i].path[j] = '[]';
+	        }
+	      }
+	      
 	      if (allDifferences[i].kind === 'N') {
-	        removedFields.push(allDifferences[i].path.join('.'));
+	        var fieldName = allDifferences[i].path.join('.');
+
+	        if (!utils.startsWithOneOf(fieldName, IGNORED_FIELD_PREFIXES)) {
+	          removedFields.push(fieldName);
+	        }
 	      }
 	    }
+
+	    removedFields = utils.getUnique(removedFields);
 
 	    return removedFields;
 	  };
@@ -4240,6 +4266,23 @@
 	};
 
 	/**
+	 * Get unique elements of an array
+	 * @param array
+	 * @returns {Array}
+	 */
+	var getUnique = function (array) {
+	  var u = {}, a = [];
+	  for (var i = 0, l = array.length; i < l; ++i) {
+	    if (u.hasOwnProperty(array[i])) {
+	      continue;
+	    }
+	    a.push(array[i]);
+	    u[array[i]] = 1;
+	  }
+	  return a;
+	}
+
+	/**
 	 * Helper to deep copy an object
 	 * @param o
 	 */
@@ -4292,10 +4335,29 @@
 	  if (navigatorAppName == 'Microsoft Internet Explorer') {
 	    var ua = userAgent;
 	    var re = new RegExp('MSIE ([0-9]{1,}[\.0-9]{0,})');
-	    if (re.exec(ua) != null)
-	      rv = parseFloat(RegExp.$1);
+	    if (re.exec(ua) != null) rv = parseFloat(RegExp.$1);
 	  }
 	  return rv;
+	};
+
+	var startsWithOneOf = function(target, array) {
+	  var len = parseInt(array.length, 10) || 0;
+	  if (len === 0) {
+	    return false;
+	  }
+
+	  var k = 0;
+
+	  var currentElement;
+	  while (k < len) {
+	    currentElement = array[k];
+	    if (target.startsWith && target.startsWith(currentElement)) {
+	      return true;
+	    }
+	    k++;
+	  }
+
+	  return false;
 	};
 
 	module.exports = {
@@ -4303,7 +4365,9 @@
 	  chunkEscapedString:         chunkEscapedString,
 	  deepCopy:                   deepCopy,
 	  merge:                      merge,
-	  getInternetExplorerVersion: getInternetExplorerVersion
+	  getInternetExplorerVersion: getInternetExplorerVersion,
+	  getUnique:                  getUnique,
+	  startsWithOneOf: startsWithOneOf
 	};
 
 /***/ },
@@ -4575,22 +4639,24 @@
 	          },
 	          prerelease: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          build: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          version: {
@@ -5046,22 +5112,24 @@
 	          },
 	          prerelease: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          build: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          version: {
@@ -5463,22 +5531,24 @@
 	          },
 	          prerelease: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          build: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          version: {
@@ -5713,6 +5783,10 @@
 	            },
 	            strict: true
 	          },
+	          id: {
+	            type: 'string',
+	            optional: true
+	          },
 	          totalRecordCount: {
 	            type: 'integer',
 	            optional: false
@@ -5733,8 +5807,37 @@
 	            type: 'string',
 	            optional: true
 	          },
+	          correctedQuery: {
+	            type: 'string',
+	            optional: true
+	          },
+	          warnings: {
+	            type: 'array',
+	            items: {
+	              type: 'string'
+	            },
+	            optional: true
+	          },
+	          errors: {
+	            type: 'string',
+	            optional: true
+	          },
 	          template: {
 	            type: 'object',
+	            properties: {
+	              name: {
+	                type: 'string',
+	                optional: true
+	              },
+	              ruleName: {
+	                type: 'string',
+	                optional: true
+	              },
+	              _id: {
+	                type: 'string',
+	                optional: true
+	              }
+	            },
 	            optional: true
 	          },
 	          pageInfo: {
@@ -5763,6 +5866,10 @@
 	            items: {
 	              type: 'string'
 	            },
+	            optional: true
+	          },
+	          redirect: {
+	            type: 'string',
 	            optional: true
 	          },
 	          siteParams: {
@@ -5838,8 +5945,16 @@
 	                  type: 'boolean',
 	                  optional: true
 	                },
+	                ignored: {
+	                  type: 'boolean',
+	                  optional: true
+	                },
 	                moreRefinements: {
 	                  type: 'boolean',
+	                  optional: true
+	                },
+	                _id: {
+	                  type: 'string',
 	                  optional: true
 	                },
 	                type: {
@@ -5874,8 +5989,16 @@
 	                        type: 'string',
 	                        optional: false
 	                      },
+	                      _id: {
+	                        type: 'string',
+	                        optional: true
+	                      },
 	                      count: {
 	                        type: 'integer',
+	                        optional: true
+	                      },
+	                      exclude: {
+	                        type: 'boolean',
 	                        optional: true
 	                      },
 	                      value: {
@@ -5919,8 +6042,16 @@
 	                  type: 'boolean',
 	                  optional: true
 	                },
+	                ignored: {
+	                  type: 'boolean',
+	                  optional: true
+	                },
 	                moreRefinements: {
 	                  type: 'boolean',
+	                  optional: true
+	                },
+	                _id: {
+	                  type: 'string',
 	                  optional: true
 	                },
 	                type: {
@@ -5955,8 +6086,16 @@
 	                        type: 'string',
 	                        optional: false
 	                      },
+	                      _id: {
+	                        type: 'string',
+	                        optional: true
+	                      },
 	                      count: {
 	                        type: 'integer',
+	                        optional: true
+	                      },
+	                      exclude: {
+	                        type: 'boolean',
 	                        optional: true
 	                      },
 	                      value: {
@@ -5986,8 +6125,47 @@
 	              properties: {
 	                allMeta: {
 	                  type: 'object',
-	                  optional: true,
-	                  strict: false
+	                  properties: {
+	                    sku: {
+	                      type: 'string',
+	                      optional: true
+	                    },
+	                    productId: {
+	                      type: 'string',
+	                      optional: true
+	                    }
+	                  },
+	                  optional: true
+	                },
+	                refinementMatches: {
+	                  type: 'array',
+	                  items: {
+	                    type: 'object',
+	                    properties: {
+	                      name: {
+	                        type: 'string',
+	                        optional: true
+	                      },
+	                      values: {
+	                        type: 'array',
+	                        items: {
+	                          type: 'object',
+	                          properties: {
+	                            value: {
+	                              type: 'string',
+	                              optional: true
+	                            },
+	                            count: {
+	                              type: 'integer',
+	                              optional: true
+	                            }
+	                          }
+	                        },
+	                        optional: true
+	                      }
+	                    }
+	                  },
+	                  optional: true
 	                },
 	                _id: {
 	                  type: 'string',
@@ -6027,8 +6205,126 @@
 	                type: 'string',
 	                optional: true
 	              },
+	              sessionId: {
+	                type: 'string',
+	                optional: true
+	              },
+	              visitorId: {
+	                type: 'string',
+	                optional: true
+	              },
+	              biasingProfile: {
+	                type: 'string',
+	                optional: true
+	              },
+	              language: {
+	                type: 'string',
+	                optional: true
+	              },
+	              customUrlParams: {
+	                type: 'array',
+	                items: {
+	                  type: 'object',
+	                  properties: {
+	                    key: {
+	                      type: 'string',
+	                      optional: true
+	                    },
+	                    value: {
+	                      type: 'string',
+	                      optional: true
+	                    }
+	                  }
+	                },
+	                optional: true
+	              },
 	              query: {
 	                type: 'string',
+	                optional: true
+	              },
+	              refinementQuery: {
+	                type: 'string',
+	                optional: true
+	              },
+	              matchStrategyName: {
+	                type: 'string',
+	                optional: true
+	              },
+	              matchStrategy: {
+	                type: 'object',
+	                properties: {
+	                  name: {
+	                    type: 'string',
+	                    optional: true
+	                  },
+	                  rules: {
+	                    type: 'array',
+	                    items: {
+	                      type: 'object',
+	                      properties: {
+	                        terms: {
+	                          type: 'integer',
+	                          optional: true
+	                        },
+	                        termsGreaterThan: {
+	                          type: 'integer',
+	                          optional: true
+	                        },
+	                        mustMatch: {
+	                          type: 'integer',
+	                          optional: true
+	                        },
+	                        percentage: {
+	                          type: 'boolean',
+	                          optional: true
+	                        }
+	                      }
+	                    },
+	                    optional: true
+	                  }
+	                },
+	                optional: true
+	              },
+	              biasing: {
+	                type: 'object',
+	                properties: {
+	                  bringToTop: {
+	                    type: 'array',
+	                    items: {
+	                      type: 'string'
+	                    },
+	                    optional: true
+	                  },
+	                  augmentBiases: {
+	                    type: 'boolean',
+	                    optional: true
+	                  },
+	                  influence: {
+	                    type: 'number',
+	                    optional: true
+	                  },
+	                  biases: {
+	                    type: 'array',
+	                    items: {
+	                      type: 'object',
+	                      properties: {
+	                        name: {
+	                          type: 'string',
+	                          optional: true
+	                        },
+	                        content: {
+	                          type: 'string',
+	                          optional: true
+	                        },
+	                        strength: {
+	                          type: 'string',
+	                          optional: true
+	                        }
+	                      }
+	                    },
+	                    optional: true
+	                  }
+	                },
 	                optional: true
 	              },
 	              skip: {
@@ -6037,6 +6333,18 @@
 	              },
 	              pageSize: {
 	                type: 'integer',
+	                optional: true
+	              },
+	              returnBinary: {
+	                type: 'boolean',
+	                optional: true
+	              },
+	              disableAutocorrection: {
+	                type: 'boolean',
+	                optional: true
+	              },
+	              pruneRefinements: {
+	                type: 'boolean',
 	                optional: true
 	              },
 	              sort: {
@@ -6060,6 +6368,82 @@
 	                type: 'array',
 	                items: {
 	                  type: 'string'
+	                },
+	                optional: true
+	              },
+	              orFields: {
+	                type: 'array',
+	                items: {
+	                  type: 'string'
+	                },
+	                optional: true
+	              },
+	              wildcardSearchEnabled: {
+	                type: 'boolean',
+	                optional: true
+	              },
+	              restrictNavigation: {
+	                type: 'object',
+	                properties: {
+	                  name: {
+	                    type: 'string',
+	                    optional: true
+	                  },
+	                  count: {
+	                    type: 'integer',
+	                    optional: true
+	                  }
+	                },
+	                optional: true
+	              },
+	              includedNavigations: {
+	                type: 'array',
+	                items: {
+	                  type: 'string'
+	                },
+	                optional: true
+	              },
+	              excludedNavigations: {
+	                type: 'array',
+	                items: {
+	                  type: 'string'
+	                },
+	                optional: true
+	              },
+	              refinements: {
+	                type: 'array',
+	                items: {
+	                  type: 'object',
+	                  properties: {
+	                    navigationName: {
+	                      type: 'string',
+	                      optional: true
+	                    },
+	                    type: {
+	                      type: 'string',
+	                      optional: true
+	                    },
+	                    _id: {
+	                      type: 'string',
+	                      optional: true
+	                    },
+	                    exclude: {
+	                      type: 'boolean',
+	                      optional: true
+	                    },
+	                    value: {
+	                      type: 'string',
+	                      optional: true
+	                    },
+	                    high: {
+	                      type: 'string',
+	                      optional: true
+	                    },
+	                    low: {
+	                      type: 'string',
+	                      optional: true
+	                    }
+	                  }
 	                },
 	                optional: true
 	              }
@@ -6132,22 +6516,24 @@
 	          },
 	          prerelease: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          build: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          version: {
@@ -6230,6 +6616,13 @@
 	            },
 	            strict: true
 	          },
+	          id: {
+	            maxLength: 10000,
+	            rules: [
+	              'trim',
+	              'lower'
+	            ]
+	          },
 	          totalRecordCount: {
 	            type: 'integer'
 	          },
@@ -6252,7 +6645,21 @@
 	              'trim',
 	              'lower'
 	            ],
-	            exec: {}
+	            exec: function (schema, post) {
+	  if (typeof post === 'string') {
+	    // Strip using blacklist
+	    post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
+
+	    // Replace all whitespace combinations with a single space
+	    post = post.replace(/\s\s+/g, ' ');
+
+	    post = post.trim();
+
+	    return post;
+	  } else {
+	    return post;
+	  }
+	}
 	          },
 	          originalQuery: {
 	            maxLength: 10000,
@@ -6260,9 +6667,87 @@
 	              'trim',
 	              'lower'
 	            ],
-	            exec: {}
+	            exec: function (schema, post) {
+	  if (typeof post === 'string') {
+	    // Strip using blacklist
+	    post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
+
+	    // Replace all whitespace combinations with a single space
+	    post = post.replace(/\s\s+/g, ' ');
+
+	    post = post.trim();
+
+	    return post;
+	  } else {
+	    return post;
+	  }
+	}
 	          },
-	          template: {},
+	          correctedQuery: {
+	            maxLength: 10000,
+	            rules: [
+	              'trim',
+	              'lower'
+	            ],
+	            exec: function (schema, post) {
+	  if (typeof post === 'string') {
+	    // Strip using blacklist
+	    post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
+
+	    // Replace all whitespace combinations with a single space
+	    post = post.replace(/\s\s+/g, ' ');
+
+	    post = post.trim();
+
+	    return post;
+	  } else {
+	    return post;
+	  }
+	}
+	          },
+	          warnings: {
+	            type: 'array',
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            }
+	          },
+	          errors: {
+	            maxLength: 10000,
+	            rules: [
+	              'trim',
+	              'lower'
+	            ]
+	          },
+	          template: {
+	            properties: {
+	              name: {
+	                maxLength: 10000,
+	                rules: [
+	                  'trim',
+	                  'lower'
+	                ]
+	              },
+	              ruleName: {
+	                maxLength: 10000,
+	                rules: [
+	                  'trim',
+	                  'lower'
+	                ]
+	              },
+	              _id: {
+	                maxLength: 10000,
+	                rules: [
+	                  'trim',
+	                  'lower'
+	                ]
+	              }
+	            },
+	            strict: true
+	          },
 	          pageInfo: {
 	            properties: {
 	              recordStart: {
@@ -6276,21 +6761,30 @@
 	          },
 	          relatedQueries: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {}
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            }
 	          },
 	          rewrites: {
 	            type: 'array',
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            }
+	          },
+	          redirect: {
 	            maxLength: 10000,
 	            rules: [
 	              'trim',
 	              'lower'
-	            ],
-	            items: {}
+	            ]
 	          },
 	          siteParams: {
 	            type: 'array',
@@ -6364,7 +6858,15 @@
 	                },
 	                range: {},
 	                or: {},
+	                ignored: {},
 	                moreRefinements: {},
+	                _id: {
+	                  maxLength: 10000,
+	                  rules: [
+	                    'trim',
+	                    'lower'
+	                  ]
+	                },
 	                type: {
 	                  maxLength: 10000,
 	                  rules: [
@@ -6405,9 +6907,17 @@
 	                          'lower'
 	                        ]
 	                      },
+	                      _id: {
+	                        maxLength: 10000,
+	                        rules: [
+	                          'trim',
+	                          'lower'
+	                        ]
+	                      },
 	                      count: {
 	                        type: 'integer'
 	                      },
+	                      exclude: {},
 	                      value: {
 	                        maxLength: 10000,
 	                        rules: [
@@ -6457,7 +6967,15 @@
 	                },
 	                range: {},
 	                or: {},
+	                ignored: {},
 	                moreRefinements: {},
+	                _id: {
+	                  maxLength: 10000,
+	                  rules: [
+	                    'trim',
+	                    'lower'
+	                  ]
+	                },
 	                type: {
 	                  maxLength: 10000,
 	                  rules: [
@@ -6498,9 +7016,17 @@
 	                          'lower'
 	                        ]
 	                      },
+	                      _id: {
+	                        maxLength: 10000,
+	                        rules: [
+	                          'trim',
+	                          'lower'
+	                        ]
+	                      },
 	                      count: {
 	                        type: 'integer'
 	                      },
+	                      exclude: {},
 	                      value: {
 	                        maxLength: 10000,
 	                        rules: [
@@ -6535,7 +7061,58 @@
 	            items: {
 	              properties: {
 	                allMeta: {
-	                  strict: false
+	                  properties: {
+	                    sku: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ],
+	                      type: 'string'
+	                    },
+	                    productId: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ],
+	                      type: 'string'
+	                    }
+	                  },
+	                  strict: true
+	                },
+	                refinementMatches: {
+	                  type: 'array',
+	                  items: {
+	                    properties: {
+	                      name: {
+	                        maxLength: 10000,
+	                        rules: [
+	                          'trim',
+	                          'lower'
+	                        ]
+	                      },
+	                      values: {
+	                        type: 'array',
+	                        items: {
+	                          properties: {
+	                            value: {
+	                              maxLength: 10000,
+	                              rules: [
+	                                'trim',
+	                                'lower'
+	                              ]
+	                            },
+	                            count: {
+	                              type: 'integer'
+	                            }
+	                          },
+	                          strict: true
+	                        }
+	                      }
+	                    },
+	                    strict: true
+	                  }
 	                },
 	                _id: {
 	                  maxLength: 10000,
@@ -6571,12 +7148,13 @@
 	          },
 	          didYouMean: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {}
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            }
 	          },
 	          originalRequest: {
 	            properties: {
@@ -6594,12 +7172,169 @@
 	                  'lower'
 	                ]
 	              },
-	              query: {
+	              sessionId: {
 	                maxLength: 10000,
 	                rules: [
 	                  'trim',
 	                  'lower'
 	                ]
+	              },
+	              visitorId: {
+	                maxLength: 10000,
+	                rules: [
+	                  'trim',
+	                  'lower'
+	                ]
+	              },
+	              biasingProfile: {
+	                maxLength: 10000,
+	                rules: [
+	                  'trim',
+	                  'lower'
+	                ]
+	              },
+	              language: {
+	                maxLength: 10000,
+	                rules: [
+	                  'trim',
+	                  'lower'
+	                ]
+	              },
+	              customUrlParams: {
+	                type: 'array',
+	                items: {
+	                  properties: {
+	                    key: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ]
+	                    },
+	                    value: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ]
+	                    }
+	                  },
+	                  strict: true
+	                }
+	              },
+	              query: {
+	                maxLength: 10000,
+	                rules: [
+	                  'trim',
+	                  'lower'
+	                ],
+	                exec: function (schema, post) {
+	  if (typeof post === 'string') {
+	    // Strip using blacklist
+	    post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
+
+	    // Replace all whitespace combinations with a single space
+	    post = post.replace(/\s\s+/g, ' ');
+
+	    post = post.trim();
+
+	    return post;
+	  } else {
+	    return post;
+	  }
+	}
+	              },
+	              refinementQuery: {
+	                maxLength: 10000,
+	                rules: [
+	                  'trim',
+	                  'lower'
+	                ]
+	              },
+	              matchStrategyName: {
+	                maxLength: 10000,
+	                rules: [
+	                  'trim',
+	                  'lower'
+	                ]
+	              },
+	              matchStrategy: {
+	                properties: {
+	                  name: {
+	                    maxLength: 10000,
+	                    rules: [
+	                      'trim',
+	                      'lower'
+	                    ]
+	                  },
+	                  rules: {
+	                    type: 'array',
+	                    items: {
+	                      properties: {
+	                        terms: {
+	                          type: 'integer'
+	                        },
+	                        termsGreaterThan: {
+	                          type: 'integer'
+	                        },
+	                        mustMatch: {
+	                          type: 'integer'
+	                        },
+	                        percentage: {}
+	                      },
+	                      strict: true
+	                    }
+	                  }
+	                },
+	                strict: true
+	              },
+	              biasing: {
+	                properties: {
+	                  bringToTop: {
+	                    type: 'array',
+	                    items: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ]
+	                    }
+	                  },
+	                  augmentBiases: {},
+	                  influence: {
+	                    type: 'number'
+	                  },
+	                  biases: {
+	                    type: 'array',
+	                    items: {
+	                      properties: {
+	                        name: {
+	                          maxLength: 10000,
+	                          rules: [
+	                            'trim',
+	                            'lower'
+	                          ]
+	                        },
+	                        content: {
+	                          maxLength: 10000,
+	                          rules: [
+	                            'trim',
+	                            'lower'
+	                          ]
+	                        },
+	                        strength: {
+	                          maxLength: 10000,
+	                          rules: [
+	                            'trim',
+	                            'lower'
+	                          ]
+	                        }
+	                      },
+	                      strict: true
+	                    }
+	                  }
+	                },
+	                strict: true
 	              },
 	              skip: {
 	                type: 'integer'
@@ -6607,6 +7342,9 @@
 	              pageSize: {
 	                type: 'integer'
 	              },
+	              returnBinary: {},
+	              disableAutocorrection: {},
+	              pruneRefinements: {},
 	              sort: {
 	                type: 'array',
 	                items: {
@@ -6631,12 +7369,110 @@
 	              },
 	              fields: {
 	                type: 'array',
-	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ],
-	                items: {}
+	                items: {
+	                  maxLength: 10000,
+	                  rules: [
+	                    'trim',
+	                    'lower'
+	                  ]
+	                }
+	              },
+	              orFields: {
+	                type: 'array',
+	                items: {
+	                  maxLength: 10000,
+	                  rules: [
+	                    'trim',
+	                    'lower'
+	                  ]
+	                }
+	              },
+	              wildcardSearchEnabled: {},
+	              restrictNavigation: {
+	                properties: {
+	                  name: {
+	                    maxLength: 10000,
+	                    rules: [
+	                      'trim',
+	                      'lower'
+	                    ]
+	                  },
+	                  count: {
+	                    type: 'integer'
+	                  }
+	                },
+	                strict: true
+	              },
+	              includedNavigations: {
+	                type: 'array',
+	                items: {
+	                  maxLength: 10000,
+	                  rules: [
+	                    'trim',
+	                    'lower'
+	                  ]
+	                }
+	              },
+	              excludedNavigations: {
+	                type: 'array',
+	                items: {
+	                  maxLength: 10000,
+	                  rules: [
+	                    'trim',
+	                    'lower'
+	                  ]
+	                }
+	              },
+	              refinements: {
+	                type: 'array',
+	                items: {
+	                  properties: {
+	                    navigationName: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ]
+	                    },
+	                    type: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ]
+	                    },
+	                    _id: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ]
+	                    },
+	                    exclude: {},
+	                    value: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ]
+	                    },
+	                    high: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ]
+	                    },
+	                    low: {
+	                      maxLength: 10000,
+	                      rules: [
+	                        'trim',
+	                        'lower'
+	                      ]
+	                    }
+	                  },
+	                  strict: true
+	                }
 	              }
 	            },
 	            strict: true
@@ -6842,22 +7678,24 @@
 	          },
 	          prerelease: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          build: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          version: {
@@ -7161,22 +7999,24 @@
 	          },
 	          prerelease: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          build: {
 	            type: 'array',
-	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            items: {},
+	            items: {
+	              maxLength: 10000,
+	              rules: [
+	                'trim',
+	                'lower'
+	              ]
+	            },
 	            optional: true
 	          },
 	          version: {
