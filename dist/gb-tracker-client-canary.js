@@ -92,18 +92,18 @@
 	var utils = __webpack_require__(15);
 	var LZString = __webpack_require__(16);
 
-	var VERSION = __webpack_require__(17).version;
-	var Cookies = __webpack_require__(18);
+	var VERSION = 'canary'; //require('../package.json').version;
+	var Cookies = __webpack_require__(17);
 
 	var SCHEMAS = {
-	  addToCart: __webpack_require__(19),
-	  viewCart: __webpack_require__(21),
-	  removeFromCart: __webpack_require__(22),
-	  order: __webpack_require__(23),
-	  autoSearch: __webpack_require__(24),
-	  search: __webpack_require__(25),
-	  sessionChange: __webpack_require__(26),
-	  viewProduct: __webpack_require__(27)
+	  addToCart: __webpack_require__(18),
+	  viewCart: __webpack_require__(20),
+	  removeFromCart: __webpack_require__(21),
+	  order: __webpack_require__(22),
+	  autoSearch: __webpack_require__(23),
+	  search: __webpack_require__(24),
+	  sessionChange: __webpack_require__(25),
+	  viewProduct: __webpack_require__(26)
 	};
 
 	// Info on path length limitations: http://stackoverflow.com/a/812962
@@ -4662,70 +4662,6 @@
 
 /***/ },
 /* 17 */
-/***/ function(module, exports) {
-
-	module.exports = {
-		"name": "gb-tracker-client",
-		"version": "3.3.3",
-		"description": "GroupBy client-side event tracker",
-		"keywords": [
-			"groupby",
-			"tracker",
-			"recommendations"
-		],
-		"repository": {
-			"type": "git",
-			"url": "git+https://github.com/groupby/gb-tracker-client.git"
-		},
-		"main": "index.js",
-		"scripts": {
-			"test": "gulp test",
-			"coverage:codacy": "cat ./coverage/lcov.info | codacy-coverage"
-		},
-		"engines": {
-			"node": ">=6"
-		},
-		"author": "Eric Hacke",
-		"license": "MIT",
-		"devDependencies": {
-			"babel-core": "^6.21.0",
-			"babel-loader": "^6.2.10",
-			"babel-preset-latest": "^6.16.0",
-			"chai": "^3.5.0",
-			"codacy-coverage": "^2.0.0",
-			"eslint-plugin-no-only-tests": "^1.1.0",
-			"glob": "^7.1.1",
-			"gulp": "^3.9.1",
-			"gulp-eslint": "^3.0.1",
-			"gulp-exec": "^2.1.3",
-			"gulp-if": "^2.0.2",
-			"gulp-istanbul": "^1.1.1",
-			"gulp-mocha": "^3.0.1",
-			"gulp-util": "^3.0.7",
-			"istanbul": "^0.4.3",
-			"jsdom": "^9.9.1",
-			"json-loader": "^0.5.4",
-			"lodash": "^4.16.6",
-			"mocha": "^3.1.2",
-			"moment": "^2.17.1",
-			"stream-combiner2": "^1.1.1",
-			"stringify-object": "3.0.0",
-			"supertest": "^2.0.1",
-			"supertest-as-promised": "^4.0.2",
-			"webpack": "^1.13.3",
-			"webpack-stream": "^3.2.0"
-		},
-		"dependencies": {
-			"cookies-js": "^1.2.3",
-			"deep-diff": "^0.3.4",
-			"lz-string": "^1.4.4",
-			"schema-inspector": "^1.6.8",
-			"uuid": "^3.0.1"
-		}
-	};
-
-/***/ },
-/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -4902,12 +4838,12 @@
 	})(typeof window === 'undefined' ? this : window);
 
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(20);
+	var utils = __webpack_require__(19);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -5290,7 +5226,7 @@
 	};
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5308,16 +5244,16 @@
 	};
 
 /***/ },
+/* 20 */
+18,
 /* 21 */
-19,
+18,
 /* 22 */
-19,
-/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(20);
+	var utils = __webpack_require__(19);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -5732,12 +5668,12 @@
 	};
 
 /***/ },
-/* 24 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(20);
+	var utils = __webpack_require__(19);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -6041,12 +5977,12 @@
 	};
 
 /***/ },
-/* 25 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(20);
+	var utils = __webpack_require__(19);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -7640,12 +7576,12 @@
 	};
 
 /***/ },
-/* 26 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(20);
+	var utils = __webpack_require__(19);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -7897,12 +7833,12 @@
 	};
 
 /***/ },
-/* 27 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(20);
+	var utils = __webpack_require__(19);
 	module.exports = {
 	  validation: {
 	    type: 'object',
