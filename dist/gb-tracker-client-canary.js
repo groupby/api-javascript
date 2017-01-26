@@ -40,7 +40,30 @@
 /******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
-/******/ ([
+/******/ ((function(modules) {
+	// Check all modules for deduplicated modules
+	for(var i in modules) {
+		if(Object.prototype.hasOwnProperty.call(modules, i)) {
+			switch(typeof modules[i]) {
+			case "function": break;
+			case "object":
+				// Module can be created from a template
+				modules[i] = (function(_m) {
+					var args = _m.slice(1), fn = modules[_m[0]];
+					return function (a,b,c) {
+						fn.apply(this, [a,b,c].concat(args));
+					};
+				}(modules[i]));
+				break;
+			default:
+				// Module is a copy of another module
+				modules[i] = modules[modules[i]];
+				break;
+			}
+		}
+	}
+	return modules;
+}([
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -51,7 +74,9 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	(function(w){
+	'use strict';
+
+	(function (w) {
 	  w.GbTracker = __webpack_require__(2);
 	})(window);
 
@@ -59,45 +84,56 @@
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var uuid      = __webpack_require__(3);
-	var diff      = __webpack_require__(5).diff;
-	var inspector = __webpack_require__(6);
-	var utils     = __webpack_require__(11);
-	var LZString  = __webpack_require__(12);
+	'use strict';
 
-	var VERSION = __webpack_require__(13).version;
+	var uuid = __webpack_require__(3);
+	var diff = __webpack_require__(8).diff;
+	var inspector = __webpack_require__(9);
+	var utils = __webpack_require__(15);
+	var LZString = __webpack_require__(16);
+
+	var VERSION = __webpack_require__(17).version;
+	var Cookies = __webpack_require__(18);
 
 	var SCHEMAS = {
-	  addToCart:     __webpack_require__(14),
-	  order:         __webpack_require__(16),
-	  autoSearch:    __webpack_require__(17),
-	  search:        __webpack_require__(18),
-	  sessionChange: __webpack_require__(19),
-	  viewProduct:   __webpack_require__(20)
+	  addToCart: __webpack_require__(19),
+	  viewCart: __webpack_require__(21),
+	  removeFromCart: __webpack_require__(22),
+	  order: __webpack_require__(23),
+	  autoSearch: __webpack_require__(24),
+	  search: __webpack_require__(25),
+	  sessionChange: __webpack_require__(26),
+	  viewProduct: __webpack_require__(27)
 	};
 
 	// Info on path length limitations: http://stackoverflow.com/a/812962
-	var MAX_PATH_LENGTH     = 4000; // Thanks NGINX
+	var MAX_PATH_LENGTH = 4000; // Thanks NGINX
 	var MAX_PATHNAME_LENGTH = 100; // '/v2/pixel/?random=0.5405421565044588&m=' plus extra for luck
-	var MAX_SEGMENT_COUNT   = 100;
+	var MAX_SEGMENT_COUNT = 100;
 
 	var overridenPixelUrl = null;
 
-	var Tracker = function (customerId, area, overridePixelUrl) {
-	  var self                 = this;
-	  var customer             = {};
-	  var visit                = {customerData: {}};
+	var SET_FROM_COOKIES = 'setFromCookies';
+	var NOT_SET_FROM_COOKIES = 'notSetFromCookies';
+	var SESSION_TIMEOUT_SEC = 15 * 60;
+	var SESSION_COOKIE_KEY = 'gbi_sessionId';
+	var VISITOR_COOKIE_KEY = 'gbi_visitorId';
+	var DEBUG_COOKIE_KEY = 'gbi_debug';
+
+	var Tracker = function Tracker(customerId, area, overridePixelUrl) {
+	  var self = this;
+	  var customer = {};
+	  var visit = { customerData: {} };
 	  var invalidEventCallback = null;
-	  var strictMode           = false;
+	  var strictMode = false;
 	  overridenPixelUrl = overridePixelUrl || '';
-	  var disableWarnings      = false;
+	  var disableWarnings = false;
+
+	  var visitorSettingsSource = null;
 
 	  var MAX_QUERY_STRING_LENGTH = MAX_PATH_LENGTH - MAX_PATHNAME_LENGTH;
 
-	  var IGNORED_FIELD_PREFIXES = [
-	    'search.records.[].allMeta',
-	    'search.template.zones'
-	  ];
+	  var IGNORED_FIELD_PREFIXES = ['search.records.[].allMeta', 'search.template.zones'];
 
 	  if (typeof customerId !== 'string' || customerId.length === 0) {
 	    throw new Error('customerId must be a string with length');
@@ -123,8 +159,15 @@
 	   * @param sessionId
 	   */
 	  self.setVisitor = function (visitorId, sessionId) {
-	    visitorId = (visitorId && typeof visitorId === 'number') ? (visitorId + '') : visitorId;
-	    sessionId = (sessionId && typeof sessionId === 'number') ? (sessionId + '') : sessionId;
+	    if (visitorSettingsSource && visitorSettingsSource !== NOT_SET_FROM_COOKIES) {
+	      console.log('visitorId and sessionId already set using autoSetVisitor(). Ignoring setVisitor()');
+	      return;
+	    }
+
+	    visitorSettingsSource = NOT_SET_FROM_COOKIES;
+
+	    visitorId = visitorId && typeof visitorId === 'number' ? '' + visitorId : visitorId;
+	    sessionId = sessionId && typeof sessionId === 'number' ? '' + sessionId : sessionId;
 
 	    if (typeof visitorId !== 'string' || visitorId.length === 0) {
 	      throw new Error('visitorId must be a string with length');
@@ -140,7 +183,7 @@
 	    visit.customerData.visitorId = visitorId;
 	    visit.customerData.sessionId = sessionId;
 
-	    if ((prevVisitorId && prevVisitorId !== visitorId) || (prevSessionId && prevSessionId !== sessionId)) {
+	    if (prevVisitorId && prevVisitorId !== visitorId || prevSessionId && prevSessionId !== sessionId) {
 	      var sessionEvent = {
 	        newSessionId: visit.customerData.sessionId,
 	        newVisitorId: visit.customerData.visitorId
@@ -152,8 +195,53 @@
 	        sessionEvent.previousSessionId = prevSessionId;
 	      }
 
-	      self.__private.sendSessionChangeEvent({session: sessionEvent});
+	      self.__private.sendSessionChangeEvent({ session: sessionEvent });
 	    }
+	  };
+
+	  /**
+	   * Initialize visitor data from cookies, or create those cookies if they do not exist
+	   * @param loginId
+	   */
+	  self.autoSetVisitor = function (loginId) {
+	    if (visitorSettingsSource && visitorSettingsSource !== SET_FROM_COOKIES) {
+	      console.log('visitorId and sessionId already set using setVisitor(). Overriding setVisitor()');
+	    }
+
+	    if (loginId && typeof loginId !== 'string') {
+	      throw new Error('if loginId is provided, it must be a string');
+	    }
+
+	    visitorSettingsSource = SET_FROM_COOKIES;
+
+	    if (loginId && loginId.length > 0) {
+	      visit.customerData.loginId = loginId;
+	    } else {
+	      delete visit.customerData.loginId;
+	    }
+
+	    visit.customerData.sessionId = Cookies.get(SESSION_COOKIE_KEY);
+	    visit.customerData.visitorId = Cookies.get(VISITOR_COOKIE_KEY);
+
+	    if (!visit.customerData.sessionId || visit.customerData.sessionId.length < 1) {
+	      visit.customerData.sessionId = uuid.v4();
+	      Cookies.set(SESSION_COOKIE_KEY, visit.customerData.sessionId, { expires: SESSION_TIMEOUT_SEC });
+	    }
+
+	    if (!visit.customerData.visitorId || visit.customerData.visitorId.length < 1) {
+	      visit.customerData.visitorId = uuid.v4();
+	      Cookies.set(VISITOR_COOKIE_KEY, visit.customerData.visitorId, { expires: Infinity });
+	    }
+	  };
+
+	  self.getVisitorId = function () {
+	    return visit.customerData.visitorId;
+	  };
+	  self.getSessionId = function () {
+	    return visit.customerData.sessionId;
+	  };
+	  self.getLoginId = function () {
+	    return visit.customerData.loginId;
 	  };
 
 	  self.setStrictMode = function (strict) {
@@ -165,18 +253,22 @@
 	   * @param event
 	   * @param type
 	   */
-	  var prepareEvent = function (event, type) {
-	    if (visit.customerData.sessionId == null || visit.customerData.visitorId == null) {
-	      throw new Error('visitorId and sessionId must be set using setVisitor() before an event is sent');
+	  var prepareEvent = function prepareEvent(event, type) {
+	    // Continuously initialize visitor info in order to keep sessionId from expiring
+	    if (visitorSettingsSource === SET_FROM_COOKIES) {
+	      self.autoSetVisitor(visit.customerData.loginId);
 	    }
 
-	    event.clientVersion = {raw: VERSION};
+	    if (visit.customerData.sessionId == null || visit.customerData.visitorId == null) {
+	      throw new Error('call autoSetVisitor() at least once before an event is sent');
+	    }
+
+	    event.clientVersion = { raw: VERSION };
 	    event.eventType = type;
 	    event.customer = customer;
 	    event.visit = visit;
 	    return event;
 	  };
-
 
 	  /**
 	   * Set callback to be notified of invalid events
@@ -195,7 +287,23 @@
 	   * @param event
 	   */
 	  self.sendAddToCartEvent = function (event) {
-	    self.__private.prepareAndSendEvent(event, 'addToCart');
+	    return self.__private.prepareAndSendEvent(event, 'addToCart');
+	  };
+
+	  /**
+	   * Validate and send viewCart event
+	   * @param event
+	   */
+	  self.sendViewCartEvent = function (event) {
+	    return self.__private.prepareAndSendEvent(event, 'viewCart');
+	  };
+
+	  /**
+	   * Validate and send removeFromCart event
+	   * @param event
+	   */
+	  self.sendRemoveFromCartEvent = function (event) {
+	    return self.__private.prepareAndSendEvent(event, 'removeFromCart');
 	  };
 
 	  /**
@@ -203,7 +311,7 @@
 	   * @param event
 	   */
 	  self.sendOrderEvent = function (event) {
-	    self.__private.prepareAndSendEvent(event, 'order');
+	    return self.__private.prepareAndSendEvent(event, 'order');
 	  };
 
 	  /**
@@ -211,12 +319,7 @@
 	   * @param event
 	   */
 	  self.sendSearchEvent = function (event) {
-	    // Move search.id to the event object
-	    if (event && event.search && event.search.id && !event.responseId) {
-	      event.responseId = event.search.id;
-	    }
-
-	    self.__private.prepareAndSendEvent(event, 'search');
+	    return self.__private.prepareAndSendEvent(event, 'search');
 	  };
 
 	  /**
@@ -224,7 +327,7 @@
 	   * @param event
 	   */
 	  self.sendAutoSearchEvent = function (event) {
-	    self.__private.prepareAndSendEvent(event, 'autoSearch');
+	    return self.__private.prepareAndSendEvent(event, 'autoSearch');
 	  };
 
 	  /**
@@ -232,7 +335,7 @@
 	   * @param event
 	   */
 	  self.sendViewProductEvent = function (event) {
-	    self.__private.prepareAndSendEvent(event, 'viewProduct');
+	    return self.__private.prepareAndSendEvent(event, 'viewProduct');
 	  };
 
 	  self.__private = {};
@@ -265,7 +368,7 @@
 	   * @param event
 	   */
 	  self.__private.sendSessionChangeEvent = function (event) {
-	    self.__private.prepareAndSendEvent(event, 'sessionChange');
+	    return self.__private.prepareAndSendEvent(event, 'sessionChange');
 	  };
 
 	  /**
@@ -311,17 +414,17 @@
 	        }
 
 	        sanitizedEvent.metadata.push({
-	          key:   'gbi-field-warning',
+	          key: 'gbi-field-warning',
 	          value: removedFields[i]
 	        });
 	      }
 	    }
 
-	    sanitizedEvent.visit.generated.uri = (typeof window !== 'undefined' && window.location) ? window.location.href : '';
+	    sanitizedEvent.visit.generated.uri = typeof window !== 'undefined' && window.location ? window.location.href : '';
 	    sanitizedEvent.visit.generated.timezoneOffset = new Date().getTimezoneOffset();
 	    sanitizedEvent.visit.generated.localTime = new Date().toISOString();
 
-	    return {event: sanitizedEvent};
+	    return { event: sanitizedEvent };
 	  };
 
 	  /**
@@ -332,7 +435,7 @@
 	   */
 	  self.__private.getRemovedFields = function (sanitizedEvent, originalEvent) {
 	    var allDifferences = diff(sanitizedEvent, originalEvent);
-	    var removedFields  = [];
+	    var removedFields = [];
 
 	    for (var i = 0; i < allDifferences.length; i++) {
 	      for (var j = 0; j < allDifferences[i].path.length; j++) {
@@ -341,7 +444,7 @@
 	          allDifferences[i].path[j] = '[]';
 	        }
 	      }
-	      
+
 	      if (allDifferences[i].kind === 'N') {
 	        var fieldName = allDifferences[i].path.join('.');
 
@@ -363,13 +466,13 @@
 	   */
 	  self.__private.sendEvent = function (event, sendSegment) {
 	    var eventString = JSON.stringify(event);
-	    var uuidString  = uuid.v4();
+	    var uuidString = uuid.v4();
 
 	    var segmentTemplate = {
-	      uuid:          uuidString,
-	      id:            MAX_SEGMENT_COUNT,
-	      total:         MAX_SEGMENT_COUNT,
-	      customer:      event.customer,
+	      uuid: uuidString,
+	      id: MAX_SEGMENT_COUNT,
+	      total: MAX_SEGMENT_COUNT,
+	      customer: event.customer,
 	      clientVersion: VERSION
 	    };
 
@@ -383,18 +486,17 @@
 	      return;
 	    }
 
-	    if (window.DEBUG) {
-	      // eslint-disable-next-line
+	    if (window.DEBUG || Cookies.get(DEBUG_COOKIE_KEY)) {
 	      console.log('Beaconing event: ' + JSON.stringify(event, null, 2));
 	    }
 
 	    for (var i = 0; i < eventStringSegments.length; i++) {
 	      sendSegment({
-	        uuid:          uuidString,
-	        segment:       LZString.compressToEncodedURIComponent(eventStringSegments[i]), // To prevent double-encoding, it'll be re-encoded before sending
-	        id:            i,
-	        total:         eventStringSegments.length,
-	        customer:      event.customer,
+	        uuid: uuidString,
+	        segment: LZString.compressToEncodedURIComponent(eventStringSegments[i]), // To prevent double-encoding, it'll be re-encoded before sending
+	        id: i,
+	        total: eventStringSegments.length,
+	        customer: event.customer,
 	        clientVersion: VERSION
 	      });
 	    }
@@ -405,8 +507,8 @@
 	   * @param segment
 	   */
 	  self.__private.sendSegment = function (segment) {
-	    var host   = document.location.protocol + '//' + customerId + '.groupbycloud.com';
-	    var params = '?random\x3d' + Math.random(); // To bust the cache
+	    var host = document.location.protocol + '//' + customerId + '.groupbycloud.com';
+	    var params = '?random=' + Math.random(); // To bust the cache
 	    params += '&m=' + encodeURIComponent(JSON.stringify(segment));
 
 	    var path = '/wisdom/v2/pixel/' + params;
@@ -417,18 +519,26 @@
 	    }
 
 	    var im = new Image();
-	    if (overridenPixelUrl && (typeof overridenPixelUrl === 'string') && overridenPixelUrl.length > 0) {
+	    if (overridenPixelUrl && typeof overridenPixelUrl === 'string' && overridenPixelUrl.length > 0) {
 	      im.src = overridenPixelUrl + params;
 	    } else {
 	      im.src = host + path;
 	    }
 	  };
 
+	  return self;
 	};
 
-	Tracker.__overridePixelPath = function (path) {
-	  overridenPixelUrl = path;
+	Tracker.__overrideCookiesLib = function (cookies) {
+	  return Cookies = cookies;
 	};
+	Tracker.__overridePixelPath = function (path) {
+	  return overridenPixelUrl = path;
+	};
+	Tracker.SESSION_COOKIE_KEY = SESSION_COOKIE_KEY;
+	Tracker.VISITOR_COOKIE_KEY = VISITOR_COOKIE_KEY;
+	Tracker.SESSION_TIMEOUT_SEC = SESSION_TIMEOUT_SEC;
+	Tracker.VERSION = VERSION;
 
 	module.exports = Tracker;
 
@@ -436,55 +546,25 @@
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	//     uuid.js
-	//
-	//     Copyright (c) 2010-2012 Robert Kieffer
-	//     MIT License - http://opensource.org/licenses/mit-license.php
+	var v1 = __webpack_require__(4);
+	var v4 = __webpack_require__(7);
+
+	var uuid = v4;
+	uuid.v1 = v1;
+	uuid.v4 = v4;
+
+	module.exports = uuid;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
 
 	// Unique ID creation requires a high quality random # generator.  We feature
 	// detect to determine the best RNG source, normalizing to a function that
 	// returns 128-bits of randomness, since that's what's usually required
-	var _rng = __webpack_require__(4);
-
-	// Maps for number <-> hex string conversion
-	var _byteToHex = [];
-	var _hexToByte = {};
-	for (var i = 0; i < 256; i++) {
-	  _byteToHex[i] = (i + 0x100).toString(16).substr(1);
-	  _hexToByte[_byteToHex[i]] = i;
-	}
-
-	// **`parse()` - Parse a UUID into it's component bytes**
-	function parse(s, buf, offset) {
-	  var i = (buf && offset) || 0, ii = 0;
-
-	  buf = buf || [];
-	  s.toLowerCase().replace(/[0-9a-f]{2}/g, function(oct) {
-	    if (ii < 16) { // Don't overflow!
-	      buf[i + ii++] = _hexToByte[oct];
-	    }
-	  });
-
-	  // Zero out remaining bytes if string was short
-	  while (ii < 16) {
-	    buf[i + ii++] = 0;
-	  }
-
-	  return buf;
-	}
-
-	// **`unparse()` - Convert UUID byte array (ala parse()) into a string**
-	function unparse(buf, offset) {
-	  var i = offset || 0, bth = _byteToHex;
-	  return  bth[buf[i++]] + bth[buf[i++]] +
-	          bth[buf[i++]] + bth[buf[i++]] + '-' +
-	          bth[buf[i++]] + bth[buf[i++]] + '-' +
-	          bth[buf[i++]] + bth[buf[i++]] + '-' +
-	          bth[buf[i++]] + bth[buf[i++]] + '-' +
-	          bth[buf[i++]] + bth[buf[i++]] +
-	          bth[buf[i++]] + bth[buf[i++]] +
-	          bth[buf[i++]] + bth[buf[i++]];
-	}
+	var rng = __webpack_require__(5);
+	var bytesToUuid = __webpack_require__(6);
 
 	// **`v1()` - Generate time-based UUID**
 	//
@@ -492,7 +572,7 @@
 	// and http://docs.python.org/library/uuid.html
 
 	// random #'s we need to init node and clockseq
-	var _seedBytes = _rng();
+	var _seedBytes = rng();
 
 	// Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
 	var _nodeId = [
@@ -575,67 +655,33 @@
 
 	  // `node`
 	  var node = options.node || _nodeId;
-	  for (var n = 0; n < 6; n++) {
+	  for (var n = 0; n < 6; ++n) {
 	    b[i + n] = node[n];
 	  }
 
-	  return buf ? buf : unparse(b);
+	  return buf ? buf : bytesToUuid(b);
 	}
 
-	// **`v4()` - Generate random UUID**
-
-	// See https://github.com/broofa/node-uuid for API details
-	function v4(options, buf, offset) {
-	  // Deprecated - 'format' argument, as supported in v1.2
-	  var i = buf && offset || 0;
-
-	  if (typeof(options) == 'string') {
-	    buf = options == 'binary' ? new Array(16) : null;
-	    options = null;
-	  }
-	  options = options || {};
-
-	  var rnds = options.random || (options.rng || _rng)();
-
-	  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-	  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-	  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-	  // Copy bytes to buffer, if provided
-	  if (buf) {
-	    for (var ii = 0; ii < 16; ii++) {
-	      buf[i + ii] = rnds[ii];
-	    }
-	  }
-
-	  return buf || unparse(rnds);
-	}
-
-	// Export public API
-	var uuid = v4;
-	uuid.v1 = v1;
-	uuid.v4 = v4;
-	uuid.parse = parse;
-	uuid.unparse = unparse;
-
-	module.exports = uuid;
+	module.exports = v1;
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {
+	/* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
+	// browser this is a little complicated due to unknown quality of Math.random()
+	// and inconsistent support for the `crypto` API.  We do the best we can via
+	// feature-detection
 	var rng;
 
 	var crypto = global.crypto || global.msCrypto; // for IE 11
 	if (crypto && crypto.getRandomValues) {
-	  // WHATWG crypto-based RNG - http://wiki.whatwg.org/wiki/Crypto
-	  // Moderately fast, high quality
-	  var _rnds8 = new Uint8Array(16);
+	  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+	  var rnds8 = new Uint8Array(16);
 	  rng = function whatwgRNG() {
-	    crypto.getRandomValues(_rnds8);
-	    return _rnds8;
+	    crypto.getRandomValues(rnds8);
+	    return rnds8;
 	  };
 	}
 
@@ -644,24 +690,87 @@
 	  //
 	  // If all else fails, use Math.random().  It's fast, but is of unspecified
 	  // quality.
-	  var  _rnds = new Array(16);
+	  var  rnds = new Array(16);
 	  rng = function() {
 	    for (var i = 0, r; i < 16; i++) {
 	      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-	      _rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+	      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
 	    }
 
-	    return _rnds;
+	    return rnds;
 	  };
 	}
 
 	module.exports = rng;
 
-
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 5 */
+/* 6 */
+/***/ function(module, exports) {
+
+	/**
+	 * Convert array of 16 byte values to UUID string format of the form:
+	 * XXXXXXXX-XXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+	 */
+	var byteToHex = [];
+	for (var i = 0; i < 256; ++i) {
+	  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+	}
+
+	function bytesToUuid(buf, offset) {
+	  var i = offset || 0;
+	  var bth = byteToHex;
+	  return  bth[buf[i++]] + bth[buf[i++]] +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] +
+	          bth[buf[i++]] + bth[buf[i++]] +
+	          bth[buf[i++]] + bth[buf[i++]];
+	}
+
+	module.exports = bytesToUuid;
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var rng = __webpack_require__(5);
+	var bytesToUuid = __webpack_require__(6);
+
+	function v4(options, buf, offset) {
+	  var i = buf && offset || 0;
+
+	  if (typeof(options) == 'string') {
+	    buf = options == 'binary' ? new Array(16) : null;
+	    options = null;
+	  }
+	  options = options || {};
+
+	  var rnds = options.random || (options.rng || rng)();
+
+	  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+	  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+	  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+	  // Copy bytes to buffer, if provided
+	  if (buf) {
+	    for (var ii = 0; ii < 16; ++ii) {
+	      buf[i + ii] = rnds[ii];
+	    }
+	  }
+
+	  return buf || bytesToUuid(rnds);
+	}
+
+	module.exports = v4;
+
+
+/***/ },
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/*!
@@ -1090,14 +1199,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 6 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(7);
+	module.exports = __webpack_require__(10);
 
 
 /***/ },
-/* 7 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -1108,7 +1217,7 @@
 	(function () {
 		var root = {};
 		// Dependencies --------------------------------------------------------------
-		root.async = ( true) ? __webpack_require__(8) : window.async;
+		root.async = ( true) ? __webpack_require__(11) : window.async;
 		if (typeof root.async !== 'object') {
 			throw new Error('Module async is required (https://github.com/caolan/async)');
 		}
@@ -2680,7 +2789,7 @@
 
 
 /***/ },
-/* 8 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, setImmediate, process) {/*!
@@ -3949,17 +4058,13 @@
 
 	}());
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(9).setImmediate, __webpack_require__(10)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(12).setImmediate, __webpack_require__(14)))
 
 /***/ },
-/* 9 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(10).nextTick;
 	var apply = Function.prototype.apply;
-	var slice = Array.prototype.slice;
-	var immediateIds = {};
-	var nextImmediateId = 0;
 
 	// DOM APIs, for completeness
 
@@ -3970,7 +4075,11 @@
 	  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
 	};
 	exports.clearTimeout =
-	exports.clearInterval = function(timeout) { timeout.close(); };
+	exports.clearInterval = function(timeout) {
+	  if (timeout) {
+	    timeout.close();
+	  }
+	};
 
 	function Timeout(id, clearFn) {
 	  this._id = id;
@@ -4004,37 +4113,207 @@
 	  }
 	};
 
-	// That's not how node.js implements it but the exposed api is the same.
-	exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
-	  var id = nextImmediateId++;
-	  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
+	// setimmediate attaches itself to the global object
+	__webpack_require__(13);
+	exports.setImmediate = setImmediate;
+	exports.clearImmediate = clearImmediate;
 
-	  immediateIds[id] = true;
-
-	  nextTick(function onNextTick() {
-	    if (immediateIds[id]) {
-	      // fn.call() is faster so we optimize for the common use-case
-	      // @see http://jsperf.com/call-apply-segu
-	      if (args) {
-	        fn.apply(null, args);
-	      } else {
-	        fn.call(null);
-	      }
-	      // Prevent ids from leaking
-	      exports.clearImmediate(id);
-	    }
-	  });
-
-	  return id;
-	};
-
-	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
-	  delete immediateIds[id];
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).setImmediate, __webpack_require__(9).clearImmediate))
 
 /***/ },
-/* 10 */
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+	    "use strict";
+
+	    if (global.setImmediate) {
+	        return;
+	    }
+
+	    var nextHandle = 1; // Spec says greater than zero
+	    var tasksByHandle = {};
+	    var currentlyRunningATask = false;
+	    var doc = global.document;
+	    var registerImmediate;
+
+	    function setImmediate(callback) {
+	      // Callback can either be a function or a string
+	      if (typeof callback !== "function") {
+	        callback = new Function("" + callback);
+	      }
+	      // Copy function arguments
+	      var args = new Array(arguments.length - 1);
+	      for (var i = 0; i < args.length; i++) {
+	          args[i] = arguments[i + 1];
+	      }
+	      // Store and register the task
+	      var task = { callback: callback, args: args };
+	      tasksByHandle[nextHandle] = task;
+	      registerImmediate(nextHandle);
+	      return nextHandle++;
+	    }
+
+	    function clearImmediate(handle) {
+	        delete tasksByHandle[handle];
+	    }
+
+	    function run(task) {
+	        var callback = task.callback;
+	        var args = task.args;
+	        switch (args.length) {
+	        case 0:
+	            callback();
+	            break;
+	        case 1:
+	            callback(args[0]);
+	            break;
+	        case 2:
+	            callback(args[0], args[1]);
+	            break;
+	        case 3:
+	            callback(args[0], args[1], args[2]);
+	            break;
+	        default:
+	            callback.apply(undefined, args);
+	            break;
+	        }
+	    }
+
+	    function runIfPresent(handle) {
+	        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+	        // So if we're currently running a task, we'll need to delay this invocation.
+	        if (currentlyRunningATask) {
+	            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+	            // "too much recursion" error.
+	            setTimeout(runIfPresent, 0, handle);
+	        } else {
+	            var task = tasksByHandle[handle];
+	            if (task) {
+	                currentlyRunningATask = true;
+	                try {
+	                    run(task);
+	                } finally {
+	                    clearImmediate(handle);
+	                    currentlyRunningATask = false;
+	                }
+	            }
+	        }
+	    }
+
+	    function installNextTickImplementation() {
+	        registerImmediate = function(handle) {
+	            process.nextTick(function () { runIfPresent(handle); });
+	        };
+	    }
+
+	    function canUsePostMessage() {
+	        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+	        // where `global.postMessage` means something completely different and can't be used for this purpose.
+	        if (global.postMessage && !global.importScripts) {
+	            var postMessageIsAsynchronous = true;
+	            var oldOnMessage = global.onmessage;
+	            global.onmessage = function() {
+	                postMessageIsAsynchronous = false;
+	            };
+	            global.postMessage("", "*");
+	            global.onmessage = oldOnMessage;
+	            return postMessageIsAsynchronous;
+	        }
+	    }
+
+	    function installPostMessageImplementation() {
+	        // Installs an event handler on `global` for the `message` event: see
+	        // * https://developer.mozilla.org/en/DOM/window.postMessage
+	        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+	        var messagePrefix = "setImmediate$" + Math.random() + "$";
+	        var onGlobalMessage = function(event) {
+	            if (event.source === global &&
+	                typeof event.data === "string" &&
+	                event.data.indexOf(messagePrefix) === 0) {
+	                runIfPresent(+event.data.slice(messagePrefix.length));
+	            }
+	        };
+
+	        if (global.addEventListener) {
+	            global.addEventListener("message", onGlobalMessage, false);
+	        } else {
+	            global.attachEvent("onmessage", onGlobalMessage);
+	        }
+
+	        registerImmediate = function(handle) {
+	            global.postMessage(messagePrefix + handle, "*");
+	        };
+	    }
+
+	    function installMessageChannelImplementation() {
+	        var channel = new MessageChannel();
+	        channel.port1.onmessage = function(event) {
+	            var handle = event.data;
+	            runIfPresent(handle);
+	        };
+
+	        registerImmediate = function(handle) {
+	            channel.port2.postMessage(handle);
+	        };
+	    }
+
+	    function installReadyStateChangeImplementation() {
+	        var html = doc.documentElement;
+	        registerImmediate = function(handle) {
+	            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+	            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+	            var script = doc.createElement("script");
+	            script.onreadystatechange = function () {
+	                runIfPresent(handle);
+	                script.onreadystatechange = null;
+	                html.removeChild(script);
+	                script = null;
+	            };
+	            html.appendChild(script);
+	        };
+	    }
+
+	    function installSetTimeoutImplementation() {
+	        registerImmediate = function(handle) {
+	            setTimeout(runIfPresent, 0, handle);
+	        };
+	    }
+
+	    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+	    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+	    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+	    // Don't get fooled by e.g. browserify environments.
+	    if ({}.toString.call(global.process) === "[object process]") {
+	        // For Node.js before 0.9
+	        installNextTickImplementation();
+
+	    } else if (canUsePostMessage()) {
+	        // For non-IE10 modern browsers
+	        installPostMessageImplementation();
+
+	    } else if (global.MessageChannel) {
+	        // For web workers, where supported
+	        installMessageChannelImplementation();
+
+	    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+	        // For IE 6–8
+	        installReadyStateChangeImplementation();
+
+	    } else {
+	        // For older browsers
+	        installSetTimeoutImplementation();
+	    }
+
+	    attachTo.setImmediate = setImmediate;
+	    attachTo.clearImmediate = clearImmediate;
+	}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(14)))
+
+/***/ },
+/* 14 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -4220,8 +4499,12 @@
 
 
 /***/ },
-/* 11 */
+/* 15 */
 /***/ function(module, exports) {
+
+	'use strict';
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	/**
 	 * Helper to split string by length
@@ -4229,9 +4512,9 @@
 	 * @param len
 	 * @returns {Array}
 	 */
-	var chunkString = function (str, len) {
-	  var size   = Math.ceil(str.length / len);
-	  var ret    = new Array(size);
+	var chunkString = function chunkString(str, len) {
+	  var size = Math.ceil(str.length / len);
+	  var ret = new Array(size);
 	  var offset = null;
 
 	  for (var i = 0; i < size; i++) {
@@ -4244,13 +4527,13 @@
 
 	var ESCAPE_SEQUENCE_SIZE = 3;
 
-	var chunkEscapedString = function (str, len) {
+	var chunkEscapedString = function chunkEscapedString(str, len) {
 	  var chunked = [];
 
 	  while (str.length > 0) {
-	    var substr     = str.substring(0, len);
+	    var substr = str.substring(0, len);
 	    var lastEscape = substr.lastIndexOf('%');
-	    var sliceIndex = (lastEscape > 0 && len - lastEscape < ESCAPE_SEQUENCE_SIZE) ? lastEscape : len;
+	    var sliceIndex = lastEscape > 0 && len - lastEscape < ESCAPE_SEQUENCE_SIZE ? lastEscape : len;
 
 	    var chunk = str.slice(0, sliceIndex);
 
@@ -4270,8 +4553,9 @@
 	 * @param array
 	 * @returns {Array}
 	 */
-	var getUnique = function (array) {
-	  var u = {}, a = [];
+	var getUnique = function getUnique(array) {
+	  var u = {};
+	  var a = [];
 	  for (var i = 0, l = array.length; i < l; ++i) {
 	    if (u.hasOwnProperty(array[i])) {
 	      continue;
@@ -4280,13 +4564,13 @@
 	    u[array[i]] = 1;
 	  }
 	  return a;
-	}
+	};
 
 	/**
 	 * Helper to deep copy an object
 	 * @param o
 	 */
-	var deepCopy = function (o) {
+	var deepCopy = function deepCopy(o) {
 	  if (o === undefined || o === null) {
 	    return null;
 	  }
@@ -4299,8 +4583,8 @@
 	 * @param source
 	 * @returns {*}
 	 */
-	var merge = function (target, source) {
-	  if (typeof target !== 'object') {
+	var merge = function merge(target, source) {
+	  if ((typeof target === 'undefined' ? 'undefined' : _typeof(target)) !== 'object') {
 	    target = {};
 	  }
 
@@ -4308,7 +4592,7 @@
 	    if (source.hasOwnProperty(property)) {
 	      var sourceProperty = source[property];
 
-	      if (typeof sourceProperty === 'object') {
+	      if ((typeof sourceProperty === 'undefined' ? 'undefined' : _typeof(sourceProperty)) === 'object') {
 	        target[property] = merge(target[property], sourceProperty);
 	        continue;
 	      }
@@ -4324,13 +4608,12 @@
 	  return target;
 	};
 
-
 	/**
 	 * Returns the version of Internet Explorer or a -1
 	 * (indicating the use of another browser).
 	 * @returns {number}
 	 */
-	var getInternetExplorerVersion = function (navigatorAppName, userAgent) {
+	var getInternetExplorerVersion = function getInternetExplorerVersion(navigatorAppName, userAgent) {
 	  var rv = -1; // Return value assumes failure.
 	  if (navigatorAppName == 'Microsoft Internet Explorer') {
 	    var ua = userAgent;
@@ -4340,7 +4623,7 @@
 	  return rv;
 	};
 
-	var startsWithOneOf = function (target, array) {
+	var startsWithOneOf = function startsWithOneOf(target, array) {
 	  var len = parseInt(array.length, 10) || 0;
 	  if (len === 0) {
 	    return false;
@@ -4361,24 +4644,24 @@
 	};
 
 	module.exports = {
-	  chunkString:                chunkString,
-	  chunkEscapedString:         chunkEscapedString,
-	  deepCopy:                   deepCopy,
-	  merge:                      merge,
+	  chunkString: chunkString,
+	  chunkEscapedString: chunkEscapedString,
+	  deepCopy: deepCopy,
+	  merge: merge,
 	  getInternetExplorerVersion: getInternetExplorerVersion,
-	  getUnique:                  getUnique,
-	  startsWithOneOf:            startsWithOneOf
+	  getUnique: getUnique,
+	  startsWithOneOf: startsWithOneOf
 	};
 
 /***/ },
-/* 12 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length;n++)t[o][o.charAt(n)]=n}return t[o][r]}var r=String.fromCharCode,n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",e="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",t={},i={compressToBase64:function(o){if(null==o)return"";var r=i._compress(o,6,function(o){return n.charAt(o)});switch(r.length%4){default:case 0:return r;case 1:return r+"===";case 2:return r+"==";case 3:return r+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(e){return o(n,r.charAt(e))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(o){return null==o?"":""==o?null:i._decompress(o.length,16384,function(r){return o.charCodeAt(r)-32})},compressToUint8Array:function(o){for(var r=i.compress(o),n=new Uint8Array(2*r.length),e=0,t=r.length;t>e;e++){var s=r.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null===o||void 0===o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;t>e;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(o){return null==o?"":i._compress(o,6,function(o){return e.charAt(o)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(n){return o(e,r.charAt(n))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(o,r,n){if(null==o)return"";var e,t,i,s={},p={},u="",c="",a="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<o.length;i+=1)if(u=o.charAt(i),Object.prototype.hasOwnProperty.call(s,u)||(s[u]=f++,p[u]=!0),c=a+u,Object.prototype.hasOwnProperty.call(s,c))a=c;else{if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++),s[c]=f++,a=String(u)}if(""!==a){if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==r-1){d.push(n(m));break}v++}return d.join("")},decompress:function(o){return null==o?"":""==o?null:i._decompress(o.length,32768,function(r){return o.charCodeAt(r)})},_decompress:function(o,n,e){var t,i,s,p,u,c,a,l,f=[],h=4,d=4,m=3,v="",w=[],A={val:e(0),position:n,index:1};for(i=0;3>i;i+=1)f[i]=i;for(p=0,c=Math.pow(2,2),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(t=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 2:return""}for(f[3]=l,s=l,w.push(l);;){if(A.index>o)return"";for(p=0,c=Math.pow(2,m),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(l=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 2:return w.join("")}if(0==h&&(h=Math.pow(2,m),m++),f[l])v=f[l];else{if(l!==d)return null;v=s+s.charAt(0)}w.push(v),f[d++]=s+v.charAt(0),h--,s=v,0==h&&(h=Math.pow(2,m),m++)}}};return i}(); true?!(__WEBPACK_AMD_DEFINE_RESULT__ = function(){return LZString}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)):"undefined"!=typeof module&&null!=module&&(module.exports=LZString);
 
 
 /***/ },
-/* 13 */
+/* 17 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -4399,11 +4682,19 @@
 			"test": "gulp test",
 			"coverage:codacy": "cat ./coverage/lcov.info | codacy-coverage"
 		},
+		"engines": {
+			"node": ">=6"
+		},
 		"author": "Eric Hacke",
 		"license": "MIT",
 		"devDependencies": {
+			"babel-core": "^6.21.0",
+			"babel-loader": "^6.2.10",
+			"babel-preset-latest": "^6.16.0",
 			"chai": "^3.5.0",
 			"codacy-coverage": "^2.0.0",
+			"eslint-plugin-no-only-tests": "^1.1.0",
+			"glob": "^7.1.1",
 			"gulp": "^3.9.1",
 			"gulp-eslint": "^3.0.1",
 			"gulp-exec": "^2.1.3",
@@ -4412,7 +4703,11 @@
 			"gulp-mocha": "^3.0.1",
 			"gulp-util": "^3.0.7",
 			"istanbul": "^0.4.3",
+			"jsdom": "^9.9.1",
+			"json-loader": "^0.5.4",
 			"lodash": "^4.16.6",
+			"mocha": "^3.1.2",
+			"moment": "^2.17.1",
 			"stream-combiner2": "^1.1.1",
 			"stringify-object": "3.0.0",
 			"supertest": "^2.0.1",
@@ -4421,21 +4716,199 @@
 			"webpack-stream": "^3.2.0"
 		},
 		"dependencies": {
+			"cookies-js": "^1.2.3",
 			"deep-diff": "^0.3.4",
-			"json-loader": "^0.5.4",
 			"lz-string": "^1.4.4",
-			"mocha": "^3.1.2",
 			"schema-inspector": "^1.6.8",
-			"uuid": "^2.0.3"
+			"uuid": "^3.0.1"
 		}
 	};
 
 /***/ },
-/* 14 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var utils = __webpack_require__(15);
-	module.exports={
+	var __WEBPACK_AMD_DEFINE_RESULT__;/*
+	 * Cookies.js - 1.2.3
+	 * https://github.com/ScottHamper/Cookies
+	 *
+	 * This is free and unencumbered software released into the public domain.
+	 */
+	(function (global, undefined) {
+	    'use strict';
+
+	    var factory = function (window) {
+	        if (typeof window.document !== 'object') {
+	            throw new Error('Cookies.js requires a `window` with a `document` object');
+	        }
+
+	        var Cookies = function (key, value, options) {
+	            return arguments.length === 1 ?
+	                Cookies.get(key) : Cookies.set(key, value, options);
+	        };
+
+	        // Allows for setter injection in unit tests
+	        Cookies._document = window.document;
+
+	        // Used to ensure cookie keys do not collide with
+	        // built-in `Object` properties
+	        Cookies._cacheKeyPrefix = 'cookey.'; // Hurr hurr, :)
+	        
+	        Cookies._maxExpireDate = new Date('Fri, 31 Dec 9999 23:59:59 UTC');
+
+	        Cookies.defaults = {
+	            path: '/',
+	            secure: false
+	        };
+
+	        Cookies.get = function (key) {
+	            if (Cookies._cachedDocumentCookie !== Cookies._document.cookie) {
+	                Cookies._renewCache();
+	            }
+	            
+	            var value = Cookies._cache[Cookies._cacheKeyPrefix + key];
+
+	            return value === undefined ? undefined : decodeURIComponent(value);
+	        };
+
+	        Cookies.set = function (key, value, options) {
+	            options = Cookies._getExtendedOptions(options);
+	            options.expires = Cookies._getExpiresDate(value === undefined ? -1 : options.expires);
+
+	            Cookies._document.cookie = Cookies._generateCookieString(key, value, options);
+
+	            return Cookies;
+	        };
+
+	        Cookies.expire = function (key, options) {
+	            return Cookies.set(key, undefined, options);
+	        };
+
+	        Cookies._getExtendedOptions = function (options) {
+	            return {
+	                path: options && options.path || Cookies.defaults.path,
+	                domain: options && options.domain || Cookies.defaults.domain,
+	                expires: options && options.expires || Cookies.defaults.expires,
+	                secure: options && options.secure !== undefined ?  options.secure : Cookies.defaults.secure
+	            };
+	        };
+
+	        Cookies._isValidDate = function (date) {
+	            return Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date.getTime());
+	        };
+
+	        Cookies._getExpiresDate = function (expires, now) {
+	            now = now || new Date();
+
+	            if (typeof expires === 'number') {
+	                expires = expires === Infinity ?
+	                    Cookies._maxExpireDate : new Date(now.getTime() + expires * 1000);
+	            } else if (typeof expires === 'string') {
+	                expires = new Date(expires);
+	            }
+
+	            if (expires && !Cookies._isValidDate(expires)) {
+	                throw new Error('`expires` parameter cannot be converted to a valid Date instance');
+	            }
+
+	            return expires;
+	        };
+
+	        Cookies._generateCookieString = function (key, value, options) {
+	            key = key.replace(/[^#$&+\^`|]/g, encodeURIComponent);
+	            key = key.replace(/\(/g, '%28').replace(/\)/g, '%29');
+	            value = (value + '').replace(/[^!#$&-+\--:<-\[\]-~]/g, encodeURIComponent);
+	            options = options || {};
+
+	            var cookieString = key + '=' + value;
+	            cookieString += options.path ? ';path=' + options.path : '';
+	            cookieString += options.domain ? ';domain=' + options.domain : '';
+	            cookieString += options.expires ? ';expires=' + options.expires.toUTCString() : '';
+	            cookieString += options.secure ? ';secure' : '';
+
+	            return cookieString;
+	        };
+
+	        Cookies._getCacheFromString = function (documentCookie) {
+	            var cookieCache = {};
+	            var cookiesArray = documentCookie ? documentCookie.split('; ') : [];
+
+	            for (var i = 0; i < cookiesArray.length; i++) {
+	                var cookieKvp = Cookies._getKeyValuePairFromCookieString(cookiesArray[i]);
+
+	                if (cookieCache[Cookies._cacheKeyPrefix + cookieKvp.key] === undefined) {
+	                    cookieCache[Cookies._cacheKeyPrefix + cookieKvp.key] = cookieKvp.value;
+	                }
+	            }
+
+	            return cookieCache;
+	        };
+
+	        Cookies._getKeyValuePairFromCookieString = function (cookieString) {
+	            // "=" is a valid character in a cookie value according to RFC6265, so cannot `split('=')`
+	            var separatorIndex = cookieString.indexOf('=');
+
+	            // IE omits the "=" when the cookie value is an empty string
+	            separatorIndex = separatorIndex < 0 ? cookieString.length : separatorIndex;
+
+	            var key = cookieString.substr(0, separatorIndex);
+	            var decodedKey;
+	            try {
+	                decodedKey = decodeURIComponent(key);
+	            } catch (e) {
+	                if (console && typeof console.error === 'function') {
+	                    console.error('Could not decode cookie with key "' + key + '"', e);
+	                }
+	            }
+	            
+	            return {
+	                key: decodedKey,
+	                value: cookieString.substr(separatorIndex + 1) // Defer decoding value until accessed
+	            };
+	        };
+
+	        Cookies._renewCache = function () {
+	            Cookies._cache = Cookies._getCacheFromString(Cookies._document.cookie);
+	            Cookies._cachedDocumentCookie = Cookies._document.cookie;
+	        };
+
+	        Cookies._areEnabled = function () {
+	            var testKey = 'cookies.js';
+	            var areEnabled = Cookies.set(testKey, 1).get(testKey) === '1';
+	            Cookies.expire(testKey);
+	            return areEnabled;
+	        };
+
+	        Cookies.enabled = Cookies._areEnabled();
+
+	        return Cookies;
+	    };
+	    var cookiesExport = (global && typeof global.document === 'object') ? factory(global) : factory;
+
+	    // AMD support
+	    if (true) {
+	        !(__WEBPACK_AMD_DEFINE_RESULT__ = function () { return cookiesExport; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	    // CommonJS/Node.js support
+	    } else if (typeof exports === 'object') {
+	        // Support Node.js specific `module.exports` (which can be a function)
+	        if (typeof module === 'object' && typeof module.exports === 'object') {
+	            exports = module.exports = cookiesExport;
+	        }
+	        // But always support CommonJS module 1.1.1 spec (`exports` cannot be a function)
+	        exports.Cookies = cookiesExport;
+	    } else {
+	        global.Cookies = cookiesExport;
+	    }
+	})(typeof window === 'undefined' ? this : window);
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var utils = __webpack_require__(20);
+	module.exports = {
 	  validation: {
 	    type: 'object',
 	    properties: {
@@ -4588,6 +5061,10 @@
 	              },
 	              sessionId: {
 	                type: 'string'
+	              },
+	              loginId: {
+	                type: 'string',
+	                optional: true
 	              }
 	            },
 	            strict: true
@@ -4620,10 +5097,7 @@
 	        properties: {
 	          raw: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          major: {
 	            type: 'integer',
@@ -4641,10 +5115,7 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
@@ -4652,19 +5123,13 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
 	          version: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          }
 	        },
@@ -4672,24 +5137,17 @@
 	      },
 	      eventType: {
 	        maxLength: 10000,
-	        rules: [
-	          'trim'
-	        ]
+	        rules: ['trim']
 	      },
 	      customer: {
 	        properties: {
 	          id: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          area: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim'
-	            ],
+	            rules: ['trim'],
 	            optional: false,
 	            def: 'Production'
 	          }
@@ -4700,10 +5158,7 @@
 	        properties: {
 	          id: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          },
 	          items: {
@@ -4712,48 +5167,31 @@
 	              properties: {
 	                category: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ],
+	                  rules: ['trim', 'lower'],
 	                  optional: true
 	                },
 	                collection: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim'
-	                  ],
+	                  rules: ['trim'],
 	                  optional: false,
 	                  def: 'default'
 	                },
 	                title: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                sku: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ],
+	                  rules: ['trim', 'lower'],
 	                  optional: true
 	                },
 	                productId: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                parentId: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ],
+	                  rules: ['trim', 'lower'],
 	                  optional: true
 	                },
 	                margin: {
@@ -4772,17 +5210,11 @@
 	                    properties: {
 	                      key: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      value: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      }
 	                    },
 	                    strict: true
@@ -4799,17 +5231,11 @@
 	              properties: {
 	                key: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                value: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                }
 	              },
 	              strict: true
@@ -4825,17 +5251,15 @@
 	            properties: {
 	              visitorId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              sessionId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
+	              },
+	              loginId: {
+	                maxLength: 10000,
+	                rules: ['trim', 'lower']
 	              }
 	            },
 	            strict: true
@@ -4849,17 +5273,11 @@
 	          properties: {
 	            key: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            value: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          strict: true
@@ -4869,11 +5287,13 @@
 	    },
 	    strict: true
 	  }
-	}
+	};
 
 /***/ },
-/* 15 */
+/* 20 */
 /***/ function(module, exports) {
+
+	"use strict";
 
 	module.exports = {
 	  regex: {
@@ -4888,11 +5308,17 @@
 	};
 
 /***/ },
-/* 16 */
+/* 21 */
+19,
+/* 22 */
+19,
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var utils = __webpack_require__(15);
-	module.exports={
+	'use strict';
+
+	var utils = __webpack_require__(20);
+	module.exports = {
 	  validation: {
 	    type: 'object',
 	    properties: {
@@ -5061,6 +5487,10 @@
 	              },
 	              sessionId: {
 	                type: 'string'
+	              },
+	              loginId: {
+	                type: 'string',
+	                optional: true
 	              }
 	            },
 	            strict: true
@@ -5093,10 +5523,7 @@
 	        properties: {
 	          raw: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          major: {
 	            type: 'integer',
@@ -5114,10 +5541,7 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
@@ -5125,19 +5549,13 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
 	          version: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          }
 	        },
@@ -5145,24 +5563,17 @@
 	      },
 	      eventType: {
 	        maxLength: 10000,
-	        rules: [
-	          'trim'
-	        ]
+	        rules: ['trim']
 	      },
 	      customer: {
 	        properties: {
 	          id: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          area: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim'
-	            ],
+	            rules: ['trim'],
 	            optional: false,
 	            def: 'Production'
 	          }
@@ -5173,10 +5584,7 @@
 	        properties: {
 	          id: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          },
 	          totalItems: {
@@ -5201,48 +5609,31 @@
 	              properties: {
 	                category: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ],
+	                  rules: ['trim', 'lower'],
 	                  optional: true
 	                },
 	                collection: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim'
-	                  ],
+	                  rules: ['trim'],
 	                  optional: false,
 	                  def: 'default'
 	                },
 	                title: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                sku: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ],
+	                  rules: ['trim', 'lower'],
 	                  optional: true
 	                },
 	                productId: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                parentId: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ],
+	                  rules: ['trim', 'lower'],
 	                  optional: true
 	                },
 	                margin: {
@@ -5261,17 +5652,11 @@
 	                    properties: {
 	                      key: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      value: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      }
 	                    },
 	                    strict: true
@@ -5288,17 +5673,11 @@
 	              properties: {
 	                key: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                value: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                }
 	              },
 	              strict: true
@@ -5314,17 +5693,15 @@
 	            properties: {
 	              visitorId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              sessionId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
+	              },
+	              loginId: {
+	                maxLength: 10000,
+	                rules: ['trim', 'lower']
 	              }
 	            },
 	            strict: true
@@ -5338,17 +5715,11 @@
 	          properties: {
 	            key: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            value: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          strict: true
@@ -5358,14 +5729,16 @@
 	    },
 	    strict: true
 	  }
-	}
+	};
 
 /***/ },
-/* 17 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var utils = __webpack_require__(15);
-	module.exports={
+	'use strict';
+
+	var utils = __webpack_require__(20);
+	module.exports = {
 	  validation: {
 	    type: 'object',
 	    properties: {
@@ -5410,8 +5783,7 @@
 	      },
 	      responseId: {
 	        type: 'string',
-	        pattern: /^[0-9a-f]{40}$/,
-	        error: 'must be SHA1 hex'
+	        optional: true
 	      },
 	      eventType: {
 	        type: 'string'
@@ -5464,6 +5836,10 @@
 	              }
 	            },
 	            strict: true
+	          },
+	          id: {
+	            type: 'string',
+	            optional: false
 	          }
 	        },
 	        type: 'object',
@@ -5480,6 +5856,10 @@
 	              },
 	              sessionId: {
 	                type: 'string'
+	              },
+	              loginId: {
+	                type: 'string',
+	                optional: true
 	              }
 	            },
 	            strict: true
@@ -5512,10 +5892,7 @@
 	        properties: {
 	          raw: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          major: {
 	            type: 'integer',
@@ -5533,10 +5910,7 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
@@ -5544,45 +5918,36 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
 	          version: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          }
 	        },
 	        strict: true
 	      },
-	      responseId: {},
+	      responseId: {
+	        maxLength: 10000,
+	        rules: ['trim', 'lower'],
+	        optional: true
+	      },
 	      eventType: {
 	        maxLength: 10000,
-	        rules: [
-	          'trim'
-	        ]
+	        rules: ['trim']
 	      },
 	      customer: {
 	        properties: {
 	          id: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          area: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim'
-	            ],
+	            rules: ['trim'],
 	            optional: false,
 	            def: 'Production'
 	          }
@@ -5623,6 +5988,10 @@
 	              }
 	            },
 	            strict: true
+	          },
+	          id: {
+	            maxLength: 10000,
+	            rules: ['trim', 'lower']
 	          }
 	        },
 	        strict: true
@@ -5633,17 +6002,15 @@
 	            properties: {
 	              visitorId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              sessionId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
+	              },
+	              loginId: {
+	                maxLength: 10000,
+	                rules: ['trim', 'lower']
 	              }
 	            },
 	            strict: true
@@ -5657,17 +6024,11 @@
 	          properties: {
 	            key: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            value: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          strict: true
@@ -5677,14 +6038,16 @@
 	    },
 	    strict: true
 	  }
-	}
+	};
 
 /***/ },
-/* 18 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var utils = __webpack_require__(15);
-	module.exports={
+	'use strict';
+
+	var utils = __webpack_require__(20);
+	module.exports = {
 	  validation: {
 	    type: 'object',
 	    properties: {
@@ -6465,6 +6828,10 @@
 	              },
 	              sessionId: {
 	                type: 'string'
+	              },
+	              loginId: {
+	                type: 'string',
+	                optional: true
 	              }
 	            },
 	            strict: true
@@ -6497,10 +6864,7 @@
 	        properties: {
 	          raw: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          major: {
 	            type: 'integer',
@@ -6518,10 +6882,7 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
@@ -6529,19 +6890,13 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
 	          version: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          }
 	        },
@@ -6549,32 +6904,22 @@
 	      },
 	      responseId: {
 	        maxLength: 10000,
-	        rules: [
-	          'trim',
-	          'lower'
-	        ],
+	        rules: ['trim', 'lower'],
 	        optional: true
 	      },
 	      eventType: {
 	        maxLength: 10000,
-	        rules: [
-	          'trim'
-	        ]
+	        rules: ['trim']
 	      },
 	      customer: {
 	        properties: {
 	          id: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          area: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim'
-	            ],
+	            rules: ['trim'],
 	            optional: false,
 	            def: 'Production'
 	          }
@@ -6618,132 +6963,100 @@
 	          },
 	          id: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          totalRecordCount: {
 	            type: 'integer'
 	          },
 	          area: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim'
-	            ]
+	            rules: ['trim']
 	          },
 	          biasingProfile: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          query: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            exec: function (schema, post) {
-	  if (typeof post === 'string') {
-	    // Strip using blacklist
-	    post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
+	            rules: ['trim', 'lower'],
+	            exec: function exec(schema, post) {
+	              if (typeof post === 'string') {
+	                // Strip using blacklist
+	                post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
 
-	    // Replace all whitespace combinations with a single space
-	    post = post.replace(/\s\s+/g, ' ');
+	                // Replace all whitespace combinations with a single space
+	                post = post.replace(/\s\s+/g, ' ');
 
-	    post = post.trim();
+	                post = post.trim();
 
-	    return post;
-	  } else {
-	    return post;
-	  }
-	}
+	                return post;
+	              } else {
+	                return post;
+	              }
+	            }
 	          },
 	          originalQuery: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            exec: function (schema, post) {
-	  if (typeof post === 'string') {
-	    // Strip using blacklist
-	    post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
+	            rules: ['trim', 'lower'],
+	            exec: function exec(schema, post) {
+	              if (typeof post === 'string') {
+	                // Strip using blacklist
+	                post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
 
-	    // Replace all whitespace combinations with a single space
-	    post = post.replace(/\s\s+/g, ' ');
+	                // Replace all whitespace combinations with a single space
+	                post = post.replace(/\s\s+/g, ' ');
 
-	    post = post.trim();
+	                post = post.trim();
 
-	    return post;
-	  } else {
-	    return post;
-	  }
-	}
+	                return post;
+	              } else {
+	                return post;
+	              }
+	            }
 	          },
 	          correctedQuery: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
-	            exec: function (schema, post) {
-	  if (typeof post === 'string') {
-	    // Strip using blacklist
-	    post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
+	            rules: ['trim', 'lower'],
+	            exec: function exec(schema, post) {
+	              if (typeof post === 'string') {
+	                // Strip using blacklist
+	                post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
 
-	    // Replace all whitespace combinations with a single space
-	    post = post.replace(/\s\s+/g, ' ');
+	                // Replace all whitespace combinations with a single space
+	                post = post.replace(/\s\s+/g, ' ');
 
-	    post = post.trim();
+	                post = post.trim();
 
-	    return post;
-	  } else {
-	    return post;
-	  }
-	}
+	                return post;
+	              } else {
+	                return post;
+	              }
+	            }
 	          },
 	          warnings: {
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          errors: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          template: {
 	            properties: {
 	              name: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              ruleName: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              _id: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              }
 	            },
 	            strict: true
@@ -6763,28 +7076,19 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          rewrites: {
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          redirect: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          siteParams: {
 	            type: 'array',
@@ -6792,17 +7096,11 @@
 	              properties: {
 	                key: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                value: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                }
 	              },
 	              strict: true
@@ -6812,10 +7110,7 @@
 	            properties: {
 	              name: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              rules: {
 	                type: 'array',
@@ -6844,17 +7139,11 @@
 	              properties: {
 	                name: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                displayName: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                range: {},
 	                or: {},
@@ -6862,17 +7151,11 @@
 	                moreRefinements: {},
 	                _id: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                type: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                metadata: {
 	                  type: 'array',
@@ -6880,17 +7163,11 @@
 	                    properties: {
 	                      key: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      value: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      }
 	                    },
 	                    strict: true
@@ -6902,17 +7179,11 @@
 	                    properties: {
 	                      type: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      _id: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      count: {
 	                        type: 'integer'
@@ -6920,24 +7191,15 @@
 	                      exclude: {},
 	                      value: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      high: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      low: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      }
 	                    },
 	                    strict: true
@@ -6953,17 +7215,11 @@
 	              properties: {
 	                name: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                displayName: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                range: {},
 	                or: {},
@@ -6971,17 +7227,11 @@
 	                moreRefinements: {},
 	                _id: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                type: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                metadata: {
 	                  type: 'array',
@@ -6989,17 +7239,11 @@
 	                    properties: {
 	                      key: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      value: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      }
 	                    },
 	                    strict: true
@@ -7011,17 +7255,11 @@
 	                    properties: {
 	                      type: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      _id: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      count: {
 	                        type: 'integer'
@@ -7029,24 +7267,15 @@
 	                      exclude: {},
 	                      value: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      high: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      low: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      }
 	                    },
 	                    strict: true
@@ -7064,18 +7293,12 @@
 	                  properties: {
 	                    sku: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ],
+	                      rules: ['trim', 'lower'],
 	                      type: 'string'
 	                    },
 	                    productId: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ],
+	                      rules: ['trim', 'lower'],
 	                      type: 'string'
 	                    }
 	                  },
@@ -7087,10 +7310,7 @@
 	                    properties: {
 	                      name: {
 	                        maxLength: 10000,
-	                        rules: [
-	                          'trim',
-	                          'lower'
-	                        ]
+	                        rules: ['trim', 'lower']
 	                      },
 	                      values: {
 	                        type: 'array',
@@ -7098,10 +7318,7 @@
 	                          properties: {
 	                            value: {
 	                              maxLength: 10000,
-	                              rules: [
-	                                'trim',
-	                                'lower'
-	                              ]
+	                              rules: ['trim', 'lower']
 	                            },
 	                            count: {
 	                              type: 'integer'
@@ -7116,31 +7333,19 @@
 	                },
 	                _id: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                _u: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                _t: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                collection: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                }
 	              },
 	              strict: true
@@ -7150,55 +7355,34 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          originalRequest: {
 	            properties: {
 	              collection: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              area: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              sessionId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              visitorId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              biasingProfile: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              language: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              customUrlParams: {
 	                type: 'array',
@@ -7206,17 +7390,11 @@
 	                  properties: {
 	                    key: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    },
 	                    value: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    }
 	                  },
 	                  strict: true
@@ -7224,48 +7402,36 @@
 	              },
 	              query: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ],
-	                exec: function (schema, post) {
-	  if (typeof post === 'string') {
-	    // Strip using blacklist
-	    post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
+	                rules: ['trim', 'lower'],
+	                exec: function exec(schema, post) {
+	                  if (typeof post === 'string') {
+	                    // Strip using blacklist
+	                    post = post.replace(utils.regex.BLACKLIST_STRIPING_REGEX, ' ');
 
-	    // Replace all whitespace combinations with a single space
-	    post = post.replace(/\s\s+/g, ' ');
+	                    // Replace all whitespace combinations with a single space
+	                    post = post.replace(/\s\s+/g, ' ');
 
-	    post = post.trim();
+	                    post = post.trim();
 
-	    return post;
-	  } else {
-	    return post;
-	  }
-	}
+	                    return post;
+	                  } else {
+	                    return post;
+	                  }
+	                }
 	              },
 	              refinementQuery: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              matchStrategyName: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              matchStrategy: {
 	                properties: {
 	                  name: {
 	                    maxLength: 10000,
-	                    rules: [
-	                      'trim',
-	                      'lower'
-	                    ]
+	                    rules: ['trim', 'lower']
 	                  },
 	                  rules: {
 	                    type: 'array',
@@ -7294,10 +7460,7 @@
 	                    type: 'array',
 	                    items: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    }
 	                  },
 	                  augmentBiases: {},
@@ -7310,24 +7473,15 @@
 	                      properties: {
 	                        name: {
 	                          maxLength: 10000,
-	                          rules: [
-	                            'trim',
-	                            'lower'
-	                          ]
+	                          rules: ['trim', 'lower']
 	                        },
 	                        content: {
 	                          maxLength: 10000,
-	                          rules: [
-	                            'trim',
-	                            'lower'
-	                          ]
+	                          rules: ['trim', 'lower']
 	                        },
 	                        strength: {
 	                          maxLength: 10000,
-	                          rules: [
-	                            'trim',
-	                            'lower'
-	                          ]
+	                          rules: ['trim', 'lower']
 	                        }
 	                      },
 	                      strict: true
@@ -7351,17 +7505,11 @@
 	                  properties: {
 	                    field: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    },
 	                    order: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    }
 	                  },
 	                  strict: true
@@ -7371,20 +7519,14 @@
 	                type: 'array',
 	                items: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                }
 	              },
 	              orFields: {
 	                type: 'array',
 	                items: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                }
 	              },
 	              wildcardSearchEnabled: {},
@@ -7392,10 +7534,7 @@
 	                properties: {
 	                  name: {
 	                    maxLength: 10000,
-	                    rules: [
-	                      'trim',
-	                      'lower'
-	                    ]
+	                    rules: ['trim', 'lower']
 	                  },
 	                  count: {
 	                    type: 'integer'
@@ -7407,20 +7546,14 @@
 	                type: 'array',
 	                items: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                }
 	              },
 	              excludedNavigations: {
 	                type: 'array',
 	                items: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                }
 	              },
 	              refinements: {
@@ -7429,46 +7562,28 @@
 	                  properties: {
 	                    navigationName: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    },
 	                    type: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    },
 	                    _id: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    },
 	                    exclude: {},
 	                    value: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    },
 	                    high: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    },
 	                    low: {
 	                      maxLength: 10000,
-	                      rules: [
-	                        'trim',
-	                        'lower'
-	                      ]
+	                      rules: ['trim', 'lower']
 	                    }
 	                  },
 	                  strict: true
@@ -7486,17 +7601,15 @@
 	            properties: {
 	              visitorId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              sessionId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
+	              },
+	              loginId: {
+	                maxLength: 10000,
+	                rules: ['trim', 'lower']
 	              }
 	            },
 	            strict: true
@@ -7510,17 +7623,11 @@
 	          properties: {
 	            key: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            value: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          strict: true
@@ -7530,14 +7637,16 @@
 	    },
 	    strict: true
 	  }
-	}
+	};
 
 /***/ },
-/* 19 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var utils = __webpack_require__(15);
-	module.exports={
+	'use strict';
+
+	var utils = __webpack_require__(20);
+	module.exports = {
 	  validation: {
 	    type: 'object',
 	    properties: {
@@ -7627,6 +7736,10 @@
 	              },
 	              sessionId: {
 	                type: 'string'
+	              },
+	              loginId: {
+	                type: 'string',
+	                optional: true
 	              }
 	            },
 	            strict: true
@@ -7659,10 +7772,7 @@
 	        properties: {
 	          raw: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          major: {
 	            type: 'integer',
@@ -7680,10 +7790,7 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
@@ -7691,19 +7798,13 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
 	          version: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          }
 	        },
@@ -7711,24 +7812,17 @@
 	      },
 	      eventType: {
 	        maxLength: 10000,
-	        rules: [
-	          'trim'
-	        ]
+	        rules: ['trim']
 	      },
 	      customer: {
 	        properties: {
 	          id: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          area: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim'
-	            ],
+	            rules: ['trim'],
 	            optional: false,
 	            def: 'Production'
 	          }
@@ -7739,33 +7833,21 @@
 	        properties: {
 	          previousSessionId: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          },
 	          newSessionId: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          previousVisitorId: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          },
 	          newVisitorId: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          }
 	        },
 	        strict: true
@@ -7776,17 +7858,15 @@
 	            properties: {
 	              visitorId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              sessionId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
+	              },
+	              loginId: {
+	                maxLength: 10000,
+	                rules: ['trim', 'lower']
 	              }
 	            },
 	            strict: true
@@ -7800,17 +7880,11 @@
 	          properties: {
 	            key: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            value: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          strict: true
@@ -7820,14 +7894,16 @@
 	    },
 	    strict: true
 	  }
-	}
+	};
 
 /***/ },
-/* 20 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var utils = __webpack_require__(15);
-	module.exports={
+	'use strict';
+
+	var utils = __webpack_require__(20);
+	module.exports = {
 	  validation: {
 	    type: 'object',
 	    properties: {
@@ -7948,6 +8024,10 @@
 	              },
 	              sessionId: {
 	                type: 'string'
+	              },
+	              loginId: {
+	                type: 'string',
+	                optional: true
 	              }
 	            },
 	            strict: true
@@ -7980,10 +8060,7 @@
 	        properties: {
 	          raw: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          major: {
 	            type: 'integer',
@@ -8001,10 +8078,7 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
@@ -8012,19 +8086,13 @@
 	            type: 'array',
 	            items: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            optional: true
 	          },
 	          version: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          }
 	        },
@@ -8032,24 +8100,17 @@
 	      },
 	      eventType: {
 	        maxLength: 10000,
-	        rules: [
-	          'trim'
-	        ]
+	        rules: ['trim']
 	      },
 	      customer: {
 	        properties: {
 	          id: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          area: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim'
-	            ],
+	            rules: ['trim'],
 	            optional: false,
 	            def: 'Production'
 	          }
@@ -8060,48 +8121,31 @@
 	        properties: {
 	          category: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          },
 	          collection: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim'
-	            ],
+	            rules: ['trim'],
 	            optional: false,
 	            def: 'default'
 	          },
 	          title: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          sku: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          },
 	          productId: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ]
+	            rules: ['trim', 'lower']
 	          },
 	          parentId: {
 	            maxLength: 10000,
-	            rules: [
-	              'trim',
-	              'lower'
-	            ],
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          },
 	          margin: {
@@ -8117,17 +8161,11 @@
 	              properties: {
 	                key: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                },
 	                value: {
 	                  maxLength: 10000,
-	                  rules: [
-	                    'trim',
-	                    'lower'
-	                  ]
+	                  rules: ['trim', 'lower']
 	                }
 	              },
 	              strict: true
@@ -8143,17 +8181,15 @@
 	            properties: {
 	              visitorId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
 	              },
 	              sessionId: {
 	                maxLength: 10000,
-	                rules: [
-	                  'trim',
-	                  'lower'
-	                ]
+	                rules: ['trim', 'lower']
+	              },
+	              loginId: {
+	                maxLength: 10000,
+	                rules: ['trim', 'lower']
 	              }
 	            },
 	            strict: true
@@ -8167,17 +8203,11 @@
 	          properties: {
 	            key: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            },
 	            value: {
 	              maxLength: 10000,
-	              rules: [
-	                'trim',
-	                'lower'
-	              ]
+	              rules: ['trim', 'lower']
 	            }
 	          },
 	          strict: true
@@ -8187,7 +8217,7 @@
 	    },
 	    strict: true
 	  }
-	}
+	};
 
 /***/ }
-/******/ ]);
+/******/ ])));
