@@ -59,11 +59,11 @@ export abstract class AbstractBridge {
 
   protected abstract augmentRequest(request: any): any;
 
-  private handleResponse<T>(response: Promise<T>, callback: Function): Promise<T> {
+  private handleResponse<T>(response: PromiseLike<T>, callback: Function) {
     if (callback) {
       response.then((res) => callback(undefined, res), (err) => callback(err));
     } else {
-      return response;
+      return <Promise<T>>response;
     }
   }
 

@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-process-env
 const isCi = process.env.NODE_ENV === 'ci';
 
 module.exports = {
