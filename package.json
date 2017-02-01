@@ -42,10 +42,12 @@
   },
   "homepage": "https://github.com/groupby/api-javascript#readme",
   "devDependencies": {
+    "@types/node": "^7.0.4",
     "awesome-typescript-loader": "^2.2.4",
     "chai": "^3.2.0",
     "codacy-coverage": "^2.0.0",
     "gb-license-check": "^1.0.1",
+    "istanbul": "^0.4.5",
     "karma": "^0.13.22",
     "karma-chai": "^0.1.0",
     "karma-coverage": "^1.1.1",
@@ -72,6 +74,11 @@
     "xhr-mock": "^1.6.0"
   },
   "dependencies": {
+    "@types/axios": "^0.9.35",
+    "@types/clone": "^0.1.30",
+    "@types/deep-equal": "^0.0.30",
+    "@types/eventemitter3": "^1.2.0",
+    "@types/qs": "^6.2.30",
     "array.prototype.find": "^2.0.0",
     "array.prototype.findindex": "^2.0.0",
     "axios": "^0.12.0",

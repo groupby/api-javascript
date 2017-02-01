@@ -1,8 +1,9 @@
 const webpackConfig = require('./webpack.config');
 
+// eslint-disable-next-line no-process-env
 const isCi = process.env.NODE_ENV === 'ci';
 
-function reporters() {
+function reporters () {
   const coverageReporters = [{
     type: 'json',
     subdir: '.',
@@ -14,7 +15,7 @@ function reporters() {
   });
 }
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     basePath: '',
     frameworks: ['mocha', 'chai', 'source-map-support', 'sinon'],
