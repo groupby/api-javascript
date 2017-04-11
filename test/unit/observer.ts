@@ -1,4 +1,4 @@
-import observe from '../../src/flux/observer';
+import observe, { observers } from '../../src/flux/observer';
 import { expect } from 'chai';
 
 describe.only('observer', () => {
