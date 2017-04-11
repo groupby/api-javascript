@@ -1,6 +1,6 @@
-import { Query } from '../src/core/query';
-import { SelectedValueRefinement } from '../src/models/request';
-import { COMBINED_REFINEMENTS, COMPLEX_REQUEST, CUSTOM_PARAMS_FROM_STRING } from './fixtures';
+import { Query } from '../../src/core/query';
+import { SelectedValueRefinement } from '../../src/models/request';
+import { COMBINED_REFINEMENTS, COMPLEX_REQUEST, CUSTOM_PARAMS_FROM_STRING } from '../fixtures';
 import { expect } from 'chai';
 
 describe('Query', function() {

@@ -1,5 +1,5 @@
-import { Pager } from '../src/flux/pager';
-import { Events, FluxCapacitor, Query } from '../src/index';
+import { Pager } from '../../src/flux/pager';
+import { Events, FluxCapacitor, Query } from '../../src/index';
 import { expect } from 'chai';
 
 describe('Pager', function() {

@@ -1,4 +1,4 @@
-import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../src/index';
+import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../../src/index';
 import { expect } from 'chai';
 import * as mock from 'xhr-mock';
 

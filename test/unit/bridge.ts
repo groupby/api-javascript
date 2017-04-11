@@ -1,5 +1,5 @@
-import { BrowserBridge, CloudBridge } from '../src/core/bridge';
-import { Query } from '../src/core/query';
+import { BrowserBridge, CloudBridge } from '../../src/core/bridge';
+import { Query } from '../../src/core/query';
 import { expect } from 'chai';
 import * as mock from 'xhr-mock';
 

@@ -3,7 +3,7 @@ const webpackConfig = require('./webpack.config');
 // eslint-disable-next-line no-process-env
 const isCi = process.env.NODE_ENV === 'ci';
 
-function reporters () {
+function reporters() {
   const coverageReporters = [{
     type: 'json',
     subdir: '.',
@@ -15,18 +15,21 @@ function reporters () {
   });
 }
 
-module.exports = function (config) {
+module.exports = function(config) {
   config.set({
     basePath: '',
-    frameworks: ['mocha', 'chai', 'source-map-support', 'sinon'],
-    files: ['./karma.entry.ts'],
+    frameworks: ['mocha', 'sinon-chai', 'source-map-support'],
+    files: ['./test/karma.entry.ts'],
     preprocessors: {
-      './karma.entry.ts': ['webpack']
+      './test/karma.entry.ts': ['webpack']
     },
     webpack: webpackConfig,
     webpackServer: {
       noInfo: true,
       stats: 'errors-only'
+    },
+    client: {
+      captureConsole: true
     },
     coverageReporter: {
       dir: 'coverage',
