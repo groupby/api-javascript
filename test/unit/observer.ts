@@ -104,10 +104,12 @@ describe.only('Observer', () => {
       const observers = Observer.create(<any>{});
 
       expect(observers).to.be.an('object');
-      expect(observers.request).to.be.an('object');
-      expect(observers.request.query).to.be.a('function');
-      expect(observers.request.refinements).to.be.a('function');
-      expect(observers.response).to.be.a('function');
+      expect(observers.data).to.be.an('object');
+      expect(observers.data.search).to.be.an('object');
+      expect(observers.data.search.request).to.be.a('function');
+      expect(observers.data.search.request.query).to.be.a('function');
+      expect(observers.data.search.request.refinements).to.be.a('function');
+      expect(observers.data.search.response).to.be.a('function');
     });
   });
 });

@@ -2,38 +2,38 @@ import { RangeRefinement, Refinement, ValueRefinement } from './response';
 
 export type SortOrder = 'Ascending' | 'Descending';
 
-export class Request {
+export interface Request {
   // query parameters
-  query: string;
-  refinements: SelectedRefinement[];
+  query?: string;
+  refinements?: SelectedRefinement[];
 
   // query configuration
-  fields: string[];
-  orFields: string[];
-  includedNavigations: string[];
-  excludedNavigations: string[];
-  sort: Sort[];
-  customUrlParams: CustomUrlParam[];
-  restrictNavigation: RestrictNavigation;
-  biasing: Biasing;
-  matchStrategy: MatchStrategy;
+  fields?: string[];
+  orFields?: string[];
+  includedNavigations?: string[];
+  excludedNavigations?: string[];
+  sort?: Sort[];
+  customUrlParams?: CustomUrlParam[];
+  restrictNavigation?: RestrictNavigation;
+  biasing?: Biasing;
+  matchStrategy?: MatchStrategy;
 
   // configuration
-  userId: string;
-  language: string;
-  collection: string;
-  area: string;
-  biasingProfile: string;
+  userId?: string;
+  language?: string;
+  collection?: string;
+  area?: string;
+  biasingProfile?: string;
 
   // paging
-  skip: number;
-  pageSize: number;
+  skip?: number;
+  pageSize?: number;
 
   // format
-  returnBinary: boolean;
-  pruneRefinements: boolean;
-  disableAutocorrection: boolean;
-  wildcardSearchEnabled: boolean;
+  returnBinary?: boolean;
+  pruneRefinements?: boolean;
+  disableAutocorrection?: boolean;
+  wildcardSearchEnabled?: boolean;
 }
 
 export interface Sort {

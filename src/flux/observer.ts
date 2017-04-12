@@ -1,5 +1,7 @@
 import { Events, FluxCapacitor } from './capacitor';
 
+export const DETAIL_QUERY_INDICATOR = 'gbiDetailQuery';
+
 type Observer = (oldState: any, newState: any) => void;
 
 namespace Observer {
@@ -31,17 +33,33 @@ namespace Observer {
 
   export function create(flux: FluxCapacitor) {
     return {
-      request: {
-        query: (oldQuery, newQuery) => flux.emit(Events.QUERY_CHANGED, newQuery),
-        refinements: (oldRefinements, newRefinements) => flux.emit(Events.REFINEMENTS_CHANGED, newRefinements)
-      },
-      response: Object.assign((oldResponse, newResponse) => {
-        if (newResponse.redirect) {
-          flux.emit(Events.REDIRECT, newResponse.redirect);
-        } else {
-          flux.emit(Events.RESULTS, newResponse);
+      data: {
+        search: {
+          request: Object.assign((_, newRequest) => flux.emit(Events.SEARCH, newRequest), {
+            // NOTE: can ONLY be used to switch the "active" page in gb-paging
+            skip: (_, newPageNumber) => flux.emit(Events.PAGE_CHANGED, newPageNumber),
+            collection: (_, newCollection) => flux.emit(Events.COLLECTION_CHANGED, newCollection),
+            query: (_, newQuery) => flux.emit(Events.QUERY_CHANGED, newQuery),
+            // TODO: emitted value will break current implementations
+            refinements: (_, newRefinements) => flux.emit(Events.REFINEMENTS_CHANGED, newRefinements),
+            sort: (_, newSort) => flux.emit(Events.SORT, newSort)
+          }),
+          response: Object.assign((_, newResponse) => {
+            if (newResponse.redirect) {
+              flux.emit(Events.REDIRECT, newResponse.redirect);
+            } else {
+              // NOTE: REFINEMENT_RESULTS is no longer, should check RESULTS
+              flux.emit(Events.RESULTS, newResponse);
+
+              const isDetailQuery = (newResponse.originalQuery.customUrlParams || [])
+                .find(({ key }) => key === DETAIL_QUERY_INDICATOR);
+              if (isDetailQuery) {
+                flux.emit(Events.DETAILS, newResponse.records[0]);
+              }
+            }
+          })
         }
-      }, {})
+      }
     };
   }
 }

@@ -1,3 +1,5 @@
+import { Request } from './request';
+
 export type RefinementType = 'Value' | 'Range';
 export type SortType = 'Count_Ascending' | 'Count_Descending' | 'Value_Ascending' | 'Value_Descending';
 
@@ -6,6 +8,7 @@ export interface Results {
   query: string;
   originalQuery: string;
   correctedQuery: string;
+  originalRequest: Request;
 
   area: string;
   biasingProfile: string;
