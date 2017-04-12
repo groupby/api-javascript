@@ -35,7 +35,13 @@ namespace Observer {
         query: (oldQuery, newQuery) => flux.emit(Events.QUERY_CHANGED, newQuery),
         refinements: (oldRefinements, newRefinements) => flux.emit(Events.REFINEMENTS_CHANGED, newRefinements)
       },
-      response: Object.assign(() => { let a = 'a'; }, {})
+      response: Object.assign((oldResponse, newResponse) => {
+        if (newResponse.redirect) {
+          flux.emit(Events.REDIRECT, newResponse.redirect);
+        } else {
+          flux.emit(Events.RESULTS, newResponse);
+        }
+      }, {})
     };
   }
 }
