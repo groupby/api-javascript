@@ -1,4 +1,5 @@
-import Observer from '../../src/flux/observer';
+import { Events } from '../../src/flux/capacitor';
+import Observer, { DETAIL_QUERY_INDICATOR } from '../../src/flux/observer';
 import { expect } from 'chai';
 
 describe.only('Observer', () => {
@@ -111,5 +112,68 @@ describe.only('Observer', () => {
       expect(observers.data.search.request.refinements).to.be.a('function');
       expect(observers.data.search.response).to.be.a('function');
     });
+
+    describe('search', () => {
+      let emit;
+      let observers;
+
+      beforeEach(() => {
+        emit = sinon.spy();
+        observers = Observer.create(<any>{ emit });
+      });
+
+      describe('request', () => {
+        it('should emit search event', () => {
+          observers.data.search.request(undefined, { a: 'b' });
+          expect(emit).to.be.calledWith(Events.SEARCH, { a: 'b' });
+        });
+
+        it('should emit PAGE_CHANGED event', () => {
+          observers.data.search.request.skip(undefined, 23);
+          expect(emit).to.be.calledWith(Events.PAGE_CHANGED, 23);
+        });
+
+        it('should emit COLLECTION_CHANGED event', () => {
+          observers.data.search.request.collection(undefined, 'somestring');
+          expect(emit).to.be.calledWith(Events.COLLECTION_CHANGED, 'somestring');
+        });
+
+        it('should emit QUERY_CHANGED event', () => {
+          observers.data.search.request.query(undefined, 'tomatoes');
+          expect(emit).to.be.calledWith(Events.QUERY_CHANGED, 'tomatoes');
+        });
+
+        it('should emit REFINEMENTS_CHANGED event', () => {
+          observers.data.search.request.refinements(undefined, [{ c: 'd' }]);
+          expect(emit).to.be.calledWith(Events.REFINEMENTS_CHANGED, [{ c: 'd' }]);
+        });
+
+        it('should emit SORT event', () => {
+          observers.data.search.request.sort(undefined, [{ e: 'f' }]);
+          expect(emit).to.be.calledWith(Events.SORT, [{ e: 'f' }]);
+        });
+      });
+
+      describe('response', () => {
+        it('should emit REDIRECT event', () => {
+          observers.data.search.response(undefined, { redirect: '/toys.html' });
+          expect(emit).to.be.calledWith(Events.REDIRECT, '/toys.html');
+        });
+
+        it('should emit RESULTS event', () => {
+          observers.data.search.response(undefined, { g: 'h', originalQuery: {} });
+          expect(emit).to.be.calledWith(Events.RESULTS, { g: 'h', originalQuery: {} });
+        });
+
+        it('should emit DETAILS event', () => {
+          observers.data.search.response(undefined, {
+            originalQuery: { customUrlParams: [{ key: DETAIL_QUERY_INDICATOR, value: 'yo' }] },
+            records: [{ i: 'j' }]
+          });
+          expect(emit).to.be.calledWith(Events.DETAILS, { i: 'j' });
+        });
+      });
+    });
+
   });
 });
