@@ -553,6 +553,10 @@ describe('FluxCapacitor', function() {
         expect(newSort).to.be.ok;
         done();
       });
+      flux.on(Events.SORT_CHANGED, (newSort) => {
+        expect(newSort).to.be.ok;
+        done();
+      });
 
       flux.sort(sort);
     });

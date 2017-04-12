@@ -2,7 +2,7 @@ import { Events } from '../../src/flux/capacitor';
 import Observer, { DETAIL_QUERY_INDICATOR } from '../../src/flux/observer';
 import { expect } from 'chai';
 
-describe.only('Observer', () => {
+describe('Observer', () => {
   describe('listen()', () => {
     let sandbox: Sinon.SinonSandbox;
 
@@ -148,9 +148,10 @@ describe.only('Observer', () => {
           expect(emit).to.be.calledWith(Events.REFINEMENTS_CHANGED, [{ c: 'd' }]);
         });
 
-        it('should emit SORT event', () => {
+        it('should emit SORT and SORT_CHANGED event', () => {
           observers.data.search.request.sort(undefined, [{ e: 'f' }]);
           expect(emit).to.be.calledWith(Events.SORT, [{ e: 'f' }]);
+          expect(emit).to.be.calledWith(Events.SORT_CHANGED, [{ e: 'f' }]);
         });
       });
 

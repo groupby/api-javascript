@@ -42,7 +42,10 @@ namespace Observer {
             query: (_, newQuery) => flux.emit(Events.QUERY_CHANGED, newQuery),
             // TODO: emitted value will break current implementations
             refinements: (_, newRefinements) => flux.emit(Events.REFINEMENTS_CHANGED, newRefinements),
-            sort: (_, newSort) => flux.emit(Events.SORT, newSort)
+            sort: (_, newSort) => {
+              flux.emit(Events.SORT_CHANGED, newSort);
+              flux.emit(Events.SORT, newSort);
+            }
           }),
           response: Object.assign((_, newResponse) => {
             if (newResponse.redirect) {

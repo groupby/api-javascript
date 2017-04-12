@@ -21,6 +21,7 @@ export namespace Events {
   export const REWRITE_QUERY = 'rewrite_query';
   export const SEARCH = 'search';
   export const SORT = 'sort';
+  export const SORT_CHANGED = 'sort_changed';
 }
 
 export { Pager };
@@ -127,6 +128,7 @@ export class FluxCapacitor extends EventEmitter {
     this.query.withoutSorts(...clearSorts).withSorts(sort);
     return this.page.reset()
       .then((res) => {
+        this.emit(Events.SORT_CHANGED, this.query.raw.sort);
         this.emit(Events.SORT, this.query.raw.sort);
         return res;
       });
