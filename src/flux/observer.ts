@@ -1,6 +1,6 @@
 import { Events, FluxCapacitor } from './capacitor';
 
-type Observer = (oldState: any, newState: any) => void
+type Observer = (oldState: any, newState: any) => void;
 
 namespace Observer {
   export type Map = { [key: string]: Observer | Map }
@@ -32,12 +32,8 @@ namespace Observer {
   export function create(flux: FluxCapacitor) {
     return {
       request: {
-        query: (oldQuery, newQuery) => {
-          flux.emit(Events.QUERY_CHANGED, newQuery);
-        },
-        refinements: (oldRefinements, newRefinements) => {
-          flux.emit(Events.REFINEMENTS_CHANGED, newRefinements);
-        }
+        query: (oldQuery, newQuery) => flux.emit(Events.QUERY_CHANGED, newQuery),
+        refinements: (oldRefinements, newRefinements) => flux.emit(Events.REFINEMENTS_CHANGED, newRefinements)
       },
       response: Object.assign(() => { let a = 'a'; }, {})
     };
