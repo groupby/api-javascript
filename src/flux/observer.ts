@@ -1,46 +1,47 @@
-import { Request } from '../models/request';
 import { Events, FluxCapacitor } from './capacitor';
-import * as redux from 'redux';
 
-export default function observe(store: redux.Store<any>) {
-  let oldState;
+type Observer = (oldState: any, newState: any) => void
 
-  return () => {
-    const state = store.getState();
+namespace Observer {
+  export type Map = { [key: string]: Observer | Map }
+  export type Node = Map | Observer | (Observer & Map);
 
-    oldState = state;
-  };
-}
+  export function listen(flux: FluxCapacitor) {
+    let oldState;
 
-export type Observer = (oldState: any, newState: any) => void
+    return () => {
+      const state = flux.store.getState();
 
-export type ObserverMap = { [key: string]: Observer | ObserverMap }
+      Observer.resolve(oldState, state, Observer.create(flux));
 
-// tslint:disable-next-line max-line-length
-export function resolveObserver(oldState: any = {}, newState: any = {}, observers: Observer & ObserverMap) {
-  if (oldState !== newState) {
-    if (typeof observers === 'function') {
+      oldState = state;
+    };
+  }
 
+  export function resolve(oldState: any, newState: any, observers: Node) {
+    if (oldState !== newState) {
+      if (typeof observers === 'function') {
+        observers(oldState, newState);
+      }
+
+      Object.keys(observers)
+        .forEach((key) => Observer.resolve((oldState || {})[key], (newState || {})[key], observers[key]));
     }
   }
 
-  return null;
+  export function create(flux: FluxCapacitor) {
+    return {
+      request: {
+        query: (oldQuery, newQuery) => {
+          flux.emit(Events.QUERY_CHANGED, newQuery);
+        },
+        refinements: (oldRefinements, newRefinements) => {
+          flux.emit(Events.REFINEMENTS_CHANGED, newRefinements);
+        }
+      },
+      response: Object.assign(() => { let a = 'a'; }, {})
+    };
+  }
 }
 
-export const observers = (flux: FluxCapacitor) => ({
-  request: {
-    query: (oldQuery, newQuery) => {
-      if (oldQuery !== newQuery) {
-
-        flux.emit(Events.QUERY_CHANGED, newQuery);
-      }
-    },
-    refinements: (oldRefinements, newRefinements) => {
-      if (oldRefinements !== newRefinements) {
-
-        flux.emit(Events.REFINEMENTS_CHANGED, newRefinements);
-      }
-    }
-  },
-  response: Object.assign(() => { }, {})
-});
+export default Observer;
