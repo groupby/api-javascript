@@ -98,4 +98,16 @@ describe.only('Observer', () => {
       expect(observer3).to.not.be.called;
     });
   });
+
+  describe('create()', () => {
+    it('should return an observer tree', () => {
+      const observers = Observer.create(<any>{});
+
+      expect(observers).to.be.an('object');
+      expect(observers.request).to.be.an('object');
+      expect(observers.request.query).to.be.a('function');
+      expect(observers.request.refinements).to.be.a('function');
+      expect(observers.response).to.be.a('function');
+    });
+  });
 });
