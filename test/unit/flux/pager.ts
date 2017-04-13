@@ -1,8 +1,8 @@
-import { Pager } from '../../src/flux/pager';
-import { Events, FluxCapacitor, Query } from '../../src/index';
-import { expect } from 'chai';
+import { Pager } from '../../../src/flux/pager';
+import { Events, FluxCapacitor, Query } from '../../../src/index';
+import suite from '../_suite';
 
-describe('Pager', function() {
+suite('Pager', ({ expect }) => {
   function flux(opts: { start: number, total?: number, pageSize?: number } | number, search?: Function): FluxCapacitor {
     const recordStart = typeof opts === 'number' ? opts : opts.start;
     const totalRecordCount = typeof opts === 'object' && Number(opts.total) >= 0 ? opts.total : 30;

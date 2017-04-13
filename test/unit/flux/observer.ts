@@ -1,14 +1,9 @@
-import { Events } from '../../src/flux/capacitor';
-import Observer, { DETAIL_QUERY_INDICATOR } from '../../src/flux/observer';
-import { expect } from 'chai';
+import { Events } from '../../../src/flux/capacitor';
+import Observer, { DETAIL_QUERY_INDICATOR } from '../../../src/flux/observer';
+import suite from '../_suite';
 
-describe('Observer', () => {
+suite('Observer', ({ expect, spy, stub }) => {
   describe('listen()', () => {
-    let sandbox: Sinon.SinonSandbox;
-
-    beforeEach(() => sandbox = sinon.sandbox.create());
-    afterEach(() => sandbox.restore());
-
     it('should return a function', () => {
       const observer = Observer.listen(<any>{});
 
@@ -16,7 +11,7 @@ describe('Observer', () => {
     });
 
     it('should call store.getState()', () => {
-      const getState = sinon.spy();
+      const getState = spy();
       const observer = Observer.listen(<any>{ store: { getState } });
 
       observer();
@@ -27,8 +22,8 @@ describe('Observer', () => {
     it('should call Observer.resolve()', () => {
       const newState = { a: 'b' };
       const flux: any = { store: { getState: () => newState } };
-      const resolve = sandbox.stub(Observer, 'resolve');
-      const create = sandbox.stub(Observer, 'create');
+      const resolve = stub(Observer, 'resolve');
+      const create = stub(Observer, 'create');
       const observer = Observer.listen(flux);
 
       observer();
@@ -40,7 +35,7 @@ describe('Observer', () => {
 
   describe('resolve()', () => {
     it('should not call the observer if no changes', () => {
-      const observer = sinon.spy();
+      const observer = spy();
 
       Observer.resolve(undefined, undefined, observer);
 
@@ -52,7 +47,7 @@ describe('Observer', () => {
     });
 
     it('should call the observer with the updated node', () => {
-      const observer = sinon.spy();
+      const observer = spy();
 
       Observer.resolve(1, 2, (...args) => observer(...args));
 
@@ -60,10 +55,10 @@ describe('Observer', () => {
     });
 
     it('should call resolve() on subtrees', () => {
-      const observer1 = sinon.spy();
-      const observer2 = sinon.spy();
-      const observer3 = sinon.spy();
-      const observer4 = sinon.spy();
+      const observer1 = spy();
+      const observer2 = spy();
+      const observer3 = spy();
+      const observer4 = spy();
       const observers = Object.assign((...args) => observer1(...args), {
         a: Object.assign((...args) => observer2(...args), {
           x: (...args) => observer3(...args)
@@ -82,9 +77,9 @@ describe('Observer', () => {
     });
 
     it('should not call resolve() on equal subtrees', () => {
-      const observer1 = sinon.spy();
-      const observer2 = sinon.spy();
-      const observer3 = sinon.spy();
+      const observer1 = spy();
+      const observer2 = spy();
+      const observer3 = spy();
       const observers = Object.assign((...args) => observer1(...args), {
         a: (...args) => observer2(...args),
         b: (...args) => observer3(...args)
@@ -118,7 +113,7 @@ describe('Observer', () => {
       let observers;
 
       beforeEach(() => {
-        emit = sinon.spy();
+        emit = spy();
         observers = Observer.create(<any>{ emit });
       });
 

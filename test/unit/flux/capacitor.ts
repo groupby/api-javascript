@@ -1,5 +1,5 @@
-import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../../src/index';
-import { expect } from 'chai';
+import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../../../src/index';
+import suite from '../_suite';
 import * as mock from 'xhr-mock';
 
 const CUSTOMER_ID = 'services';
@@ -9,7 +9,7 @@ const SELECTED_REFINEMENT: SelectedValueRefinement = { type: 'Value', navigation
 const REFINEMENT_RESULT = { availableNavigation: 'a', selectedNavigation: 'b' };
 const DETAILS_RESULT = { records: [{}] };
 
-describe('FluxCapacitor', function() {
+suite('FluxCapacitor', ({ expect, spy }) => {
   let flux: FluxCapacitor;
 
   beforeEach(() => {
@@ -81,7 +81,7 @@ describe('FluxCapacitor', function() {
   });
 
   it('should set configured errorHandler on bridge', () => {
-    const errorHandler = sinon.spy();
+    const errorHandler = spy();
     flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { errorHandler } });
     const error: any = { a: 'b' };
 
