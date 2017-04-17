@@ -21,6 +21,21 @@ export namespace Events {
   export const REWRITE_QUERY = 'rewrite_query';
   export const SEARCH = 'search';
   export const SORT = 'sort';
+
+  // request
+  export const SEARCH_REQ_UPDATED = 'search:req_updated';
+  export const SEARCH_COLLECTION_UPDATED = 'search:req:collection_updated';
+  export const SEARCH_PAGE_UPDATED = 'search:req:page_updated';
+  export const SEARCH_QUERY_UPDATED = 'search:req:query_updated';
+  export const SEARCH_REFINEMENTS_UPDATED = 'search:req:refinements_updated';
+  export const SEARCH_SORT_UPDATED = 'search:req:sort_updated';
+
+  // response
+  export const SEARCH_RES_UPDATED = 'search:res_updated';
+
+  // "global"
+  export const SEARCH_REDIRECT = 'search:res:redirect';
+  export const SEARCH_DETAILS = 'search:res:details';
 }
 
 export { Pager };

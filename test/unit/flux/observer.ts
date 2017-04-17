@@ -1,14 +1,9 @@
-import { Events } from '../../src/flux/capacitor';
-import Observer, { DETAIL_QUERY_INDICATOR } from '../../src/flux/observer';
-import { expect } from 'chai';
+import { Events } from '../../../src/flux/capacitor';
+import Observer, { DETAIL_QUERY_INDICATOR } from '../../../src/flux/observer';
+import suite from '../_suite';
 
-describe.only('Observer', () => {
+suite('Observer', ({ expect, spy, stub }) => {
   describe('listen()', () => {
-    let sandbox: Sinon.SinonSandbox;
-
-    beforeEach(() => sandbox = sinon.sandbox.create());
-    afterEach(() => sandbox.restore());
-
     it('should return a function', () => {
       const observer = Observer.listen(<any>{});
 
@@ -16,7 +11,7 @@ describe.only('Observer', () => {
     });
 
     it('should call store.getState()', () => {
-      const getState = sinon.spy();
+      const getState = spy();
       const observer = Observer.listen(<any>{ store: { getState } });
 
       observer();
@@ -27,8 +22,8 @@ describe.only('Observer', () => {
     it('should call Observer.resolve()', () => {
       const newState = { a: 'b' };
       const flux: any = { store: { getState: () => newState } };
-      const resolve = sandbox.stub(Observer, 'resolve');
-      const create = sandbox.stub(Observer, 'create');
+      const resolve = stub(Observer, 'resolve');
+      const create = stub(Observer, 'create');
       const observer = Observer.listen(flux);
 
       observer();
@@ -40,7 +35,7 @@ describe.only('Observer', () => {
 
   describe('resolve()', () => {
     it('should not call the observer if no changes', () => {
-      const observer = sinon.spy();
+      const observer = spy();
 
       Observer.resolve(undefined, undefined, observer);
 
@@ -52,7 +47,7 @@ describe.only('Observer', () => {
     });
 
     it('should call the observer with the updated node', () => {
-      const observer = sinon.spy();
+      const observer = spy();
 
       Observer.resolve(1, 2, (...args) => observer(...args));
 
@@ -60,10 +55,10 @@ describe.only('Observer', () => {
     });
 
     it('should call resolve() on subtrees', () => {
-      const observer1 = sinon.spy();
-      const observer2 = sinon.spy();
-      const observer3 = sinon.spy();
-      const observer4 = sinon.spy();
+      const observer1 = spy();
+      const observer2 = spy();
+      const observer3 = spy();
+      const observer4 = spy();
       const observers = Object.assign((...args) => observer1(...args), {
         a: Object.assign((...args) => observer2(...args), {
           x: (...args) => observer3(...args)
@@ -82,9 +77,9 @@ describe.only('Observer', () => {
     });
 
     it('should not call resolve() on equal subtrees', () => {
-      const observer1 = sinon.spy();
-      const observer2 = sinon.spy();
-      const observer3 = sinon.spy();
+      const observer1 = spy();
+      const observer2 = spy();
+      const observer3 = spy();
       const observers = Object.assign((...args) => observer1(...args), {
         a: (...args) => observer2(...args),
         b: (...args) => observer3(...args)
@@ -118,38 +113,45 @@ describe.only('Observer', () => {
       let observers;
 
       beforeEach(() => {
-        emit = sinon.spy();
+        emit = spy();
         observers = Observer.create(<any>{ emit });
       });
 
       describe('request', () => {
         it('should emit search event', () => {
           observers.data.search.request(undefined, { a: 'b' });
+          expect(emit).to.be.calledWith(Events.SEARCH_REQ_UPDATED, { a: 'b' });
           expect(emit).to.be.calledWith(Events.SEARCH, { a: 'b' });
         });
 
         it('should emit PAGE_CHANGED event', () => {
           observers.data.search.request.skip(undefined, 23);
+          expect(emit).to.be.calledWith(Events.SEARCH_PAGE_UPDATED, 23);
           expect(emit).to.be.calledWith(Events.PAGE_CHANGED, 23);
         });
 
         it('should emit COLLECTION_CHANGED event', () => {
           observers.data.search.request.collection(undefined, 'somestring');
+          expect(emit).to.be.calledWith(Events.SEARCH_COLLECTION_UPDATED, 'somestring');
           expect(emit).to.be.calledWith(Events.COLLECTION_CHANGED, 'somestring');
         });
 
         it('should emit QUERY_CHANGED event', () => {
           observers.data.search.request.query(undefined, 'tomatoes');
+          expect(emit).to.be.calledWith(Events.SEARCH_QUERY_UPDATED, 'tomatoes');
           expect(emit).to.be.calledWith(Events.QUERY_CHANGED, 'tomatoes');
+          expect(emit).to.be.calledWith(Events.REWRITE_QUERY, 'tomatoes');
         });
 
         it('should emit REFINEMENTS_CHANGED event', () => {
           observers.data.search.request.refinements(undefined, [{ c: 'd' }]);
+          expect(emit).to.be.calledWith(Events.SEARCH_REFINEMENTS_UPDATED, [{ c: 'd' }]);
           expect(emit).to.be.calledWith(Events.REFINEMENTS_CHANGED, [{ c: 'd' }]);
         });
 
-        it('should emit SORT event', () => {
+        it('should emit SORT and SORT_CHANGED event', () => {
           observers.data.search.request.sort(undefined, [{ e: 'f' }]);
+          expect(emit).to.be.calledWith(Events.SEARCH_SORT_UPDATED, [{ e: 'f' }]);
           expect(emit).to.be.calledWith(Events.SORT, [{ e: 'f' }]);
         });
       });
@@ -157,12 +159,15 @@ describe.only('Observer', () => {
       describe('response', () => {
         it('should emit REDIRECT event', () => {
           observers.data.search.response(undefined, { redirect: '/toys.html' });
+          expect(emit).to.be.calledWith(Events.SEARCH_REDIRECT, '/toys.html');
           expect(emit).to.be.calledWith(Events.REDIRECT, '/toys.html');
         });
 
         it('should emit RESULTS event', () => {
           observers.data.search.response(undefined, { g: 'h', originalQuery: {} });
+          expect(emit).to.be.calledWith(Events.SEARCH_RES_UPDATED, { g: 'h', originalQuery: {} });
           expect(emit).to.be.calledWith(Events.RESULTS, { g: 'h', originalQuery: {} });
+          expect(emit).to.be.calledWith(Events.RESET, { g: 'h', originalQuery: {} });
         });
 
         it('should emit DETAILS event', () => {
@@ -170,6 +175,7 @@ describe.only('Observer', () => {
             originalQuery: { customUrlParams: [{ key: DETAIL_QUERY_INDICATOR, value: 'yo' }] },
             records: [{ i: 'j' }]
           });
+          expect(emit).to.be.calledWith(Events.SEARCH_DETAILS, { i: 'j' });
           expect(emit).to.be.calledWith(Events.DETAILS, { i: 'j' });
         });
       });

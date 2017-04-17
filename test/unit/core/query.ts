@@ -1,9 +1,9 @@
-import { Query } from '../../src/core/query';
-import { SelectedValueRefinement } from '../../src/models/request';
-import { COMBINED_REFINEMENTS, COMPLEX_REQUEST, CUSTOM_PARAMS_FROM_STRING } from '../fixtures';
-import { expect } from 'chai';
+import { Query } from '../../../src/core/query';
+import { SelectedValueRefinement } from '../../../src/models/request';
+import { COMBINED_REFINEMENTS, COMPLEX_REQUEST, CUSTOM_PARAMS_FROM_STRING } from '../../fixtures';
+import suite from '../_suite';
 
-describe('Query', function() {
+suite('Query', ({ expect }) => {
   let query: Query;
 
   beforeEach(() => {

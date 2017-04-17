@@ -1,12 +1,12 @@
-import { BrowserBridge, CloudBridge } from '../../src/core/bridge';
-import { Query } from '../../src/core/query';
-import { expect } from 'chai';
+import { BrowserBridge, CloudBridge } from '../../../src/core/bridge';
+import { Query } from '../../../src/core/query';
+import suite from '../_suite';
 import * as mock from 'xhr-mock';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
 
-describe('Bridge', () => {
+suite('Bridge', ({ expect, spy }) => {
   let bridge;
   let query;
 
@@ -171,7 +171,7 @@ describe('Bridge', () => {
   });
 
   it('should invoke any configured errorHandler on error and allow downstream promise catching', (done) => {
-    const errorHandler = bridge.errorHandler = sinon.spy();
+    const errorHandler = bridge.errorHandler = spy();
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       return res.status(400).body('error');
     });
