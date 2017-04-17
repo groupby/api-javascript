@@ -142,7 +142,6 @@ export class FluxCapacitor extends EventEmitter {
     this.query.withoutSorts(...clearSorts).withSorts(sort);
     return this.page.reset()
       .then((res) => {
-        this.emit(Events.SORT_CHANGED, this.query.raw.sort);
         this.emit(Events.SORT, this.query.raw.sort);
         return res;
       });

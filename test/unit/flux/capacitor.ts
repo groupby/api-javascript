@@ -553,10 +553,6 @@ suite('FluxCapacitor', ({ expect, spy }) => {
         expect(newSort).to.be.ok;
         done();
       });
-      flux.on(Events.SORT_CHANGED, (newSort) => {
-        expect(newSort).to.be.ok;
-        done();
-      });
 
       flux.sort(sort);
     });
