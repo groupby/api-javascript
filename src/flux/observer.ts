@@ -1,3 +1,4 @@
+import { rayify } from '../utils';
 import { Events, FluxCapacitor } from './capacitor';
 
 export const DETAIL_QUERY_INDICATOR = 'gbiDetailQuery';
@@ -32,32 +33,33 @@ namespace Observer {
   }
 
   export function create(flux: FluxCapacitor) {
+    function emit(events: string | string[], data: any) {
+      rayify(events).forEach((event) => flux.emit(event, data));
+    }
+
     return {
       data: {
         search: {
-          request: Object.assign((_, newRequest) => flux.emit(Events.SEARCH, newRequest), {
+          request: Object.assign((_, newRequest) => emit(Events.SEARCH, newRequest), {
             // NOTE: can ONLY be used to switch the "active" page in gb-paging
-            skip: (_, newPageNumber) => flux.emit(Events.PAGE_CHANGED, newPageNumber),
-            collection: (_, newCollection) => flux.emit(Events.COLLECTION_CHANGED, newCollection),
-            query: (_, newQuery) => flux.emit(Events.QUERY_CHANGED, newQuery),
+            skip: (_, newPageNumber) => emit(Events.PAGE_CHANGED, newPageNumber),
+            collection: (_, newCollection) => emit(Events.COLLECTION_CHANGED, newCollection),
+            query: (_, newQuery) => emit([Events.QUERY_CHANGED, Events.REWRITE_QUERY], newQuery),
             // TODO: emitted value will break current implementations
-            refinements: (_, newRefinements) => flux.emit(Events.REFINEMENTS_CHANGED, newRefinements),
-            sort: (_, newSort) => {
-              flux.emit(Events.SORT_CHANGED, newSort);
-              flux.emit(Events.SORT, newSort);
-            }
+            refinements: (_, newRefinements) => emit(Events.REFINEMENTS_CHANGED, newRefinements),
+            sort: (_, newSort) => emit([Events.SORT_CHANGED, Events.SORT], newSort)
           }),
           response: Object.assign((_, newResponse) => {
             if (newResponse.redirect) {
-              flux.emit(Events.REDIRECT, newResponse.redirect);
+              emit(Events.REDIRECT, newResponse.redirect);
             } else {
               // NOTE: REFINEMENT_RESULTS is no longer, should check RESULTS
-              flux.emit(Events.RESULTS, newResponse);
+              emit([Events.RESULTS, Events.RESET], newResponse);
 
               const isDetailQuery = (newResponse.originalQuery.customUrlParams || [])
                 .find(({ key }) => key === DETAIL_QUERY_INDICATOR);
               if (isDetailQuery) {
-                flux.emit(Events.DETAILS, newResponse.records[0]);
+                emit(Events.DETAILS, newResponse.records[0]);
               }
             }
           })
