@@ -22,6 +22,12 @@ export namespace Events {
   export const SEARCH = 'search';
   export const SORT = 'sort';
   export const SORT_CHANGED = 'sort_changed';
+
+  export const COLLECTION_UPDATED = 'search:req:collection_updated';
+  export const PAGE_UPDATED = 'search:req:page_updated';
+  export const QUERY_UPDATED = 'search:req:query_updated';
+  export const REFINEMENTS_UPDATED = 'search:req:refinements_updated';
+  export const SORT_UPDATED = 'search:req:sort_updated';
 }
 
 export { Pager };
