@@ -120,45 +120,52 @@ suite('Observer', ({ expect, spy, stub }) => {
       describe('request', () => {
         it('should emit search event', () => {
           observers.data.search.request(undefined, { a: 'b' });
+          expect(emit).to.be.calledWith(Events.SEARCH_REQ_UPDATED, { a: 'b' });
           expect(emit).to.be.calledWith(Events.SEARCH, { a: 'b' });
         });
 
         it('should emit PAGE_CHANGED event', () => {
           observers.data.search.request.skip(undefined, 23);
+          expect(emit).to.be.calledWith(Events.SEARCH_PAGE_UPDATED, 23);
           expect(emit).to.be.calledWith(Events.PAGE_CHANGED, 23);
         });
 
         it('should emit COLLECTION_CHANGED event', () => {
           observers.data.search.request.collection(undefined, 'somestring');
+          expect(emit).to.be.calledWith(Events.SEARCH_COLLECTION_UPDATED, 'somestring');
           expect(emit).to.be.calledWith(Events.COLLECTION_CHANGED, 'somestring');
         });
 
         it('should emit QUERY_CHANGED event', () => {
           observers.data.search.request.query(undefined, 'tomatoes');
+          expect(emit).to.be.calledWith(Events.SEARCH_QUERY_UPDATED, 'tomatoes');
           expect(emit).to.be.calledWith(Events.QUERY_CHANGED, 'tomatoes');
           expect(emit).to.be.calledWith(Events.REWRITE_QUERY, 'tomatoes');
         });
 
         it('should emit REFINEMENTS_CHANGED event', () => {
           observers.data.search.request.refinements(undefined, [{ c: 'd' }]);
+          expect(emit).to.be.calledWith(Events.SEARCH_REFINEMENTS_UPDATED, [{ c: 'd' }]);
           expect(emit).to.be.calledWith(Events.REFINEMENTS_CHANGED, [{ c: 'd' }]);
         });
 
         it('should emit SORT and SORT_CHANGED event', () => {
           observers.data.search.request.sort(undefined, [{ e: 'f' }]);
+          expect(emit).to.be.calledWith(Events.SEARCH_SORT_UPDATED, [{ e: 'f' }]);
           expect(emit).to.be.calledWith(Events.SORT, [{ e: 'f' }]);
-          expect(emit).to.be.calledWith(Events.SORT_CHANGED, [{ e: 'f' }]);
         });
       });
 
       describe('response', () => {
         it('should emit REDIRECT event', () => {
           observers.data.search.response(undefined, { redirect: '/toys.html' });
+          expect(emit).to.be.calledWith(Events.SEARCH_REDIRECT, '/toys.html');
           expect(emit).to.be.calledWith(Events.REDIRECT, '/toys.html');
         });
 
         it('should emit RESULTS event', () => {
           observers.data.search.response(undefined, { g: 'h', originalQuery: {} });
+          expect(emit).to.be.calledWith(Events.SEARCH_RES_UPDATED, { g: 'h', originalQuery: {} });
           expect(emit).to.be.calledWith(Events.RESULTS, { g: 'h', originalQuery: {} });
           expect(emit).to.be.calledWith(Events.RESET, { g: 'h', originalQuery: {} });
         });
@@ -168,6 +175,7 @@ suite('Observer', ({ expect, spy, stub }) => {
             originalQuery: { customUrlParams: [{ key: DETAIL_QUERY_INDICATOR, value: 'yo' }] },
             records: [{ i: 'j' }]
           });
+          expect(emit).to.be.calledWith(Events.SEARCH_DETAILS, { i: 'j' });
           expect(emit).to.be.calledWith(Events.DETAILS, { i: 'j' });
         });
       });

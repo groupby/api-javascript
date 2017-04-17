@@ -40,27 +40,56 @@ namespace Observer {
     return {
       data: {
         search: {
-          request: Object.assign((_, newRequest) => emit(Events.SEARCH, newRequest), {
-            // NOTE: can ONLY be used to switch the "active" page in gb-paging
-            skip: (_, newPageNumber) => emit(Events.PAGE_CHANGED, newPageNumber),
-            collection: (_, newCollection) => emit(Events.COLLECTION_CHANGED, newCollection),
-            query: (_, newQuery) => emit([Events.QUERY_CHANGED, Events.REWRITE_QUERY], newQuery),
-            // TODO: emitted value will break current implementations
-            refinements: (_, newRefinements) => emit(Events.REFINEMENTS_CHANGED, newRefinements),
-            sort: (_, newSort) => emit([Events.SORT_CHANGED, Events.SORT], newSort)
-          }),
+          request: Object.assign((_, newRequest) => emit([
+            Events.SEARCH_REQ_UPDATED,
+            Events.SEARCH
+          ], newRequest), {
+              // NOTE: can ONLY be used to switch the "active" page in gb-paging
+              skip: (_, newPageNumber) => emit([
+                Events.SEARCH_PAGE_UPDATED,
+                Events.PAGE_CHANGED
+              ], newPageNumber),
+              collection: (_, newCollection) => emit([
+                Events.SEARCH_COLLECTION_UPDATED,
+                Events.COLLECTION_CHANGED
+              ], newCollection),
+              query: (_, newQuery) => emit([
+                Events.SEARCH_QUERY_UPDATED,
+                Events.QUERY_CHANGED,
+                Events.REWRITE_QUERY
+              ], newQuery),
+              // TODO: emitted value will break current implementations
+              refinements: (_, newRefinements) => emit([
+                Events.SEARCH_REFINEMENTS_UPDATED,
+                Events.REFINEMENTS_CHANGED
+              ], newRefinements),
+              sort: (_, newSort) => emit([
+                Events.SEARCH_SORT_UPDATED,
+                Events.SORT
+              ], newSort)
+            }),
           response: Object.assign((_, newResponse) => {
             if (newResponse.redirect) {
-              emit(Events.REDIRECT, newResponse.redirect);
+              emit([
+                Events.SEARCH_REDIRECT,
+                Events.REDIRECT
+              ], newResponse.redirect);
             } else {
               // NOTE: REFINEMENT_RESULTS is no longer, should check RESULTS
-              emit([Events.RESULTS, Events.RESET], newResponse);
+              emit([
+                Events.SEARCH_RES_UPDATED,
+                Events.RESULTS,
+                Events.RESET
+              ], newResponse);
 
               // NOTE: make sure to add the indicator when making the request
               const isDetailQuery = (newResponse.originalQuery.customUrlParams || [])
                 .find(({ key }) => key === DETAIL_QUERY_INDICATOR);
               if (isDetailQuery) {
-                emit(Events.DETAILS, newResponse.records[0]);
+                emit([
+                  Events.SEARCH_DETAILS,
+                  Events.DETAILS
+                ], newResponse.records[0]);
               }
             }
           })
