@@ -136,6 +136,7 @@ suite('Observer', ({ expect, spy, stub }) => {
         it('should emit QUERY_CHANGED event', () => {
           observers.data.search.request.query(undefined, 'tomatoes');
           expect(emit).to.be.calledWith(Events.QUERY_CHANGED, 'tomatoes');
+          expect(emit).to.be.calledWith(Events.REWRITE_QUERY, 'tomatoes');
         });
 
         it('should emit REFINEMENTS_CHANGED event', () => {
@@ -159,6 +160,7 @@ suite('Observer', ({ expect, spy, stub }) => {
         it('should emit RESULTS event', () => {
           observers.data.search.response(undefined, { g: 'h', originalQuery: {} });
           expect(emit).to.be.calledWith(Events.RESULTS, { g: 'h', originalQuery: {} });
+          expect(emit).to.be.calledWith(Events.RESET, { g: 'h', originalQuery: {} });
         });
 
         it('should emit DETAILS event', () => {

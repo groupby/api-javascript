@@ -56,6 +56,7 @@ namespace Observer {
               // NOTE: REFINEMENT_RESULTS is no longer, should check RESULTS
               emit([Events.RESULTS, Events.RESET], newResponse);
 
+              // NOTE: make sure to add the indicator when making the request
               const isDetailQuery = (newResponse.originalQuery.customUrlParams || [])
                 .find(({ key }) => key === DETAIL_QUERY_INDICATOR);
               if (isDetailQuery) {
