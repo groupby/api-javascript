@@ -1,11 +1,11 @@
+import * as EventEmitter from 'eventemitter3';
+import * as redux from 'redux';
+import filterObject = require('filter-object');
 import { BrowserBridge } from '../core/bridge';
 import { Query, QueryConfiguration } from '../core/query';
 import { SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
 import { Navigation, RefinementResults, Results } from '../models/response';
 import { Pager } from './pager';
-import * as EventEmitter from 'eventemitter3';
-import * as redux from 'redux';
-import filterObject = require('filter-object');
 
 export namespace Events {
   export const COLLECTION_CHANGED = 'collection_changed';
