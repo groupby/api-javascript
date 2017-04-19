@@ -6,7 +6,7 @@ export const DETAIL_QUERY_INDICATOR = 'gbiDetailQuery';
 type Observer = (oldState: any, newState: any) => void;
 
 namespace Observer {
-  export type Map = { [key: string]: Observer | Map }
+  export type Map = { [key: string]: Observer | Map };
   export type Node = Map | Observer | (Observer & Map);
 
   export function listen(flux: FluxCapacitor) {
@@ -39,6 +39,20 @@ namespace Observer {
 
     return {
       data: {
+        query: Object.assign((_, newQuery) => emit(Events.QUERY_UPDATED, newQuery), {
+          original: (_, newOriginal) => emit(Events.ORIGINAL_QUERY_UPDATED, newOriginal),
+          corrected: (_, newCorrected) => emit(Events.CORRECTED_QUERY_UPDATED, newCorrected),
+          related: (_, newRelated) => emit(Events.RELATED_QUERIES_UPDATED, newRelated),
+          didYouMeans: (_, newDidYouMeans) => emit(Events.DID_YOU_MEANS_UPDATED, newDidYouMeans),
+          rewrites: (_, newRewrites) => emit(Events.QUERY_REWRITES_UPDATED, newRewrites),
+        }),
+
+        filter: (_, newFilter) => emit(Events.FILTER_UPDATED, newFilter),
+
+        sort: (_, newSort) => emit(Events.SORT_UPDATED, newSort),
+
+        products: (_, newProduct) => emit(Events.PRODUCTS_UPDATED, newProduct),
+
         search: {
           request: Object.assign((_, newRequest) => emit([
             Events.SEARCH_REQ_UPDATED,

@@ -7,19 +7,19 @@ namespace Store {
 
   export interface State {
     data?: {
-      query: Query;
-      filter: Filter;
-      sort: Sort[];
-      products: Product[];
-      collection: Indexed<Collection>;
-      navigation: Indexed<Navigation>;
+      query: Query; // mixed
+      filter: Filter; // mixed
+      sort: Sort[]; // pre
+      products: Product[]; // post
+      collection: Indexed<Collection>; // mixed
+      navigation: Indexed<Navigation>; // mixed
 
-      autocomplete: Autocomplete;
+      autocomplete: Autocomplete; // mixed
 
-      redirect?: string;
+      redirect?: string; // post
 
-      errors: string[]; // convert from single string?
-      warnings: string[];
+      errors: string[]; // post
+      warnings: string[]; // post
     };
     ui?: {
       [tagName: string]: {
@@ -29,29 +29,29 @@ namespace Store {
   }
 
   export interface Query {
-    original: string;
-    corrected?: string;
-    related: Query.Related[];
-    didYouMean: Query.DidYouMean[];
-    rewrites: string[];
+    original: string; // pre
+    corrected?: string; // post
+    related: Query.Related[]; // post
+    didYouMean: Query.DidYouMean[]; // post
+    rewrites: string[]; // post
   }
 
   export namespace Query {
     export interface Related {
-      value: string;
-      url: string;
+      value: string; // post
+      url: string; // post (generated)
     }
 
     export interface DidYouMean {
-      value: string;
-      url: string;
+      value: string; // post
+      url: string; // post (generated)
     }
   }
 
   export interface Collection {
-    name: string;
-    total: number;
-    selected?: boolean;
+    name: string; // static
+    total: number; // post
+    selected?: boolean; // pre
   }
 
   export interface Sort {
@@ -60,59 +60,69 @@ namespace Store {
   }
 
   export interface Product {
-    id: string;
-    [key: string]: any;
+    id: string; // post
+    [key: string]: any; // post
   }
 
-  export type Filter = { field: string; } & (
-    {
-      range: false;
-      refinements: ValueRefinement[];
-    } | {
-      range: true;
-      refinements: RangeRefinement[];
-    }
-  );
+  export type Filter = ValueFilter | RangeFilter;
 
-  export type Navigation = {
-    field: string;
-    label: string;
-    sort?: Sort;
-    or?: boolean;
-  } & (
-      {
-        range: false;
-        refinements: ValueRefinement[];
-      } | {
-        range: true;
-        refinements: RangeRefinement[];
-      }
-    );
+  export interface BaseFilter {
+    field: string; // static
+  }
+
+  export interface ValueFilter extends BaseFilter {
+    range?: false; // post
+    refinements: ValueRefinement[]; // post
+  }
+
+  export interface RangeFilter extends BaseFilter {
+    range: true; // post
+    refinements: RangeRefinement[]; // post
+  }
+
+  export type Navigation = ValueNavigation | RangeNavigation;
+
+  export interface BaseNavigation {
+    field: string; // post
+    label: string; // post
+    or?: boolean; // post
+    sort?: Sort; // post
+  }
+
+  export interface ValueNavigation extends BaseNavigation {
+    range?: false; // post
+    refinements: ValueRefinement[]; // post
+  }
+
+  export interface RangeNavigation extends BaseNavigation {
+    range: true; // post
+    refinements: RangeRefinement[]; // post
+  }
 
   export interface BaseRefinement {
-    total: number;
-    selected?: boolean;
+    total: number; // post
+    selected?: boolean; // pre
   }
 
   export interface ValueRefinement extends BaseRefinement {
-    value: string;
+    value: string; // post
   }
 
   export interface RangeRefinement extends BaseRefinement {
-    low: number;
-    high: number;
+    low: number; // post
+    high: number; // post
   }
 
   export interface Autocomplete {
-    query: string[];
-    categories: Autocomplete.Category[];
-    products: any[];
+    query: string[]; // post
+    categories: Indexed<Autocomplete.Category>; // static & post
+    products: any[]; // post
   }
 
   export namespace Autocomplete {
     export interface Category {
-      field: string[];
-      values: string[];
+      field: string; // static
+      values: string[]; // post
     }
   }
 

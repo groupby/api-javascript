@@ -22,6 +22,21 @@ export namespace Events {
   export const SEARCH = 'search';
   export const SORT = 'sort';
 
+  export const QUERY_UPDATED = 'query_updated'; // mixed
+  export const ORIGINAL_QUERY_UPDATED = 'original_query_updated'; // pre
+  export const CORRECTED_QUERY_UPDATED = 'corrected_query_updated'; // post
+  export const RELATED_QUERIES_UPDATED = 'related_queries_updated'; // post
+  export const DID_YOU_MEANS_UPDATED = 'did_you_means_updated'; // post
+  export const QUERY_REWRITES_UPDATED = 'query_rewrites_updated'; // post
+
+  export const FILTER_UPDATED = 'filter_updated'; // mixed
+
+  export const SORT_UPDATED = 'sort_updated'; // mixed
+
+  export const PRODUCTS_UPDATED = 'products_updated'; // mixed
+
+  // post-request
+
   // request
   export const SEARCH_REQ_UPDATED = 'search:req_updated';
   export const SEARCH_COLLECTION_UPDATED = 'search:req:collection_updated';
