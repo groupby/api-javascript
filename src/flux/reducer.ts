@@ -1,5 +1,5 @@
-import { UPDATE_SEARCH_REQUEST } from './actions';
 import * as redux from 'redux';
+import { UPDATE_SEARCH_REQUEST } from './actions';
 
 export namespace Search {
   export const request = (state, action) => {

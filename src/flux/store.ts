@@ -8,11 +8,11 @@ namespace Store {
   export interface State {
     data?: {
       query: Query; // mixed
-      filter: Filter; // mixed
-      sort: Sort[]; // pre
-      products: Product[]; // post
-      collection: Indexed<Collection>; // mixed
-      navigation: Indexed<Navigation>; // mixed
+
+      sorts: Indexed<Sort>; // pre
+      products: Indexed<Product>; // post
+      collections: Indexed<Collection>; // mixed
+      navigations: Indexed<Navigation>; // mixed
 
       autocomplete: Autocomplete; // mixed
 
@@ -50,6 +50,7 @@ namespace Store {
 
   export interface Collection {
     name: string; // static
+    label: string; // static
     total: number; // post
     selected?: boolean; // pre
   }
@@ -62,22 +63,6 @@ namespace Store {
   export interface Product {
     id: string; // post
     [key: string]: any; // post
-  }
-
-  export type Filter = ValueFilter | RangeFilter;
-
-  export interface BaseFilter {
-    field: string; // static
-  }
-
-  export interface ValueFilter extends BaseFilter {
-    range?: false; // post
-    refinements: ValueRefinement[]; // post
-  }
-
-  export interface RangeFilter extends BaseFilter {
-    range: true; // post
-    refinements: RangeRefinement[]; // post
   }
 
   export type Navigation = ValueNavigation | RangeNavigation;
@@ -114,7 +99,7 @@ namespace Store {
   }
 
   export interface Autocomplete {
-    query: string[]; // post
+    queries: string[]; // post
     categories: Indexed<Autocomplete.Category>; // static & post
     products: any[]; // post
   }

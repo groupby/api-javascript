@@ -8,20 +8,6 @@ import { Navigation, RefinementResults, Results } from '../models/response';
 import { Pager } from './pager';
 
 export namespace Events {
-  export const COLLECTION_CHANGED = 'collection_changed';
-  export const DETAILS = 'details';
-  export const ERROR_BRIDGE = 'error:bridge';
-  export const PAGE_CHANGED = 'page_changed';
-  export const QUERY_CHANGED = 'query_changed';
-  export const REDIRECT = 'redirect';
-  export const REFINEMENT_RESULTS = 'refinement_results';
-  export const REFINEMENTS_CHANGED = 'refinements_changed';
-  export const RESET = 'reset';
-  export const RESULTS = 'results';
-  export const REWRITE_QUERY = 'rewrite_query';
-  export const SEARCH = 'search';
-  export const SORT = 'sort';
-
   export const QUERY_UPDATED = 'query_updated'; // mixed
   export const ORIGINAL_QUERY_UPDATED = 'original_query_updated'; // pre
   export const CORRECTED_QUERY_UPDATED = 'corrected_query_updated'; // post
@@ -29,28 +15,20 @@ export namespace Events {
   export const DID_YOU_MEANS_UPDATED = 'did_you_means_updated'; // post
   export const QUERY_REWRITES_UPDATED = 'query_rewrites_updated'; // post
 
-  export const FILTER_UPDATED = 'filter_updated'; // mixed
-
   export const SORT_UPDATED = 'sort_updated'; // mixed
 
   export const PRODUCTS_UPDATED = 'products_updated'; // mixed
 
-  // post-request
+  export const COLLECTIONS_UPDATED = 'collections_updated'; // mixed
+  export const COLLECTION_UPDATED = 'collection_updated'; // post
 
-  // request
-  export const SEARCH_REQ_UPDATED = 'search:req_updated';
-  export const SEARCH_COLLECTION_UPDATED = 'search:req:collection_updated';
-  export const SEARCH_PAGE_UPDATED = 'search:req:page_updated';
-  export const SEARCH_QUERY_UPDATED = 'search:req:query_updated';
-  export const SEARCH_REFINEMENTS_UPDATED = 'search:req:refinements_updated';
-  export const SEARCH_SORT_UPDATED = 'search:req:sort_updated';
+  export const NAVIGATIONS_UPDATED = 'navigations_updated'; // post
 
-  // response
-  export const SEARCH_RES_UPDATED = 'search:res_updated';
+  export const AUTOCOMPLETE_QUERIES_UPDATED = 'autocomplete_queries_updated';
+  export const AUTOCOMPLETE_CATEGORIES_UPDATED = 'autocomplete_categories_updated';
+  export const AUTOCOMPLETE_PRODUCTS_UPDATED = 'autocomplete_products_updated';
 
-  // "global"
-  export const SEARCH_REDIRECT = 'search:res:redirect';
-  export const SEARCH_DETAILS = 'search:res:details';
+  export const REDIRECT = 'redirect';
 }
 
 export { Pager };
