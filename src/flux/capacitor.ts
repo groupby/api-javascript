@@ -15,17 +15,21 @@ export namespace Events {
   export const DID_YOU_MEANS_UPDATED = 'did_you_means_updated'; // post
   export const QUERY_REWRITES_UPDATED = 'query_rewrites_updated'; // post
 
+  export const SORTS_UPDATED = 'sorts_updated'; // mixed
   export const SORT_UPDATED = 'sort_updated'; // mixed
 
   export const PRODUCTS_UPDATED = 'products_updated'; // mixed
+  export const PRODUCT_UPDATED = 'product_updated'; // mixed
 
   export const COLLECTIONS_UPDATED = 'collections_updated'; // mixed
   export const COLLECTION_UPDATED = 'collection_updated'; // post
 
   export const NAVIGATIONS_UPDATED = 'navigations_updated'; // post
+  export const NAVIGATION_UPDATED = 'navigation_updated'; // post
 
   export const AUTOCOMPLETE_QUERIES_UPDATED = 'autocomplete_queries_updated';
   export const AUTOCOMPLETE_CATEGORIES_UPDATED = 'autocomplete_categories_updated';
+  export const AUTOCOMPLETE_CATEGORY_UPDATED = 'autocomplete_category_updated';
   export const AUTOCOMPLETE_PRODUCTS_UPDATED = 'autocomplete_products_updated';
 
   export const REDIRECT = 'redirect';
@@ -70,23 +74,27 @@ export class FluxCapacitor extends EventEmitter {
     this.page = new Pager(this);
   }
 
-  search(originalQuery: string = this.originalQuery): Promise<Results> {
-    this.query.withQuery(originalQuery);
-    this.emit(Events.SEARCH, this.query.raw);
-    return this.bridge.search(this.query)
-      .then((results) => {
-        const oldQuery = this.originalQuery;
-        Object.assign(this, { results, originalQuery });
+  search(query: string = this.originalQuery) {
 
-        if (results.redirect) {
-          this.emit(Events.REDIRECT, results.redirect);
-        }
-        this.emit(Events.RESULTS, results);
-        this.emitQueryChanged(oldQuery, originalQuery);
-
-        return results;
-      });
   }
+
+  // search(originalQuery: string = this.originalQuery): Promise<Results> {
+  //   this.query.withQuery(originalQuery);
+  //   this.emit(Events.SEARCH, this.query.raw);
+  //   return this.bridge.search(this.query)
+  //     .then((results) => {
+  //       const oldQuery = this.originalQuery;
+  //       Object.assign(this, { results, originalQuery });
+  //
+  //       if (results.redirect) {
+  //         this.emit(Events.REDIRECT, results.redirect);
+  //       }
+  //       this.emit(Events.RESULTS, results);
+  //       this.emitQueryChanged(oldQuery, originalQuery);
+  //
+  //       return results;
+  //     });
+  // }
 
   refinements(navigationName: string): Promise<RefinementResults> {
     return this.bridge.refinements(this.query, navigationName)

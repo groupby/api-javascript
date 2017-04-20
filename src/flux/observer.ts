@@ -7,7 +7,7 @@ export const INDEXED = Symbol();
 type Observer = (oldState: any, newState: any) => void;
 
 namespace Observer {
-  export type Map = { [key: string]: Observer | Map, indexed?: Observer };
+  export type Map = { [key: string]: Observer | Map };
   export type Node = Map | Observer | (Observer & Map);
 
   export function listen(flux: FluxCapacitor) {
@@ -22,29 +22,40 @@ namespace Observer {
     };
   }
 
-  export function resolve(oldState: any, newState: any, observers: Node) {
+  export function shouldObserve(oldState: any, newState: any, observer: Node): observer is Observer {
+    // double check this logic
+    return typeof observer === 'function'
+      && !(INDEXED in observer && oldState.allIds === newState.allIds);
+  }
+
+  export function resolve(oldState: any, newState: any, observer: Node) {
     if (oldState !== newState) {
-      let observerResult;
-      if (typeof observers === 'function') {
-        observerResult = observers(oldState, newState);
+      if (Observer.shouldObserve(oldState, newState, observer)) {
+        observer(oldState, newState);
       }
 
-      if (oldState.allIds === newState.allIds && INDEXED in observers) {
+      if (INDEXED in observer && oldState.allIds === newState.allIds) {
         Object.keys(newState.allIds)
-          .forEach((key) => observers.indexed(oldState.byId[key], newState.byId[key]))
+          .forEach((key) => Observer.resolveIndexed(oldState.byId[key], newState.byId[key], observer['indexed']));
       } else {
-        Object.keys(observers)
-          .forEach((key) => Observer.resolve((oldState || {})[key], (newState || {})[key], observers[key]));
+        Object.keys(observer)
+          .forEach((key) => Observer.resolve((oldState || {})[key], (newState || {})[key], observer[key]));
       }
+    }
+  }
+
+  export function resolveIndexed(oldState: any, newState: any, observer: Observer) {
+    if (oldState !== newState) {
+      observer(oldState, newState);
     }
   }
 
   export function create(flux: FluxCapacitor) {
     const emit = (event: string) => (_, newValue) => flux.emit(event, newValue);
-    const indexed = (event: string, field: string, prefix: string) =>
+    const indexed = (event: string, prefix: string, field: string) =>
       Object.assign(emit(event), {
         INDEXED,
-        indexed: (_, newById) => Object.keys(newById)
+        indexed: (_, newIndexed) => flux.emit(`${prefix}:${newIndexed[field]}`, newIndexed)
       });
 
     return {
@@ -57,17 +68,17 @@ namespace Observer {
           rewrites: emit(Events.QUERY_REWRITES_UPDATED),
         }),
 
-        sorts: emit(Events.SORT_UPDATED), // come up with approach for indexed
+        sorts: indexed(Events.SORTS_UPDATED, Events.SORT_UPDATED, 'field'),
 
-        products: emit(Events.PRODUCTS_UPDATED),
+        products: indexed(Events.PRODUCTS_UPDATED, Events.PRODUCT_UPDATED, 'id'),
 
-        collections: emit(Events.COLLECTIONS_UPDATED),
+        collections: indexed(Events.COLLECTIONS_UPDATED, Events.COLLECTION_UPDATED, 'name'),
 
-        navigations: emit(Events.NAVIGATIONS_UPDATED),
+        navigations: indexed(Events.NAVIGATIONS_UPDATED, Events.NAVIGATION_UPDATED, 'field'),
 
         autocomplete: {
           queries: emit(Events.AUTOCOMPLETE_QUERIES_UPDATED),
-          categories: emit(Events.AUTOCOMPLETE_CATEGORIES_UPDATED),
+          categories: indexed(Events.AUTOCOMPLETE_CATEGORIES_UPDATED, Events.AUTOCOMPLETE_CATEGORY_UPDATED, 'field'),
           products: emit(Events.AUTOCOMPLETE_PRODUCTS_UPDATED)
         },
 

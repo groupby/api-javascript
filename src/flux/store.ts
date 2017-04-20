@@ -1,4 +1,5 @@
 import * as redux from 'redux';
+import thunk from 'redux-thunk';
 import { Request } from '../models/request';
 import { Results } from '../models/response';
 import reducer from './reducer';
@@ -89,6 +90,8 @@ namespace Store {
     selected?: boolean; // pre
   }
 
+  export type Refinement = ValueRefinement | RangeRefinement;
+
   export interface ValueRefinement extends BaseRefinement {
     value: string; // post
   }
@@ -117,7 +120,10 @@ namespace Store {
   }
 
   export function create() {
-    return redux.createStore<State>(reducer);
+    return redux.createStore<State>(
+      reducer,
+      redux.applyMiddleware(thunk)
+    );
   }
 }
 
