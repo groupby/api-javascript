@@ -36,11 +36,11 @@ namespace Observer {
 
       if (INDEXED in observer && 'allIds' in newState && oldState.allIds === newState.allIds) {
         Object.keys(newState.allIds)
-          .forEach((key) => Observer.resolveIndexed(oldState.byId[key], newState.byId[key], observer['indexed']));
-      } else {
-        Object.keys(observer)
-          .forEach((key) => Observer.resolve((oldState || {})[key], (newState || {})[key], observer[key]));
+          .forEach((key) => Observer.resolveIndexed(oldState.byId[key], newState.byId[key], observer[INDEXED]));
       }
+
+      Object.keys(observer)
+        .forEach((key) => Observer.resolve((oldState || {})[key], (newState || {})[key], observer[key]));
     }
   }
 
@@ -54,8 +54,7 @@ namespace Observer {
     const emit = (event: string) => (_, newValue) => flux.emit(event, newValue);
     const indexed = (event: string, prefix: string, field: string) =>
       Object.assign(emit(event), {
-        INDEXED,
-        indexed: (_, newIndexed) => flux.emit(`${prefix}:${newIndexed[field]}`, newIndexed)
+        INDEXED: (_, newIndexed) => flux.emit(`${prefix}:${newIndexed[field]}`, newIndexed)
       });
 
     return {
@@ -70,18 +69,25 @@ namespace Observer {
 
         sorts: emit(Events.SORTS_UPDATED),
 
-        products: indexed(Events.PRODUCTS_UPDATED, Events.PRODUCT_UPDATED, 'id'),
+        products: emit(Events.PRODUCTS_UPDATED),
 
-        collections: indexed(Events.COLLECTIONS_UPDATED, Events.COLLECTION_UPDATED, 'name'),
-
-        navigations: indexed(Events.NAVIGATIONS_UPDATED, Events.NAVIGATION_UPDATED, 'field'),
-
-        autocomplete: {
-          query: emit(Events.AUTOCOMPLETE_QUERY_UPDATED),
-          suggestions: emit(Events.AUTOCOMPLETE_SUGGESTIONS_UPDATED),
-          categories: indexed(Events.AUTOCOMPLETE_CATEGORIES_UPDATED, Events.AUTOCOMPLETE_CATEGORY_UPDATED, 'field'),
-          products: emit(Events.AUTOCOMPLETE_PRODUCTS_UPDATED)
+        collections: {
+          INDEXED: (_, newIndexed) => flux.emit(`${Events.COLLECTION_UPDATED}:${newIndexed.name}`, newIndexed),
+          selected: emit(Events.SELECTED_COLLECTION_UPDATED)
         },
+
+        navigations: Object.assign(emit(Events.NAVIGATIONS_UPDATED), {
+          INDEXED: (oldNavigation, newNavigation) => {
+            if (oldNavigation.selected !== newNavigation.selected) {
+              flux.emit(`${Events.SELECTED_REFINEMENTS_UPDATED}:${newNavigation.field}`, newNavigation.selected);
+            }
+          }
+        }),
+
+        autocomplete: Object.assign(emit(Events.AUTOCOMPLETE_UPDATED), {
+          query: emit(Events.AUTOCOMPLETE_QUERY_UPDATED),
+          products: emit(Events.AUTOCOMPLETE_PRODUCTS_UPDATED)
+        }),
 
         page: Object.assign(emit(Events.PAGE_UPDATED), {
           size: emit(Events.PAGE_SIZE_UPDATED),

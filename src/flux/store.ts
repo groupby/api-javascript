@@ -11,7 +11,7 @@ namespace Store {
       query: Query; // mixed
 
       sorts: Sort[]; // pre
-      products: Indexed<Product>; // post
+      products: Product[]; // post
       collections: Indexed.Selectable<Collection>; // mixed
       navigations: Indexed<Navigation>; // mixed
 
@@ -185,17 +185,12 @@ namespace Store {
 
   export interface Autocomplete {
     query: string; // pre
-    suggestions: Autocomplete.Suggestion[]; // post
-    categories: Indexed<Autocomplete.Category>; // static & post
+    suggestions: string[]; // post
+    categories: Autocomplete.Category[]; // static & post
     products: Product[]; // post
   }
 
   export namespace Autocomplete {
-    export interface Suggestion {
-      value: string;
-      selected?: boolean;
-    }
-
     export interface Category {
       field: string; // static
       values: string[]; // post

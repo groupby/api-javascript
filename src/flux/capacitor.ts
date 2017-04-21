@@ -8,6 +8,7 @@ import { Navigation, RefinementResults, Results } from '../models/response';
 import { Pager } from './pager';
 
 export namespace Events {
+  // query events
   export const QUERY_UPDATED = 'query_updated'; // mixed
   export const ORIGINAL_QUERY_UPDATED = 'original_query_updated'; // pre
   export const CORRECTED_QUERY_UPDATED = 'corrected_query_updated'; // post
@@ -15,33 +16,38 @@ export namespace Events {
   export const DID_YOU_MEANS_UPDATED = 'did_you_means_updated'; // post
   export const QUERY_REWRITES_UPDATED = 'query_rewrites_updated'; // post
 
+  // sort events
   export const SORTS_UPDATED = 'sorts_updated'; // mixed
-  export const SORT_UPDATED = 'sort_updated'; // mixed
 
+  // product events
   export const PRODUCTS_UPDATED = 'products_updated'; // mixed
-  export const PRODUCT_UPDATED = 'product_updated'; // mixed
 
-  export const COLLECTIONS_UPDATED = 'collections_updated'; // mixed
+  // collection events
   export const COLLECTION_UPDATED = 'collection_updated'; // post
+  export const SELECTED_COLLECTION_UPDATED = 'selected_collection_updated'; // post
 
+  // navigation events
   export const NAVIGATIONS_UPDATED = 'navigations_updated'; // post
-  export const NAVIGATION_UPDATED = 'navigation_updated'; // post
+  export const SELECTED_REFINEMENTS_UPDATED = 'selected_refinements_updated'; // post
 
-  export const AUTOCOMPLETE_QUERY_UPDATED = 'autocomplete_query_updated';
-  export const AUTOCOMPLETE_SUGGESTIONS_UPDATED = 'autocomplete_suggestions_updated';
-  export const AUTOCOMPLETE_CATEGORIES_UPDATED = 'autocomplete_categories_updated';
-  export const AUTOCOMPLETE_CATEGORY_UPDATED = 'autocomplete_category_updated';
-  export const AUTOCOMPLETE_PRODUCTS_UPDATED = 'autocomplete_products_updated';
+  // autocomplete events
+  export const AUTOCOMPLETE_UPDATED = 'autocomplete_updated'; // post
+  export const AUTOCOMPLETE_QUERY_UPDATED = 'autocomplete_query_updated'; // pre
+  export const AUTOCOMPLETE_PRODUCTS_UPDATED = 'autocomplete_products_updated'; // post
 
-  export const TEMPLATE_UPDATED = 'template_updated';
+  // template events
+  export const TEMPLATE_UPDATED = 'template_updated'; // post
 
+  // details events
   export const DETAILS_ID_UPDATED = 'details_id_updated'; // pre
   export const DETAILS_PRODUCT_UPDATED = 'details_product_updated'; // post
 
+  // page events
+  export const PAGE_UPDATED = 'page_updated'; // post
   export const PAGE_SIZE_UPDATED = 'page_size_updated'; // pre
   export const CURRENT_PAGE_UPDATED = 'current_page_updated'; // pre
-  export const PAGE_UPDATED = 'page_updated'; // post
 
+  // redirect event
   export const REDIRECT = 'redirect';
 }
 
