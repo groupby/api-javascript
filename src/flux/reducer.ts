@@ -3,11 +3,8 @@ import Actions from './actions';
 import Store from './store';
 
 export function updateQuery(state: Store.Query, action) {
-  switch (action) {
-    case Actions.UPDATE_QUERY:
-      return { ...state, query: action.query };
-    default:
-      return state;
+  if (action === Actions.UPDATE_SEARCH) {
+    return { ...state, query: action.query };
   }
 }
 
