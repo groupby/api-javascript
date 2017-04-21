@@ -10,9 +10,9 @@ namespace Store {
     data?: {
       query: Query; // mixed
 
-      sorts: Indexed<Sort>; // pre
+      sorts: Sort[]; // pre
       products: Indexed<Product>; // post
-      collections: Indexed<Collection>; // mixed
+      collections: Indexed.Selectable<Collection>; // mixed
       navigations: Indexed<Navigation>; // mixed
 
       autocomplete: Autocomplete; // mixed
@@ -21,7 +21,7 @@ namespace Store {
 
       template: Template; // post
 
-      details: Details; // post
+      details: Details; // mixed
 
       redirect?: string; // post
 
@@ -59,7 +59,6 @@ namespace Store {
     name: string; // static
     label: string; // static
     total: number; // post
-    selected?: boolean; // pre
   }
 
   export interface Sort {
@@ -76,7 +75,7 @@ namespace Store {
     /**
      * current page number
      */
-    current: number; // post
+    current: number; // pre
 
     /**
      * number of next page
@@ -98,11 +97,11 @@ namespace Store {
     /**
      * start of displayed products
      */
-    fromResult: number; // post
+    from: number; // post
     /**
      * end of displayed products
      */
-    toResult: number; // post
+    to: number; // post
 
     /**
      * displayed number range (in <gb-pages>)
@@ -120,23 +119,28 @@ namespace Store {
 
   export type Zone = ContentZone | RichContentZone | RecordZone;
 
-  export interface ContentZone {
+  export interface BaseZone {
+    name: string;
+  }
+
+  export interface ContentZone extends BaseZone {
     type: 'content';
     content: string;
   }
 
-  export interface RichContentZone {
+  export interface RichContentZone extends BaseZone {
     type: 'rich_content';
     content: string;
   }
 
-  export interface RecordZone {
+  export interface RecordZone extends BaseZone {
     type: 'record';
     products: Product[];
   }
 
   export interface Details {
-    product: Product;
+    id: string; // pre
+    product: Product; // post
   }
 
   export interface Product {
@@ -151,6 +155,7 @@ namespace Store {
     label: string; // post
     or?: boolean; // post
     sort?: Sort; // post
+    selected: number[]; // pre
   }
 
   export interface ValueNavigation extends BaseNavigation {
@@ -165,7 +170,6 @@ namespace Store {
 
   export interface BaseRefinement {
     total: number; // post
-    selected?: boolean; // pre
   }
 
   export type Refinement = ValueRefinement | RangeRefinement;
@@ -180,12 +184,18 @@ namespace Store {
   }
 
   export interface Autocomplete {
-    queries: string[]; // post
+    query: string; // pre
+    suggestions: Autocomplete.Suggestion[]; // post
     categories: Indexed<Autocomplete.Category>; // static & post
-    products: any[]; // post
+    products: Product[]; // post
   }
 
   export namespace Autocomplete {
+    export interface Suggestion {
+      value: string;
+      selected?: boolean;
+    }
+
     export interface Category {
       field: string; // static
       values: string[]; // post
@@ -195,6 +205,12 @@ namespace Store {
   export interface Indexed<T> {
     byId: { [key: string]: T };
     allIds: string[];
+  }
+
+  export namespace Indexed {
+    export interface Selectable<T> extends Indexed<T> {
+      selected: string;
+    }
   }
 
   export function create() {

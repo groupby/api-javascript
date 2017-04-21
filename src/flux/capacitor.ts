@@ -1,4 +1,4 @@
-import * as EventEmitter from 'eventemitter3';
+import { EventEmitter } from 'eventemitter3';
 import * as redux from 'redux';
 import filterObject = require('filter-object');
 import { BrowserBridge } from '../core/bridge';
@@ -27,10 +27,20 @@ export namespace Events {
   export const NAVIGATIONS_UPDATED = 'navigations_updated'; // post
   export const NAVIGATION_UPDATED = 'navigation_updated'; // post
 
-  export const AUTOCOMPLETE_QUERIES_UPDATED = 'autocomplete_queries_updated';
+  export const AUTOCOMPLETE_QUERY_UPDATED = 'autocomplete_query_updated';
+  export const AUTOCOMPLETE_SUGGESTIONS_UPDATED = 'autocomplete_suggestions_updated';
   export const AUTOCOMPLETE_CATEGORIES_UPDATED = 'autocomplete_categories_updated';
   export const AUTOCOMPLETE_CATEGORY_UPDATED = 'autocomplete_category_updated';
   export const AUTOCOMPLETE_PRODUCTS_UPDATED = 'autocomplete_products_updated';
+
+  export const TEMPLATE_UPDATED = 'template_updated';
+
+  export const DETAILS_ID_UPDATED = 'details_id_updated'; // pre
+  export const DETAILS_PRODUCT_UPDATED = 'details_product_updated'; // post
+
+  export const PAGE_SIZE_UPDATED = 'page_size_updated'; // pre
+  export const CURRENT_PAGE_UPDATED = 'current_page_updated'; // pre
+  export const PAGE_UPDATED = 'page_updated'; // post
 
   export const REDIRECT = 'redirect';
 }
@@ -74,27 +84,23 @@ export class FluxCapacitor extends EventEmitter {
     this.page = new Pager(this);
   }
 
-  search(query: string = this.originalQuery) {
+  search(originalQuery: string = this.originalQuery): Promise<Results> {
+    this.query.withQuery(originalQuery);
+    this.emit(Events.SEARCH, this.query.raw);
+    return this.bridge.search(this.query)
+      .then((results) => {
+        const oldQuery = this.originalQuery;
+        Object.assign(this, { results, originalQuery });
 
+        if (results.redirect) {
+          this.emit(Events.REDIRECT, results.redirect);
+        }
+        this.emit(Events.RESULTS, results);
+        this.emitQueryChanged(oldQuery, originalQuery);
+
+        return results;
+      });
   }
-
-  // search(originalQuery: string = this.originalQuery): Promise<Results> {
-  //   this.query.withQuery(originalQuery);
-  //   this.emit(Events.SEARCH, this.query.raw);
-  //   return this.bridge.search(this.query)
-  //     .then((results) => {
-  //       const oldQuery = this.originalQuery;
-  //       Object.assign(this, { results, originalQuery });
-  //
-  //       if (results.redirect) {
-  //         this.emit(Events.REDIRECT, results.redirect);
-  //       }
-  //       this.emit(Events.RESULTS, results);
-  //       this.emitQueryChanged(oldQuery, originalQuery);
-  //
-  //       return results;
-  //     });
-  // }
 
   refinements(navigationName: string): Promise<RefinementResults> {
     return this.bridge.refinements(this.query, navigationName)

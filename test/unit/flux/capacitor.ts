@@ -9,7 +9,7 @@ const SELECTED_REFINEMENT: SelectedValueRefinement = { type: 'Value', navigation
 const REFINEMENT_RESULT = { availableNavigation: 'a', selectedNavigation: 'b' };
 const DETAILS_RESULT = { records: [{}] };
 
-suite('FluxCapacitor', ({ expect, spy }) => {
+suite.skip('FluxCapacitor', ({ expect, spy }) => {
   let flux: FluxCapacitor;
 
   beforeEach(() => {

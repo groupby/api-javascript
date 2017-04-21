@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": [
       "ES5",
-      "ES6"
+      "ES6",
+      "ES2016.Array.Include"
     ],
     "module": "commonjs",
     "moduleResolution": "node",

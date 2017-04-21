@@ -22,7 +22,7 @@ module.exports = {
         enforce: 'pre',
         loader: 'tslint-loader',
         options: {
-          typeCheck: true
+          // typeCheck: true
         }
       }, {
         test: /\.ts$/,

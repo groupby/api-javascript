@@ -34,7 +34,7 @@ namespace Observer {
         observer(oldState, newState);
       }
 
-      if (INDEXED in observer && oldState.allIds === newState.allIds) {
+      if (INDEXED in observer && 'allIds' in newState && oldState.allIds === newState.allIds) {
         Object.keys(newState.allIds)
           .forEach((key) => Observer.resolveIndexed(oldState.byId[key], newState.byId[key], observer['indexed']));
       } else {
@@ -68,7 +68,7 @@ namespace Observer {
           rewrites: emit(Events.QUERY_REWRITES_UPDATED),
         }),
 
-        sorts: indexed(Events.SORTS_UPDATED, Events.SORT_UPDATED, 'field'),
+        sorts: emit(Events.SORTS_UPDATED),
 
         products: indexed(Events.PRODUCTS_UPDATED, Events.PRODUCT_UPDATED, 'id'),
 
@@ -77,9 +77,22 @@ namespace Observer {
         navigations: indexed(Events.NAVIGATIONS_UPDATED, Events.NAVIGATION_UPDATED, 'field'),
 
         autocomplete: {
-          queries: emit(Events.AUTOCOMPLETE_QUERIES_UPDATED),
+          query: emit(Events.AUTOCOMPLETE_QUERY_UPDATED),
+          suggestions: emit(Events.AUTOCOMPLETE_SUGGESTIONS_UPDATED),
           categories: indexed(Events.AUTOCOMPLETE_CATEGORIES_UPDATED, Events.AUTOCOMPLETE_CATEGORY_UPDATED, 'field'),
           products: emit(Events.AUTOCOMPLETE_PRODUCTS_UPDATED)
+        },
+
+        page: Object.assign(emit(Events.PAGE_UPDATED), {
+          size: emit(Events.PAGE_SIZE_UPDATED),
+          current: emit(Events.CURRENT_PAGE_UPDATED),
+        }),
+
+        template: emit(Events.TEMPLATE_UPDATED),
+
+        details: {
+          id: emit(Events.DETAILS_ID_UPDATED),
+          product: emit(Events.DETAILS_PRODUCT_UPDATED)
         },
 
         reditect: emit(Events.REDIRECT),
