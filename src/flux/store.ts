@@ -17,6 +17,12 @@ namespace Store {
 
       autocomplete: Autocomplete; // mixed
 
+      page: Page; // mixed
+
+      template: Template; // post
+
+      details: Details; // post
+
       redirect?: string; // post
 
       errors: string[]; // post
@@ -59,6 +65,78 @@ namespace Store {
   export interface Sort {
     field: string;
     descending?: boolean;
+  }
+
+  export interface Page {
+    /**
+     * number of products per page
+     */
+    size: number; // pre
+
+    /**
+     * current page number
+     */
+    current: number; // post
+
+    /**
+     * number of next page
+     */
+    previous: number; // post
+    /**
+     * number of previous page
+     */
+    next: number; // post
+    /**
+     * number of first page
+     */
+    first: 1; // static
+    /**
+     * number of last page
+     */
+    last: number; // post
+
+    /**
+     * start of displayed products
+     */
+    fromResult: number; // post
+    /**
+     * end of displayed products
+     */
+    toResult: number; // post
+
+    /**
+     * displayed number range (in <gb-pages>)
+     */
+    range: number[]; // post
+  }
+
+  export interface Template {
+    name: string;
+    rule: string;
+    zones: {
+      [zoneName: string]: Zone;
+    };
+  }
+
+  export type Zone = ContentZone | RichContentZone | RecordZone;
+
+  export interface ContentZone {
+    type: 'content';
+    content: string;
+  }
+
+  export interface RichContentZone {
+    type: 'rich_content';
+    content: string;
+  }
+
+  export interface RecordZone {
+    type: 'record';
+    products: Product[];
+  }
+
+  export interface Details {
+    product: Product;
   }
 
   export interface Product {

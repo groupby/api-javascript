@@ -1,7 +1,7 @@
 import Actions from '../../../src/flux/actions';
 import suite from '../_suite';
 
-suite.only('actions', ({ expect, stub }) => {
+suite.only('actions', ({ expect, spy, stub }) => {
   describe('conditional()', () => {
     it('should return result of action', () => {
       const obj = { a: 'b' };
@@ -22,7 +22,18 @@ suite.only('actions', ({ expect, stub }) => {
   });
 
   describe('thunk()', () => {
+    it('should return a constructed thunk', () => {
+      const dispatch = spy();
+      const type = 'MY_ACTION';
 
+      const thunk = Actions.thunk(type, { a: 'b' });
+
+      expect(thunk).to.be.a('function');
+
+      thunk(dispatch);
+
+      expect(dispatch).to.be.calledWith({ type, a: 'b' });
+    });
   });
 
   describe('updateQuery()', () => {
@@ -36,25 +47,47 @@ suite.only('actions', ({ expect, stub }) => {
     });
   });
 
-  describe('addRefinement()', () => {
-    it('should create an ADD_REFINEMENT action', () => {
-      const refinement: any = { a: 'b' };
+  describe('selectRefinement()', () => {
+    it('should create a SELECT_REFINEMENT action', () => {
+      const refinement: any = { id: 1 };
       const thunk = stub(Actions, 'thunk');
 
-      Actions.addRefinement(refinement);
+      Actions.selectRefinement(refinement);
 
-      expect(thunk).to.be.calledWith(Actions.ADD_REFINEMENT, { refinement });
+      expect(thunk).to.be.calledWith(Actions.SELECT_REFINEMENT, refinement);
     });
   });
 
-  describe('removeRefinement()', () => {
-    it('should create a REMOVE_REFINEMENT action', () => {
-      const refinement: any = { a: 'b' };
+  describe('deselectRefinement()', () => {
+    it('should create a DESELECT_REFINEMENT action', () => {
+      const refinement: any = { id: 1 };
       const thunk = stub(Actions, 'thunk');
 
-      Actions.removeRefinement(refinement);
+      Actions.deselectRefinement(refinement);
 
-      expect(thunk).to.be.calledWith(Actions.REMOVE_REFINEMENT, { refinement });
+      expect(thunk).to.be.calledWith(Actions.DESELECT_REFINEMENT, refinement);
+    });
+  });
+
+  describe('selectCollection()', () => {
+    it('should create a SELECT_COLLECTION action', () => {
+      const collection: any = { id: 1 };
+      const thunk = stub(Actions, 'thunk');
+
+      Actions.selectCollection(collection);
+
+      expect(thunk).to.be.calledWith(Actions.SELECT_COLLECTION, collection);
+    });
+  });
+
+  describe('deselectCollection()', () => {
+    it('should create a DESELECT_COLLECTION action', () => {
+      const collection: any = { id: 1 };
+      const thunk = stub(Actions, 'thunk');
+
+      Actions.deselectCollection(collection);
+
+      expect(thunk).to.be.calledWith(Actions.DESELECT_COLLECTION, collection);
     });
   });
 });
