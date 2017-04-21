@@ -5,6 +5,7 @@ import { thunk } from './utils';
 
 namespace Actions {
   export const UPDATE_SEARCH = 'UPDATE_SEARCH';
+  export const SELECT_REFINEMENT = 'SELECT_REFINEMENT';
   export const DESELECT_REFINEMENT = 'DESELECT_REFINEMENT';
   export const SELECT_COLLECTION = 'SELECT_COLLECTION';
   export const UPDATE_SORTS = 'UPDATE_SORTS';
@@ -15,6 +16,9 @@ namespace Actions {
 
   export const updateSearch = (search: Actions.Search) =>
     thunk(UPDATE_SEARCH, search);
+
+  export const selectRefinement = (navigationId: string, index: number) =>
+    thunk(SELECT_REFINEMENT, { navigationId, index });
 
   export const deselectRefinement = (navigationId: string, index: number) =>
     thunk(DESELECT_REFINEMENT, { navigationId, index });
