@@ -29,10 +29,25 @@ export function updateErrors(state, action) {
   }
 }
 
-export function updateNavigations(state: Store.Navigation, action) {
+export function updateNavigations(state: Store.Indexed<Store.Navigation>, action) {
   switch (action) {
-    //   case Actions.UPDATE_NAVIGATIONS:
-    //    return { ...state };
+    case Actions.UPDATE_SEARCH:
+    case Actions.SELECT_REFINEMENT:
+      return { ...state,
+        byId: {
+          [action.navigationId]: {
+            selected: state.byId[action.navigationId].selected.concat(action.index),
+          },
+        },
+      };
+    case Actions.DESELECT_REFINEMENT:
+      return { ...state,
+        byId: {
+          [action.navigationId]: {
+            selected: state.byId[action.navigationId].selected.filter((index) => index !== action.index),
+          },
+        },
+      };
     default:
       return state;
   }
