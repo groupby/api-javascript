@@ -2,61 +2,19 @@ import * as redux from 'redux';
 import Actions from './actions';
 import Store from './store';
 
-export function updateQuery(state: Store.Query, action) {
-  if (action === Actions.UPDATE_SEARCH) {
-    return { ...state, query: action.query };
-  }
-}
-
-export function updateNavigations(state: Store.Navigation, action) {
-  switch (action) {
-    // case Actions.SELECT_REFINEMENT:
-    // return { ...state, query: action.navigationId };
-    default:
-      return state;
-  }
-}
-
-export function updateSort(state: Store.Sort, action) {
-  switch (action) {
-    // case Actions.UPDATE_QUERY:
-    //   return { ...state, query: action.query };
-    default:
-      return state;
-  }
-}
-
-export function updateProducts(state: Store.Product, action) {
-  switch (action) {
-    // case Actions.UPDATE_QUERY:
-    //   return { ...state, query: action.query };
-    default:
-      return state;
-  }
-}
-
-export function updateCollections(state: Store.Collection, action) {
-  switch (action) {
-    // case Actions.UPDATE_QUERY:
-    //   return { ...state, query: action.query };
-    default:
-      return state;
-  }
-}
-
 export function updateAutocomplete(state: Store.Autocomplete, action) {
   switch (action) {
-    // case Actions.UPDATE_QUERY:
-    //   return { ...state, query: action.query };
+    case Actions.UPDATE_AUTOCOMPLETE_QUERY:
+      return { ...state, query: action.query };
     default:
       return state;
   }
 }
 
-export function updateRedirect(state, action) {
+export function updateCollections(state: Store.Indexed.Selectable<Store.Collection>, action) {
   switch (action) {
-    // case Actions.UPDATE_QUERY:
-    //   return { ...state, query: action.query };
+    case Actions.SELECT_COLLECTION:
+      return { ...state, selected: action.id };
     default:
       return state;
   }
@@ -64,8 +22,66 @@ export function updateRedirect(state, action) {
 
 export function updateErrors(state, action) {
   switch (action) {
-    // case Actions.UPDATE_QUERY:
-    //   return { ...state, query: action.query };
+    // case Actions.UPDATE_ERRORS:
+    //   return { ...state };
+    default:
+      return state;
+  }
+}
+
+export function updateNavigations(state: Store.Navigation, action) {
+  switch (action) {
+    //   case Actions.UPDATE_NAVIGATIONS:
+    //    return { ...state };
+    default:
+      return state;
+  }
+}
+
+export function updatePage(state: Store.Page, action) {
+  switch (action) {
+    case Actions.UPDATE_SEARCH:
+      return { ...state, current: 1 };
+    case Actions.UPDATE_CURRENT_PAGE:
+      return { ...state, current: action.page };
+    case Actions.UPDATE_PAGE_SIZE:
+      return { ...state, size: action.size };
+    default:
+      return state;
+  }
+}
+
+export function updateProducts(state: Store.Product, action) {
+  switch (action) {
+    // case Actions.UPDATE_PRODUCTS:
+    //   return { ...state };
+    default:
+      return state;
+  }
+}
+
+export function updateQuery(state: Store.Query, action) {
+  switch (action) {
+    case Actions.UPDATE_SEARCH:
+      return { ...state, original: action.query };
+    default:
+      return state;
+  }
+}
+
+export function updateRedirect(state, action) {
+  switch (action) {
+    // case Actions.UPDATE_REDIRECT:
+    //   return { ...state };
+    default:
+      return state;
+  }
+}
+
+export function updateSorts(state: Store.Sort, action) {
+  switch (action) {
+    case Actions.UPDATE_SORTS:
+      return { ...state, field: action.field, descending: !!action.descending };
     default:
       return state;
   }
@@ -73,8 +89,8 @@ export function updateErrors(state, action) {
 
 export function updateWarnings(state, action) {
   switch (action) {
-    // case Actions.UPDATE_QUERY:
-    //   return { ...state, query: action.query };
+    // case Actions.UPDATE_WARNINGS:
+    //   return { ...state };
     default:
       return state;
   }
@@ -82,14 +98,15 @@ export function updateWarnings(state, action) {
 
 export default redux.combineReducers({
   data: redux.combineReducers({
-    query: updateQuery,
-    sort: updateSort,
-    products: updateProducts,
-    collections: updateCollections,
-    navigations: updateNavigations,
     autocomplete: updateAutocomplete,
-    redirect: updateRedirect,
+    collections: updateCollections,
     errors: updateErrors,
-    warnings: updateWarnings
-  })
+    navigations: updateNavigations,
+    page: updatePage,
+    products: updateProducts,
+    query: updateQuery,
+    redirect: updateRedirect,
+    sorts: updateSorts,
+    warnings: updateWarnings,
+  }),
 });
