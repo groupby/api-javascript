@@ -10,7 +10,7 @@ export default <Suite>suite<Utils>((tests) => {
   tests({
     expect,
     spy: (...args) => (<any>sandbox.spy)(...args),
-    stub: (...args) => (<any>sandbox.stub)(...args)
+    stub: (...args) => (<any>sandbox.stub)(...args),
   });
 });
 

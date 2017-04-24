@@ -8,12 +8,12 @@ suite('Pager', ({ expect }) => {
     const totalRecordCount = typeof opts === 'object' && Number(opts.total) >= 0 ? opts.total : 30;
     const pageSize = typeof opts === 'object' && Number(opts.pageSize) >= 0 ? opts.pageSize : 10;
     return <any>{
+      emit: (event: string) => null,
       query: new Query()
         .skip(recordStart)
         .withPageSize(pageSize),
       results: { totalRecordCount },
-      emit: (event: string) => null,
-      search
+      search,
     };
   }
 

@@ -21,20 +21,20 @@ suite('Query', ({ expect }) => {
   it('should build a simple request with defaults', () => {
     const request = query.build();
     expect(request).to.eql({
+      pruneRefinements: true,
       query: 'test',
       wildcardSearchEnabled: false,
-      pruneRefinements: true
     });
   });
 
   it('should build a complex request', () => {
     const request = new Query('complex')
       .withConfiguration({
-        userId: '13afasd',
-        language: 'en',
-        collection: 'dev',
         area: 'Development',
-        biasingProfile: 'boost top brands'
+        biasingProfile: 'boost top brands',
+        collection: 'dev',
+        language: 'en',
+        userId: '13afasd',
       })
       .withCustomUrlParams([{ key: 'banner', value: 'nike_landing' }, { key: 'style', value: 'branded' }])
       .withFields('title', 'description')
@@ -43,21 +43,21 @@ suite('Query', ({ expect }) => {
       .withExcludedNavigations('_meta', 'originalPrice')
       .withQueryParams({
         attrs: 'size,brand',
-        id: ''
+        id: '',
       })
       .withSorts({ field: 'price', order: 'Ascending' }, { field: 'boost', order: 'Descending' })
       .withPageSize(300)
       .skip(40)
       .restrictNavigation({
+        count: 10,
         name: 'brand',
-        count: 10
       })
       .withMatchStrategy({
-        rules: [{ terms: 5, termsGreaterThan: 7 }]
+        rules: [{ terms: 5, termsGreaterThan: 7 }],
       })
       .withBiasing({
         augmentBiases: true,
-        biases: [{ name: 'popularity', strength: 'Strong_Decrease' }]
+        biases: [{ name: 'popularity', strength: 'Strong_Decrease' }],
       })
       .enableWildcardSearch()
       .disableAutocorrection()
@@ -71,22 +71,22 @@ suite('Query', ({ expect }) => {
   describe('withConfiguration() behaviour', () => {
     it('should allow all properties through', () => {
       const request = query.withConfiguration(<any>{
+        properties: 'are these',
         some: 'invalid',
-        properties: 'are these'
       }).build();
       expect(request).to.eql({
-        query: 'test',
-        wildcardSearchEnabled: false,
+        properties: 'are these',
         pruneRefinements: true,
+        query: 'test',
         some: 'invalid',
-        properties: 'are these'
+        wildcardSearchEnabled: false,
       });
     });
 
     it('should allow a custom mask', () => {
       const request = query.withConfiguration(<any>{
+        properties: 'are these',
         some: 'invalid',
-        properties: 'are these'
       }, '{query,other}').build();
       expect(request).to.not.have.keys('some', 'properties');
     });
@@ -96,40 +96,40 @@ suite('Query', ({ expect }) => {
     const request = new Query('refinements')
       .withSelectedRefinements(
       {
+        exclude: false,
+        high: 13,
+        low: 1,
         navigationName: 'size',
         type: 'Range',
-        low: 1,
-        high: 13,
-        exclude: false
       }, {
+        exclude: true,
         navigationName: 'brand',
         type: 'Value',
         value: 'Nike',
-        exclude: true
       })
       .withRefinements('material', {
         type: 'Value',
-        value: 'wool'
+        value: 'wool',
       })
       .withRefinements('year', {
-        type: 'Range',
-        low: 2000,
+        exclude: false,
         high: 2009,
-        exclude: false
-      }, {
+        low: 2000,
         type: 'Range',
+      }, {
+        high: 2011,
         low: 2010,
-        high: 2011
+        type: 'Range',
       })
       .withNavigations(<any>{
         name: 'rating',
-        refinements: [{ type: 'Value', value: '***' }]
+        refinements: [{ type: 'Value', value: '***' }],
       }, <any>{
         name: 'price',
         refinements: [
           { type: 'Range', low: 31, high: 44 },
-          { type: 'Range', low: 89, high: 100 }
-        ]
+          { type: 'Range', low: 89, high: 100 },
+        ],
       })
       .refineByValue('rating', '****', true)
       .refineByRange('price', 122, 413)

@@ -80,10 +80,14 @@ export class FluxCapacitor extends EventEmitter {
 
     const bridgeConfig: FluxBridgeConfig = config.bridge || {};
     this.bridge = new BrowserBridge(endpoint, bridgeConfig.https, bridgeConfig);
-    if (bridgeConfig.headers) this.bridge.headers = bridgeConfig.headers;
+    if (bridgeConfig.headers) {
+      this.bridge.headers = bridgeConfig.headers;
+    }
     this.bridge.errorHandler = (err) => {
       this.emit(Events.ERROR_BRIDGE, err);
-      if (bridgeConfig.errorHandler) bridgeConfig.errorHandler(err);
+      if (bridgeConfig.errorHandler) {
+        bridgeConfig.errorHandler(err);
+      }
     };
 
     this.query = new Query().withConfiguration(filterObject(config, ['*', '!{bridge}']), mask);
@@ -162,13 +166,17 @@ export class FluxCapacitor extends EventEmitter {
 
   refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {
     this.query.withSelectedRefinements(refinement);
-    if (config.skipSearch) return Promise.resolve(this.navigationInfo);
+    if (config.skipSearch) {
+      return Promise.resolve(this.navigationInfo);
+    }
     return this.doRefinement(config);
   }
 
   unrefine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {
     this.query.withoutSelectedRefinements(refinement);
-    if (config.skipSearch) return Promise.resolve(this.navigationInfo);
+    if (config.skipSearch) {
+      return Promise.resolve(this.navigationInfo);
+    }
     return this.doRefinement(config);
   }
 
@@ -178,7 +186,9 @@ export class FluxCapacitor extends EventEmitter {
       .withSelectedRefinements({ type: 'Value', navigationName, value: id })
       .withPageSize(1))
       .then((res) => {
-        if (res.records.length) this.emit(Events.DETAILS, res.records[0]);
+        if (res.records.length) {
+          this.emit(Events.DETAILS, res.records[0]);
+        }
         return res;
       });
   }
@@ -215,7 +225,7 @@ export class FluxCapacitor extends EventEmitter {
   private get navigationInfo(): NavigationInfo {
     return {
       available: this.results.availableNavigation,
-      selected: this.results.selectedNavigation
+      selected: this.results.selectedNavigation,
     };
   }
 }

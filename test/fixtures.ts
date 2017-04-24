@@ -1,127 +1,127 @@
-export let COMPLEX_REQUEST = {
-  query: 'complex',
-  sort: [
-    { field: 'price', order: 'Ascending' },
-    { field: 'boost', order: 'Descending' }
-  ],
-  fields: ['title', 'description'],
-  orFields: ['brand', 'colour'],
-  customUrlParams: [
-    { key: 'banner', value: 'nike_landing' },
-    { key: 'style', value: 'branded' }
-  ],
-  includedNavigations: ['brand', 'size'],
-  excludedNavigations: ['_meta', 'originalPrice'],
-  wildcardSearchEnabled: true,
-  pruneRefinements: false,
-  userId: '13afasd',
-  language: 'en',
-  collection: 'dev',
+export const COMPLEX_REQUEST = {
   area: 'Development',
-  biasingProfile: 'boost top brands',
-  pageSize: 300,
-  skip: 40,
-  restrictNavigation: {
-    name: 'brand',
-    count: 10
-  },
-  matchStrategy: {
-    rules: [{ terms: 5, termsGreaterThan: 7 }]
-  },
   biasing: {
     augmentBiases: true,
-    biases: [{ name: 'popularity', strength: 'Strong_Decrease' }]
+    biases: [{ name: 'popularity', strength: 'Strong_Decrease' }],
   },
+  biasingProfile: 'boost top brands',
+  collection: 'dev',
+  customUrlParams: [
+    { key: 'banner', value: 'nike_landing' },
+    { key: 'style', value: 'branded' },
+  ],
   disableAutocorrection: true,
-  returnBinary: false
+  excludedNavigations: ['_meta', 'originalPrice'],
+  fields: ['title', 'description'],
+  includedNavigations: ['brand', 'size'],
+  language: 'en',
+  matchStrategy: {
+    rules: [{ terms: 5, termsGreaterThan: 7 }],
+  },
+  orFields: ['brand', 'colour'],
+  pageSize: 300,
+  pruneRefinements: false,
+  query: 'complex',
+  restrictNavigation: {
+    count: 10,
+    name: 'brand',
+  },
+  returnBinary: false,
+  skip: 40,
+  sort: [
+    { field: 'price', order: 'Ascending' },
+    { field: 'boost', order: 'Descending' },
+  ],
+  userId: '13afasd',
+  wildcardSearchEnabled: true,
 };
 
-export let BULK_REQUEST = {
+export const BULK_REQUEST = {
+  customUrlParams: [
+    { key: 'banner', value: 'nike_landing' },
+    { key: 'style', value: 'branded' },
+  ],
+  excludedNavigations: ['_meta', 'originalPrice'],
+  fields: ['title', 'description'],
+  includedNavigations: ['brand', 'size'],
+  orFields: ['brand', 'colour'],
+  pruneRefinements: true,
   query: 'bulk',
   sort: [
     { field: 'price', order: 'Ascending' },
-    { field: 'boost', order: 'Descending' }
+    { field: 'boost', order: 'Descending' },
   ],
-  fields: ['title', 'description'],
-  orFields: ['brand', 'colour'],
-  customUrlParams: [
-    { key: 'banner', value: 'nike_landing' },
-    { key: 'style', value: 'branded' }
-  ],
-  includedNavigations: ['brand', 'size'],
-  excludedNavigations: ['_meta', 'originalPrice'],
   wildcardSearchEnabled: false,
-  pruneRefinements: true
 };
 
-export let COMBINED_REFINEMENTS = [
+export const COMBINED_REFINEMENTS = [
   {
+    exclude: false,
+    high: 13,
+    low: 1,
     navigationName: 'size',
     type: 'Range',
-    low: 1,
-    high: 13,
-    exclude: false
   },
   {
+    exclude: true,
     navigationName: 'brand',
     type: 'Value',
     value: 'Nike',
-    exclude: true
   },
   {
     navigationName: 'material',
     type: 'Value',
-    value: 'wool'
+    value: 'wool',
   },
   {
-    navigationName: 'year',
-    type: 'Range',
-    low: 2000,
+    exclude: false,
     high: 2009,
-    exclude: false
-  },
-  {
+    low: 2000,
     navigationName: 'year',
     type: 'Range',
-    low: 2010,
-    high: 2011
   },
   {
+    high: 2011,
+    low: 2010,
+    navigationName: 'year',
+    type: 'Range',
+  },
+  {
+    exclude: true,
     navigationName: 'rating',
     type: 'Value',
     value: '****',
-    exclude: true
   },
   {
-    navigationName: 'price',
-    low: 122,
+    exclude: false,
     high: 413,
+    low: 122,
+    navigationName: 'price',
     type: 'Range',
-    exclude: false
   },
   {
     navigationName: 'rating',
     type: 'Value',
-    value: '***'
+    value: '***',
   },
   {
-    navigationName: 'price',
-    type: 'Range',
+    high: 44,
     low: 31,
-    high: 44
-  },
-  {
     navigationName: 'price',
     type: 'Range',
+  },
+  {
+    high: 100,
     low: 89,
-    high: 100
-  }
+    navigationName: 'price',
+    type: 'Range',
+  },
 ];
 
-export let CUSTOM_PARAMS_FROM_STRING = [
+export const CUSTOM_PARAMS_FROM_STRING = [
   { key: 'banner', value: 'nike_landing' },
   { key: 'style', value: 'branded' },
   { key: 'defaults', value: '' },
   { key: 'others', value: '' },
-  { key: 'something', value: 'as_well' }
+  { key: 'something', value: 'as_well' },
 ];

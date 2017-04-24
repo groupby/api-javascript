@@ -1,3 +1,4 @@
+// tslint:disable ban-types
 import './bootstrap';
 
 const coreContext = (<{ context?: Function }>require).context('../src', true, /\.ts/);

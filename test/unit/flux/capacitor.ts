@@ -1,6 +1,6 @@
+import * as mock from 'xhr-mock';
 import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../../../src/index';
 import suite from '../_suite';
-import * as mock from 'xhr-mock';
 
 const CUSTOMER_ID = 'services';
 const SEARCH_URL = `http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`;
@@ -47,8 +47,8 @@ suite.skip('FluxCapacitor', ({ expect, spy }) => {
       b: 'Ascending',
       bridge: {
         headers: { c: 'd' },
-        https: true
-      }
+        https: true,
+      },
     });
 
     expect(flux.query.raw).to.not.contain.keys('bridge');
@@ -477,7 +477,9 @@ suite.skip('FluxCapacitor', ({ expect, spy }) => {
 
         let count = 0;
         const checkComplete = () => {
-          if (++count === 2) done(); // tslint:disable-line:no-constant-condition
+          if (++count === 2) {
+            done();
+          }
         };
         flux.on(Events.RESET, checkComplete);
         flux.on(Events.PAGE_CHANGED, checkComplete);
@@ -535,7 +537,7 @@ suite.skip('FluxCapacitor', ({ expect, spy }) => {
       const sorts: Sort[] = [
         { field: 'price', order: 'Descending' },
         { field: 'other', order: 'Ascending' },
-        { field: 'type', order: 'Descending' }
+        { field: 'type', order: 'Descending' },
       ];
       flux.query.withSorts(...sorts);
       mock.post(SEARCH_URL, (req, res) => {
@@ -582,8 +584,8 @@ suite.skip('FluxCapacitor', ({ expect, spy }) => {
       flux.query.withConfiguration({
         area: 'nonProd',
         collection: 'offbrand',
+        fields: ['title', 'price'],
         language: 'zh',
-        fields: ['title', 'price']
       });
       mock.post(SEARCH_URL, (req, res) => {
         const body = JSON.parse(req.body());

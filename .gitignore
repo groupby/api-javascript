@@ -6,8 +6,10 @@ tmp
 node_modules
 npm-debug.log
 typings
-src/**/*.js*
-test/**/*.js*
+src/**/*.js
+src/**/*.js.map
+test/**/*.js
+test/**/*.js.map
 coverage
 dist
 docs

@@ -1,7 +1,7 @@
+import * as mock from 'xhr-mock';
 import { BrowserBridge, CloudBridge } from '../../../src/core/bridge';
 import { Query } from '../../../src/core/query';
 import suite from '../_suite';
-import * as mock from 'xhr-mock';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
@@ -27,17 +27,13 @@ suite('Bridge', ({ expect, spy }) => {
   });
 
   it('should have default values', () => {
-    expect(bridge.config).to.eql({
-      timeout: 1500
-    });
+    expect(bridge.config).to.eql({ timeout: 1500 });
   });
 
   it('should accept configuration', () => {
     bridge = new CloudBridge(CLIENT_KEY, CUSTOMER_ID, { timeout: 4000 });
 
-    expect(bridge.config).to.eql({
-      timeout: 4000
-    });
+    expect(bridge.config).to.eql({ timeout: 4000 });
   });
 
   it('should handle invalid query types', (done) => {
@@ -95,15 +91,15 @@ suite('Bridge', ({ expect, spy }) => {
   });
 
   it('should send a search query and return a promise', (done) => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&syle=branded&other=`, (req, res) => {
+    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?other=&size=20&syle=branded`, (req, res) => {
       return res.status(200).body('success');
     });
 
     query = new Query('skirts')
       .withQueryParams({
+        other: '',
         size: 20,
         syle: 'branded',
-        other: ''
       });
 
     bridge.search(query)
@@ -206,7 +202,7 @@ suite('Bridge', ({ expect, spy }) => {
     describe('refinements()', () => {
       it('should send requests to the CORS supported refinements endpoint', (done) => {
         mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search/refinements`, (req, res) => {
-          expect(JSON.parse(req['_body'])).to.contain.all.keys('originalQuery', 'navigationName');
+          expect(JSON.parse((<any>req)._body)).to.contain.all.keys('originalQuery', 'navigationName');
           return res.status(200).body('success');
         });
 
@@ -234,7 +230,7 @@ suite('Bridge', ({ expect, spy }) => {
     it('should include headers', (done) => {
       const headers = { a: 'b' };
       mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
-        expect(req['_headers']).to.include.keys('a');
+        expect((<any>req)._headers).to.include.keys('a');
         return res.status(200).body('success');
       });
 
