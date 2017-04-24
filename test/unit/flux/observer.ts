@@ -1,5 +1,5 @@
 import { Events } from '../../../src/flux/capacitor';
-import Observer, { DETAIL_QUERY_INDICATOR } from '../../../src/flux/observer';
+import Observer, { DETAIL_QUERY_INDICATOR, INDEXED } from '../../../src/flux/observer';
 import suite from '../_suite';
 
 suite('Observer', ({ expect, spy, stub }) => {
@@ -33,96 +33,116 @@ suite('Observer', ({ expect, spy, stub }) => {
     });
   });
 
-  // describe.skip('resolve()', () => {
-  //   it('should not call the observer if no changes', () => {
-  //     const observer = spy();
-  //
-  //     Observer.resolve(undefined, undefined, observer);
-  //
-  //     expect(observer).to.not.be.called;
-  //   });
-  //
-  //   it('should not call the observer if not a function', () => {
-  //     expect(() => Observer.resolve(1, 2, {})).to.not.throw();
-  //   });
-  //
-  //   it('should call the observer with the updated node', () => {
-  //     const observer = spy();
-  //
-  //     Observer.resolve(1, 2, (...args) => observer(...args));
-  //
-  //     expect(observer).to.be.calledWith(1, 2);
-  //   });
-  //
-  //   it('should call resolve() on subtrees', () => {
-  //     const observer1 = spy();
-  //     const observer2 = spy();
-  //     const observer3 = spy();
-  //     const observer4 = spy();
-  //     const observers = Object.assign((...args) => observer1(...args), {
-  //       a: Object.assign((...args) => observer2(...args), {
-  //         x: (...args) => observer3(...args)
-  //       }),
-  //       b: (...args) => observer4(...args)
-  //     });
-  //     const oldState = { a: { x: 1 } };
-  //     const newState = { b: 2 };
-  //
-  //     Observer.resolve(oldState, newState, observers);
-  //
-  //     expect(observer1).to.be.calledWith(oldState, newState);
-  //     expect(observer2).to.be.calledWith({ x: 1 }, undefined);
-  //     expect(observer3).to.be.calledWith(1, undefined);
-  //     expect(observer4).to.be.calledWith(undefined, 2);
-  //   });
-  //
-  //   it('should not call resolve() on equal subtrees', () => {
-  //     const observer1 = spy();
-  //     const observer2 = spy();
-  //     const observer3 = spy();
-  //     const observers = Object.assign((...args) => observer1(...args), {
-  //       a: (...args) => observer2(...args),
-  //       b: (...args) => observer3(...args)
-  //     });
-  //     const oldState = {};
-  //     const newState = {};
-  //
-  //     Observer.resolve(oldState, newState, observers);
-  //
-  //     expect(observer1).to.be.calledWith(oldState, newState);
-  //     expect(observer2).to.not.be.called;
-  //     expect(observer3).to.not.be.called;
-  //   });
-  // });
+  describe.skip('resolve()', () => {
+    it('should not call the observer if no changes', () => {
+      const observer = spy();
 
-  // describe('create()', () => {
-  //   it('should return an observer tree', () => {
-  //     const observers = Observer.create(<any>{});
-  //
-  //     expect(observers).to.be.an('object');
-  //     expect(observers.data).to.be.an('object');
-  //     expect(observers.data.search).to.be.an('object');
-  //     expect(observers.data.search.request).to.be.a('function');
-  //     expect(observers.data.search.request.query).to.be.a('function');
-  //     expect(observers.data.search.request.refinements).to.be.a('function');
-  //     expect(observers.data.search.response).to.be.a('function');
-  //   });
-  //
-  //   describe('data', () => {
-  //     let emit;
-  //     let observers;
-  //
-  //     beforeEach(() => {
-  //       emit = spy();
-  //       observers = Observer.create(<any>{ emit });
-  //     });
-  //
-  //     describe('query', () => {
-  //       observers.data.query(undefined, { a: 'b' });
-  //
-  //       expect(emit).to.be.calledWith(Events.QUERY_UPDATED, { a: 'b' });
-  //     });
-  //   });
+      Observer.resolve(undefined, undefined, observer);
+
+      expect(observer).to.not.be.called;
+    });
+
+    it('should not call the observer if not a function', () => {
+      expect(() => Observer.resolve(1, 2, {})).to.not.throw();
+    });
+
+    it('should call the observer with the updated node', () => {
+      const observer = spy();
+
+      Observer.resolve(1, 2, (...args) => observer(...args));
+
+      expect(observer).to.be.calledWith(1, 2);
+    });
+
+    it('should call resolve() on subtrees', () => {
+      const observer1 = spy();
+      const observer2 = spy();
+      const observer3 = spy();
+      const observer4 = spy();
+      const observers = Object.assign((...args) => observer1(...args), {
+        a: Object.assign((...args) => observer2(...args), {
+          x: (...args) => observer3(...args),
+        }),
+        b: (...args) => observer4(...args),
+      });
+      const oldState = { a: { x: 1 } };
+      const newState = { b: 2 };
+
+      Observer.resolve(oldState, newState, observers);
+
+      expect(observer1).to.be.calledWith(oldState, newState);
+      expect(observer2).to.be.calledWith({ x: 1 }, undefined);
+      expect(observer3).to.be.calledWith(1, undefined);
+      expect(observer4).to.be.calledWith(undefined, 2);
+    });
+
+    it('should not call resolve() on equal subtrees', () => {
+      const observer1 = spy();
+      const observer2 = spy();
+      const observer3 = spy();
+      const observers = Object.assign((...args) => observer1(...args), {
+        a: (...args) => observer2(...args),
+        b: (...args) => observer3(...args),
+      });
+      const oldState = {};
+      const newState = {};
+
+      Observer.resolve(oldState, newState, observers);
+
+      expect(observer1).to.be.calledWith(oldState, newState);
+      expect(observer2).to.not.be.called;
+      expect(observer3).to.not.be.called;
+    });
+  });
+
+  describe('create()', () => {
+    it('should return an observer tree', () => {
+      const observers = Observer.create(<any>{});
+
+      expect(observers).to.be.an('object');
+      expect(observers.data).to.be.an('object');
+      expect(observers.data.autocomplete).to.be.a('function');
+      expect(observers.data.autocomplete.products).to.be.a('function');
+      expect(observers.data.autocomplete.query).to.be.a('function');
+      expect(observers.data.collections).to.be.an('object');
+      expect(observers.data.collections[INDEXED]).to.be.a('function');
+      expect(observers.data.collections.selected).to.be.a('function');
+      expect(observers.data.details).to.be.an('object');
+      expect(observers.data.details.id).to.be.a('function');
+      expect(observers.data.details.product).to.be.a('function');
+      expect(observers.data.navigations).to.be.a('function');
+      // expect(observers.data.navigations[INDEXED]).to.be.a('function');
+      expect(observers.data.page).to.be.a('function');
+      expect(observers.data.page.current).to.be.a('function');
+      expect(observers.data.page.size).to.be.a('function');
+      expect(observers.data.products).to.be.a('function');
+      expect(observers.data.query).to.be.a('function');
+      expect(observers.data.query.corrected).to.be.a('function');
+      expect(observers.data.query.didYouMeans).to.be.a('function');
+      expect(observers.data.query.original).to.be.a('function');
+      expect(observers.data.query.related).to.be.a('function');
+      expect(observers.data.query.rewrites).to.be.a('function');
+      expect(observers.data.reditect).to.be.a('function');
+      expect(observers.data.sorts).to.be.a('function');
+      expect(observers.data.template).to.be.a('function');
+    });
+
+    // describe('data', () => {
+    //   let emit;
+    //   let observers;
+    //
+    //   beforeEach(() => {
+    //     emit = spy();
+    //     observers = Observer.create(<any>{ emit });
+    //   });
+    //
+    //   describe('query', () => {
+    //     observers.data.query(undefined, { a: 'b' });
+    //
+    //     expect(emit).to.be.calledWith(Events.QUERY_UPDATED, { a: 'b' });
+    //   });
+    // });
+  });
 
   // describe('search', () => {
   //   let emit;
