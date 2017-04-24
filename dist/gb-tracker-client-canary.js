@@ -65,14 +65,14 @@
 	return modules;
 }([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__(1);
 
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -80,36 +80,37 @@
 	  w.GbTracker = __webpack_require__(2);
 	})(window);
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var uuid = __webpack_require__(3);
 	var diff = __webpack_require__(8).diff;
 	var inspector = __webpack_require__(9);
-	var utils = __webpack_require__(14);
-	var LZString = __webpack_require__(15);
+	var utils = __webpack_require__(15);
+	var LZString = __webpack_require__(16);
 
-	var VERSION = __webpack_require__(16).version;
-	var Cookies = __webpack_require__(17);
+	var VERSION = __webpack_require__(17).version;
+	var Cookies = __webpack_require__(18);
 
 	var SCHEMAS = {
-	  addToCart: __webpack_require__(18),
-	  viewCart: __webpack_require__(20),
-	  removeFromCart: __webpack_require__(21),
-	  order: __webpack_require__(22),
-	  autoSearch: __webpack_require__(23),
-	  search: __webpack_require__(24),
-	  sessionChange: __webpack_require__(25),
-	  viewProduct: __webpack_require__(26)
+	  addToCart: __webpack_require__(19),
+	  viewCart: __webpack_require__(21),
+	  removeFromCart: __webpack_require__(22),
+	  order: __webpack_require__(23),
+	  autoSearch: __webpack_require__(24),
+	  search: __webpack_require__(25),
+	  sessionChange: __webpack_require__(26),
+	  viewProduct: __webpack_require__(27)
 	};
 
 	// Info on path length limitations: http://stackoverflow.com/a/812962
 	var MAX_PATH_LENGTH = 4000; // Thanks NGINX
 	var MAX_PATHNAME_LENGTH = 100; // '/v2/pixel/?random=0.5405421565044588&m=' plus extra for luck
 	var MAX_SEGMENT_COUNT = 100;
+	var VISITOR_TIMEOUT_SEC = 60 * 60 * 24 * 365 * 10;
 
 	var overridenPixelUrl = null;
 
@@ -230,8 +231,8 @@
 
 	    if (!visit.customerData.visitorId || visit.customerData.visitorId.length < 1) {
 	      visit.customerData.visitorId = uuid.v4();
-	      Cookies.set(VISITOR_COOKIE_KEY, visit.customerData.visitorId, { expires: Infinity });
 	    }
+	    Cookies.set(VISITOR_COOKIE_KEY, visit.customerData.visitorId, { expires: VISITOR_TIMEOUT_SEC });
 	  };
 
 	  self.getVisitorId = function () {
@@ -539,12 +540,13 @@
 	Tracker.VISITOR_COOKIE_KEY = VISITOR_COOKIE_KEY;
 	Tracker.SESSION_TIMEOUT_SEC = SESSION_TIMEOUT_SEC;
 	Tracker.VERSION = VERSION;
+	Tracker.VISITOR_TIMEOUT_SEC = VISITOR_TIMEOUT_SEC;
 
 	module.exports = Tracker;
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var v1 = __webpack_require__(4);
 	var v4 = __webpack_require__(7);
@@ -556,9 +558,9 @@
 	module.exports = uuid;
 
 
-/***/ },
+/***/ }),
 /* 4 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	// Unique ID creation requires a high quality random # generator.  We feature
 	// detect to determine the best RNG source, normalizing to a function that
@@ -665,9 +667,9 @@
 	module.exports = v1;
 
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
 	// browser this is a little complicated due to unknown quality of Math.random()
@@ -705,9 +707,9 @@
 
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
-/***/ },
+/***/ }),
 /* 6 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Convert array of 16 byte values to UUID string format of the form:
@@ -734,9 +736,9 @@
 	module.exports = bytesToUuid;
 
 
-/***/ },
+/***/ }),
 /* 7 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var rng = __webpack_require__(5);
 	var bytesToUuid = __webpack_require__(6);
@@ -769,445 +771,431 @@
 	module.exports = v4;
 
 
-/***/ },
+/***/ }),
 /* 8 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/*!
-	 * deep-diff.
-	 * Licensed under the MIT License.
-	 */
-	;(function(root, factory) {
-	  'use strict';
-	  if (true) {
-	    // AMD. Register as an anonymous module.
-	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
-	      return factory();
-	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	  } else if (typeof exports === 'object') {
-	    // Node. Does not work with strict CommonJS, but
-	    // only CommonJS-like environments that support module.exports,
-	    // like Node.
-	    module.exports = factory();
-	  } else {
-	    // Browser globals (root is window)
-	    root.DeepDiff = factory();
-	  }
-	}(this, function(undefined) {
-	  'use strict';
+	/* WEBPACK VAR INJECTION */(function(global) {(function (global, factory) {
+		 true ? module.exports = factory() :
+		typeof define === 'function' && define.amd ? define(factory) :
+		(global.DeepDiff = factory());
+	}(this, (function () { 'use strict';
 
-	  var $scope, conflict, conflictResolution = [];
-	  if (typeof global === 'object' && global) {
-	    $scope = global;
-	  } else if (typeof window !== 'undefined') {
-	    $scope = window;
-	  } else {
-	    $scope = {};
-	  }
-	  conflict = $scope.DeepDiff;
-	  if (conflict) {
-	    conflictResolution.push(
-	      function() {
-	        if ('undefined' !== typeof conflict && $scope.DeepDiff === accumulateDiff) {
-	          $scope.DeepDiff = conflict;
-	          conflict = undefined;
-	        }
-	      });
-	  }
-
-	  // nodejs compatible on server side and in the browser.
-	  function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    ctor.prototype = Object.create(superCtor.prototype, {
-	      constructor: {
-	        value: ctor,
-	        enumerable: false,
-	        writable: true,
-	        configurable: true
+	var $scope;
+	var conflict;
+	var conflictResolution = [];
+	if (typeof global === 'object' && global) {
+	  $scope = global;
+	} else if (typeof window !== 'undefined') {
+	  $scope = window;
+	} else {
+	  $scope = {};
+	}
+	conflict = $scope.DeepDiff;
+	if (conflict) {
+	  conflictResolution.push(
+	    function() {
+	      if ('undefined' !== typeof conflict && $scope.DeepDiff === accumulateDiff) {
+	        $scope.DeepDiff = conflict;
+	        conflict = undefined;
 	      }
 	    });
-	  }
+	}
 
-	  function Diff(kind, path) {
-	    Object.defineProperty(this, 'kind', {
-	      value: kind,
-	      enumerable: true
-	    });
-	    if (path && path.length) {
-	      Object.defineProperty(this, 'path', {
-	        value: path,
-	        enumerable: true
-	      });
-	    }
-	  }
-
-	  function DiffEdit(path, origin, value) {
-	    DiffEdit.super_.call(this, 'E', path);
-	    Object.defineProperty(this, 'lhs', {
-	      value: origin,
-	      enumerable: true
-	    });
-	    Object.defineProperty(this, 'rhs', {
-	      value: value,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffEdit, Diff);
-
-	  function DiffNew(path, value) {
-	    DiffNew.super_.call(this, 'N', path);
-	    Object.defineProperty(this, 'rhs', {
-	      value: value,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffNew, Diff);
-
-	  function DiffDeleted(path, value) {
-	    DiffDeleted.super_.call(this, 'D', path);
-	    Object.defineProperty(this, 'lhs', {
-	      value: value,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffDeleted, Diff);
-
-	  function DiffArray(path, index, item) {
-	    DiffArray.super_.call(this, 'A', path);
-	    Object.defineProperty(this, 'index', {
-	      value: index,
-	      enumerable: true
-	    });
-	    Object.defineProperty(this, 'item', {
-	      value: item,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffArray, Diff);
-
-	  function arrayRemove(arr, from, to) {
-	    var rest = arr.slice((to || from) + 1 || arr.length);
-	    arr.length = from < 0 ? arr.length + from : from;
-	    arr.push.apply(arr, rest);
-	    return arr;
-	  }
-
-	  function realTypeOf(subject) {
-	    var type = typeof subject;
-	    if (type !== 'object') {
-	      return type;
-	    }
-
-	    if (subject === Math) {
-	      return 'math';
-	    } else if (subject === null) {
-	      return 'null';
-	    } else if (Array.isArray(subject)) {
-	      return 'array';
-	    } else if (Object.prototype.toString.call(subject) === '[object Date]') {
-	      return 'date';
-	    } else if (typeof subject.toString !== 'undefined' && /^\/.*\//.test(subject.toString())) {
-	      return 'regexp';
-	    }
-	    return 'object';
-	  }
-
-	  function deepDiff(lhs, rhs, changes, prefilter, path, key, stack) {
-	    path = path || [];
-	    var currentPath = path.slice(0);
-	    if (typeof key !== 'undefined') {
-	      if (prefilter) {
-	        if (typeof(prefilter) === 'function' && prefilter(currentPath, key)) { return; }
-	        else if (typeof(prefilter) === 'object') {
-	          if (prefilter.prefilter && prefilter.prefilter(currentPath, key)) { return; }
-	          if (prefilter.normalize) {
-	            var alt = prefilter.normalize(currentPath, key, lhs, rhs);
-	            if (alt) {
-	              lhs = alt[0];
-	              rhs = alt[1];
-	            }
-	          }
-	        }
-	      }
-	      currentPath.push(key);
-	    }
-
-	    // Use string comparison for regexes
-	    if (realTypeOf(lhs) === 'regexp' && realTypeOf(rhs) === 'regexp') {
-	      lhs = lhs.toString();
-	      rhs = rhs.toString();
-	    }
-
-	    var ltype = typeof lhs;
-	    var rtype = typeof rhs;
-	    if (ltype === 'undefined') {
-	      if (rtype !== 'undefined') {
-	        changes(new DiffNew(currentPath, rhs));
-	      }
-	    } else if (rtype === 'undefined') {
-	      changes(new DiffDeleted(currentPath, lhs));
-	    } else if (realTypeOf(lhs) !== realTypeOf(rhs)) {
-	      changes(new DiffEdit(currentPath, lhs, rhs));
-	    } else if (Object.prototype.toString.call(lhs) === '[object Date]' && Object.prototype.toString.call(rhs) === '[object Date]' && ((lhs - rhs) !== 0)) {
-	      changes(new DiffEdit(currentPath, lhs, rhs));
-	    } else if (ltype === 'object' && lhs !== null && rhs !== null) {
-	      stack = stack || [];
-	      if (stack.indexOf(lhs) < 0) {
-	        stack.push(lhs);
-	        if (Array.isArray(lhs)) {
-	          var i, len = lhs.length;
-	          for (i = 0; i < lhs.length; i++) {
-	            if (i >= rhs.length) {
-	              changes(new DiffArray(currentPath, i, new DiffDeleted(undefined, lhs[i])));
-	            } else {
-	              deepDiff(lhs[i], rhs[i], changes, prefilter, currentPath, i, stack);
-	            }
-	          }
-	          while (i < rhs.length) {
-	            changes(new DiffArray(currentPath, i, new DiffNew(undefined, rhs[i++])));
-	          }
-	        } else {
-	          var akeys = Object.keys(lhs);
-	          var pkeys = Object.keys(rhs);
-	          akeys.forEach(function(k, i) {
-	            var other = pkeys.indexOf(k);
-	            if (other >= 0) {
-	              deepDiff(lhs[k], rhs[k], changes, prefilter, currentPath, k, stack);
-	              pkeys = arrayRemove(pkeys, other);
-	            } else {
-	              deepDiff(lhs[k], undefined, changes, prefilter, currentPath, k, stack);
-	            }
-	          });
-	          pkeys.forEach(function(k) {
-	            deepDiff(undefined, rhs[k], changes, prefilter, currentPath, k, stack);
-	          });
-	        }
-	        stack.length = stack.length - 1;
-	      }
-	    } else if (lhs !== rhs) {
-	      if (!(ltype === 'number' && isNaN(lhs) && isNaN(rhs))) {
-	        changes(new DiffEdit(currentPath, lhs, rhs));
-	      }
-	    }
-	  }
-
-	  function accumulateDiff(lhs, rhs, prefilter, accum) {
-	    accum = accum || [];
-	    deepDiff(lhs, rhs,
-	      function(diff) {
-	        if (diff) {
-	          accum.push(diff);
-	        }
-	      },
-	      prefilter);
-	    return (accum.length) ? accum : undefined;
-	  }
-
-	  function applyArrayChange(arr, index, change) {
-	    if (change.path && change.path.length) {
-	      var it = arr[index],
-	          i, u = change.path.length - 1;
-	      for (i = 0; i < u; i++) {
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          applyArrayChange(it[change.path[i]], change.index, change.item);
-	          break;
-	        case 'D':
-	          delete it[change.path[i]];
-	          break;
-	        case 'E':
-	        case 'N':
-	          it[change.path[i]] = change.rhs;
-	          break;
-	      }
-	    } else {
-	      switch (change.kind) {
-	        case 'A':
-	          applyArrayChange(arr[index], change.index, change.item);
-	          break;
-	        case 'D':
-	          arr = arrayRemove(arr, index);
-	          break;
-	        case 'E':
-	        case 'N':
-	          arr[index] = change.rhs;
-	          break;
-	      }
-	    }
-	    return arr;
-	  }
-
-	  function applyChange(target, source, change) {
-	    if (target && source && change && change.kind) {
-	      var it = target,
-	          i = -1,
-	          last = change.path ? change.path.length - 1 : 0;
-	      while (++i < last) {
-	        if (typeof it[change.path[i]] === 'undefined') {
-	          it[change.path[i]] = (typeof change.path[i] === 'number') ? [] : {};
-	        }
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          applyArrayChange(change.path ? it[change.path[i]] : it, change.index, change.item);
-	          break;
-	        case 'D':
-	          delete it[change.path[i]];
-	          break;
-	        case 'E':
-	        case 'N':
-	          it[change.path[i]] = change.rhs;
-	          break;
-	      }
-	    }
-	  }
-
-	  function revertArrayChange(arr, index, change) {
-	    if (change.path && change.path.length) {
-	      // the structure of the object at the index has changed...
-	      var it = arr[index],
-	          i, u = change.path.length - 1;
-	      for (i = 0; i < u; i++) {
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          revertArrayChange(it[change.path[i]], change.index, change.item);
-	          break;
-	        case 'D':
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'E':
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'N':
-	          delete it[change.path[i]];
-	          break;
-	      }
-	    } else {
-	      // the array item is different...
-	      switch (change.kind) {
-	        case 'A':
-	          revertArrayChange(arr[index], change.index, change.item);
-	          break;
-	        case 'D':
-	          arr[index] = change.lhs;
-	          break;
-	        case 'E':
-	          arr[index] = change.lhs;
-	          break;
-	        case 'N':
-	          arr = arrayRemove(arr, index);
-	          break;
-	      }
-	    }
-	    return arr;
-	  }
-
-	  function revertChange(target, source, change) {
-	    if (target && source && change && change.kind) {
-	      var it = target,
-	          i, u;
-	      u = change.path.length - 1;
-	      for (i = 0; i < u; i++) {
-	        if (typeof it[change.path[i]] === 'undefined') {
-	          it[change.path[i]] = {};
-	        }
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          // Array was modified...
-	          // it will be an array...
-	          revertArrayChange(it[change.path[i]], change.index, change.item);
-	          break;
-	        case 'D':
-	          // Item was deleted...
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'E':
-	          // Item was edited...
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'N':
-	          // Item is new...
-	          delete it[change.path[i]];
-	          break;
-	      }
-	    }
-	  }
-
-	  function applyDiff(target, source, filter) {
-	    if (target && source) {
-	      var onChange = function(change) {
-	        if (!filter || filter(target, source, change)) {
-	          applyChange(target, source, change);
-	        }
-	      };
-	      deepDiff(target, source, onChange);
-	    }
-	  }
-
-	  Object.defineProperties(accumulateDiff, {
-
-	    diff: {
-	      value: accumulateDiff,
-	      enumerable: true
-	    },
-	    observableDiff: {
-	      value: deepDiff,
-	      enumerable: true
-	    },
-	    applyDiff: {
-	      value: applyDiff,
-	      enumerable: true
-	    },
-	    applyChange: {
-	      value: applyChange,
-	      enumerable: true
-	    },
-	    revertChange: {
-	      value: revertChange,
-	      enumerable: true
-	    },
-	    isConflict: {
-	      value: function() {
-	        return 'undefined' !== typeof conflict;
-	      },
-	      enumerable: true
-	    },
-	    noConflict: {
-	      value: function() {
-	        if (conflictResolution) {
-	          conflictResolution.forEach(function(it) {
-	            it();
-	          });
-	          conflictResolution = null;
-	        }
-	        return accumulateDiff;
-	      },
-	      enumerable: true
+	// nodejs compatible on server side and in the browser.
+	function inherits(ctor, superCtor) {
+	  ctor.super_ = superCtor;
+	  ctor.prototype = Object.create(superCtor.prototype, {
+	    constructor: {
+	      value: ctor,
+	      enumerable: false,
+	      writable: true,
+	      configurable: true
 	    }
 	  });
+	}
 
-	  return accumulateDiff;
-	}));
+	function Diff(kind, path) {
+	  Object.defineProperty(this, 'kind', {
+	    value: kind,
+	    enumerable: true
+	  });
+	  if (path && path.length) {
+	    Object.defineProperty(this, 'path', {
+	      value: path,
+	      enumerable: true
+	    });
+	  }
+	}
+
+	function DiffEdit(path, origin, value) {
+	  DiffEdit.super_.call(this, 'E', path);
+	  Object.defineProperty(this, 'lhs', {
+	    value: origin,
+	    enumerable: true
+	  });
+	  Object.defineProperty(this, 'rhs', {
+	    value: value,
+	    enumerable: true
+	  });
+	}
+	inherits(DiffEdit, Diff);
+
+	function DiffNew(path, value) {
+	  DiffNew.super_.call(this, 'N', path);
+	  Object.defineProperty(this, 'rhs', {
+	    value: value,
+	    enumerable: true
+	  });
+	}
+	inherits(DiffNew, Diff);
+
+	function DiffDeleted(path, value) {
+	  DiffDeleted.super_.call(this, 'D', path);
+	  Object.defineProperty(this, 'lhs', {
+	    value: value,
+	    enumerable: true
+	  });
+	}
+	inherits(DiffDeleted, Diff);
+
+	function DiffArray(path, index, item) {
+	  DiffArray.super_.call(this, 'A', path);
+	  Object.defineProperty(this, 'index', {
+	    value: index,
+	    enumerable: true
+	  });
+	  Object.defineProperty(this, 'item', {
+	    value: item,
+	    enumerable: true
+	  });
+	}
+	inherits(DiffArray, Diff);
+
+	function arrayRemove(arr, from, to) {
+	  var rest = arr.slice((to || from) + 1 || arr.length);
+	  arr.length = from < 0 ? arr.length + from : from;
+	  arr.push.apply(arr, rest);
+	  return arr;
+	}
+
+	function realTypeOf(subject) {
+	  var type = typeof subject;
+	  if (type !== 'object') {
+	    return type;
+	  }
+
+	  if (subject === Math) {
+	    return 'math';
+	  } else if (subject === null) {
+	    return 'null';
+	  } else if (Array.isArray(subject)) {
+	    return 'array';
+	  } else if (Object.prototype.toString.call(subject) === '[object Date]') {
+	    return 'date';
+	  } else if (typeof subject.toString === 'function' && /^\/.*\//.test(subject.toString())) {
+	    return 'regexp';
+	  }
+	  return 'object';
+	}
+
+	function deepDiff(lhs, rhs, changes, prefilter, path, key, stack) {
+	  path = path || [];
+	  var currentPath = path.slice(0);
+	  if (typeof key !== 'undefined') {
+	    if (prefilter) {
+	      if (typeof(prefilter) === 'function' && prefilter(currentPath, key)) { return; }
+	      else if (typeof(prefilter) === 'object') {
+	        if (prefilter.prefilter && prefilter.prefilter(currentPath, key)) { return; }
+	        if (prefilter.normalize) {
+	          var alt = prefilter.normalize(currentPath, key, lhs, rhs);
+	          if (alt) {
+	            lhs = alt[0];
+	            rhs = alt[1];
+	          }
+	        }
+	      }
+	    }
+	    currentPath.push(key);
+	  }
+
+	  // Use string comparison for regexes
+	  if (realTypeOf(lhs) === 'regexp' && realTypeOf(rhs) === 'regexp') {
+	    lhs = lhs.toString();
+	    rhs = rhs.toString();
+	  }
+
+	  var ltype = typeof lhs;
+	  var rtype = typeof rhs;
+	  if (ltype === 'undefined') {
+	    if (rtype !== 'undefined') {
+	      changes(new DiffNew(currentPath, rhs));
+	    }
+	  } else if (rtype === 'undefined') {
+	    changes(new DiffDeleted(currentPath, lhs));
+	  } else if (realTypeOf(lhs) !== realTypeOf(rhs)) {
+	    changes(new DiffEdit(currentPath, lhs, rhs));
+	  } else if (realTypeOf(lhs) === 'date' && (lhs - rhs) !== 0) {
+	    changes(new DiffEdit(currentPath, lhs, rhs));
+	  } else if (ltype === 'object' && lhs !== null && rhs !== null) {
+	    stack = stack || [];
+	    if (stack.indexOf(lhs) < 0) {
+	      stack.push(lhs);
+	      if (Array.isArray(lhs)) {
+	        var i, len = lhs.length;
+	        for (i = 0; i < lhs.length; i++) {
+	          if (i >= rhs.length) {
+	            changes(new DiffArray(currentPath, i, new DiffDeleted(undefined, lhs[i])));
+	          } else {
+	            deepDiff(lhs[i], rhs[i], changes, prefilter, currentPath, i, stack);
+	          }
+	        }
+	        while (i < rhs.length) {
+	          changes(new DiffArray(currentPath, i, new DiffNew(undefined, rhs[i++])));
+	        }
+	      } else {
+	        var akeys = Object.keys(lhs);
+	        var pkeys = Object.keys(rhs);
+	        akeys.forEach(function(k, i) {
+	          var other = pkeys.indexOf(k);
+	          if (other >= 0) {
+	            deepDiff(lhs[k], rhs[k], changes, prefilter, currentPath, k, stack);
+	            pkeys = arrayRemove(pkeys, other);
+	          } else {
+	            deepDiff(lhs[k], undefined, changes, prefilter, currentPath, k, stack);
+	          }
+	        });
+	        pkeys.forEach(function(k) {
+	          deepDiff(undefined, rhs[k], changes, prefilter, currentPath, k, stack);
+	        });
+	      }
+	      stack.length = stack.length - 1;
+	    }
+	  } else if (lhs !== rhs) {
+	    if (!(ltype === 'number' && isNaN(lhs) && isNaN(rhs))) {
+	      changes(new DiffEdit(currentPath, lhs, rhs));
+	    }
+	  }
+	}
+
+	function accumulateDiff(lhs, rhs, prefilter, accum) {
+	  accum = accum || [];
+	  deepDiff(lhs, rhs,
+	    function(diff) {
+	      if (diff) {
+	        accum.push(diff);
+	      }
+	    },
+	    prefilter);
+	  return (accum.length) ? accum : undefined;
+	}
+
+	function applyArrayChange(arr, index, change) {
+	  if (change.path && change.path.length) {
+	    var it = arr[index],
+	        i, u = change.path.length - 1;
+	    for (i = 0; i < u; i++) {
+	      it = it[change.path[i]];
+	    }
+	    switch (change.kind) {
+	      case 'A':
+	        applyArrayChange(it[change.path[i]], change.index, change.item);
+	        break;
+	      case 'D':
+	        delete it[change.path[i]];
+	        break;
+	      case 'E':
+	      case 'N':
+	        it[change.path[i]] = change.rhs;
+	        break;
+	    }
+	  } else {
+	    switch (change.kind) {
+	      case 'A':
+	        applyArrayChange(arr[index], change.index, change.item);
+	        break;
+	      case 'D':
+	        arr = arrayRemove(arr, index);
+	        break;
+	      case 'E':
+	      case 'N':
+	        arr[index] = change.rhs;
+	        break;
+	    }
+	  }
+	  return arr;
+	}
+
+	function applyChange(target, source, change) {
+	  if (target && source && change && change.kind) {
+	    var it = target,
+	        i = -1,
+	        last = change.path ? change.path.length - 1 : 0;
+	    while (++i < last) {
+	      if (typeof it[change.path[i]] === 'undefined') {
+	        it[change.path[i]] = (typeof change.path[i] === 'number') ? [] : {};
+	      }
+	      it = it[change.path[i]];
+	    }
+	    switch (change.kind) {
+	      case 'A':
+	        applyArrayChange(change.path ? it[change.path[i]] : it, change.index, change.item);
+	        break;
+	      case 'D':
+	        delete it[change.path[i]];
+	        break;
+	      case 'E':
+	      case 'N':
+	        it[change.path[i]] = change.rhs;
+	        break;
+	    }
+	  }
+	}
+
+	function revertArrayChange(arr, index, change) {
+	  if (change.path && change.path.length) {
+	    // the structure of the object at the index has changed...
+	    var it = arr[index],
+	        i, u = change.path.length - 1;
+	    for (i = 0; i < u; i++) {
+	      it = it[change.path[i]];
+	    }
+	    switch (change.kind) {
+	      case 'A':
+	        revertArrayChange(it[change.path[i]], change.index, change.item);
+	        break;
+	      case 'D':
+	        it[change.path[i]] = change.lhs;
+	        break;
+	      case 'E':
+	        it[change.path[i]] = change.lhs;
+	        break;
+	      case 'N':
+	        delete it[change.path[i]];
+	        break;
+	    }
+	  } else {
+	    // the array item is different...
+	    switch (change.kind) {
+	      case 'A':
+	        revertArrayChange(arr[index], change.index, change.item);
+	        break;
+	      case 'D':
+	        arr[index] = change.lhs;
+	        break;
+	      case 'E':
+	        arr[index] = change.lhs;
+	        break;
+	      case 'N':
+	        arr = arrayRemove(arr, index);
+	        break;
+	    }
+	  }
+	  return arr;
+	}
+
+	function revertChange(target, source, change) {
+	  if (target && source && change && change.kind) {
+	    var it = target,
+	        i, u;
+	    u = change.path.length - 1;
+	    for (i = 0; i < u; i++) {
+	      if (typeof it[change.path[i]] === 'undefined') {
+	        it[change.path[i]] = {};
+	      }
+	      it = it[change.path[i]];
+	    }
+	    switch (change.kind) {
+	      case 'A':
+	        // Array was modified...
+	        // it will be an array...
+	        revertArrayChange(it[change.path[i]], change.index, change.item);
+	        break;
+	      case 'D':
+	        // Item was deleted...
+	        it[change.path[i]] = change.lhs;
+	        break;
+	      case 'E':
+	        // Item was edited...
+	        it[change.path[i]] = change.lhs;
+	        break;
+	      case 'N':
+	        // Item is new...
+	        delete it[change.path[i]];
+	        break;
+	    }
+	  }
+	}
+
+	function applyDiff(target, source, filter) {
+	  if (target && source) {
+	    var onChange = function(change) {
+	      if (!filter || filter(target, source, change)) {
+	        applyChange(target, source, change);
+	      }
+	    };
+	    deepDiff(target, source, onChange);
+	  }
+	}
+
+	Object.defineProperties(accumulateDiff, {
+
+	  diff: {
+	    value: accumulateDiff,
+	    enumerable: true
+	  },
+	  observableDiff: {
+	    value: deepDiff,
+	    enumerable: true
+	  },
+	  applyDiff: {
+	    value: applyDiff,
+	    enumerable: true
+	  },
+	  applyChange: {
+	    value: applyChange,
+	    enumerable: true
+	  },
+	  revertChange: {
+	    value: revertChange,
+	    enumerable: true
+	  },
+	  isConflict: {
+	    value: function() {
+	      return 'undefined' !== typeof conflict;
+	    },
+	    enumerable: true
+	  },
+	  noConflict: {
+	    value: function() {
+	      if (conflictResolution) {
+	        conflictResolution.forEach(function(it) {
+	          it();
+	        });
+	        conflictResolution = null;
+	      }
+	      return accumulateDiff;
+	    },
+	    enumerable: true
+	  }
+	});
+
+	return accumulateDiff;
+
+	})));
 
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
-/***/ },
+/***/ }),
 /* 9 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__(10);
 
 
-/***/ },
+/***/ }),
 /* 10 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*
 	 * This module is intended to be executed both on client side and server side.
@@ -2788,9 +2776,9 @@
 	})();
 
 
-/***/ },
+/***/ }),
 /* 11 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, setImmediate, process) {/*!
 	 * async
@@ -4058,17 +4046,13 @@
 
 	}());
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(12).setImmediate, __webpack_require__(13)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(12).setImmediate, __webpack_require__(14)))
 
-/***/ },
+/***/ }),
 /* 12 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(13).nextTick;
 	var apply = Function.prototype.apply;
-	var slice = Array.prototype.slice;
-	var immediateIds = {};
-	var nextImmediateId = 0;
 
 	// DOM APIs, for completeness
 
@@ -4079,7 +4063,11 @@
 	  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
 	};
 	exports.clearTimeout =
-	exports.clearInterval = function(timeout) { timeout.close(); };
+	exports.clearInterval = function(timeout) {
+	  if (timeout) {
+	    timeout.close();
+	  }
+	};
 
 	function Timeout(id, clearFn) {
 	  this._id = id;
@@ -4113,38 +4101,208 @@
 	  }
 	};
 
-	// That's not how node.js implements it but the exposed api is the same.
-	exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
-	  var id = nextImmediateId++;
-	  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
+	// setimmediate attaches itself to the global object
+	__webpack_require__(13);
+	exports.setImmediate = setImmediate;
+	exports.clearImmediate = clearImmediate;
 
-	  immediateIds[id] = true;
 
-	  nextTick(function onNextTick() {
-	    if (immediateIds[id]) {
-	      // fn.call() is faster so we optimize for the common use-case
-	      // @see http://jsperf.com/call-apply-segu
-	      if (args) {
-	        fn.apply(null, args);
-	      } else {
-	        fn.call(null);
-	      }
-	      // Prevent ids from leaking
-	      exports.clearImmediate(id);
-	    }
-	  });
-
-	  return id;
-	};
-
-	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
-	  delete immediateIds[id];
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).setImmediate, __webpack_require__(12).clearImmediate))
-
-/***/ },
+/***/ }),
 /* 13 */
-/***/ function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+	    "use strict";
+
+	    if (global.setImmediate) {
+	        return;
+	    }
+
+	    var nextHandle = 1; // Spec says greater than zero
+	    var tasksByHandle = {};
+	    var currentlyRunningATask = false;
+	    var doc = global.document;
+	    var registerImmediate;
+
+	    function setImmediate(callback) {
+	      // Callback can either be a function or a string
+	      if (typeof callback !== "function") {
+	        callback = new Function("" + callback);
+	      }
+	      // Copy function arguments
+	      var args = new Array(arguments.length - 1);
+	      for (var i = 0; i < args.length; i++) {
+	          args[i] = arguments[i + 1];
+	      }
+	      // Store and register the task
+	      var task = { callback: callback, args: args };
+	      tasksByHandle[nextHandle] = task;
+	      registerImmediate(nextHandle);
+	      return nextHandle++;
+	    }
+
+	    function clearImmediate(handle) {
+	        delete tasksByHandle[handle];
+	    }
+
+	    function run(task) {
+	        var callback = task.callback;
+	        var args = task.args;
+	        switch (args.length) {
+	        case 0:
+	            callback();
+	            break;
+	        case 1:
+	            callback(args[0]);
+	            break;
+	        case 2:
+	            callback(args[0], args[1]);
+	            break;
+	        case 3:
+	            callback(args[0], args[1], args[2]);
+	            break;
+	        default:
+	            callback.apply(undefined, args);
+	            break;
+	        }
+	    }
+
+	    function runIfPresent(handle) {
+	        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+	        // So if we're currently running a task, we'll need to delay this invocation.
+	        if (currentlyRunningATask) {
+	            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+	            // "too much recursion" error.
+	            setTimeout(runIfPresent, 0, handle);
+	        } else {
+	            var task = tasksByHandle[handle];
+	            if (task) {
+	                currentlyRunningATask = true;
+	                try {
+	                    run(task);
+	                } finally {
+	                    clearImmediate(handle);
+	                    currentlyRunningATask = false;
+	                }
+	            }
+	        }
+	    }
+
+	    function installNextTickImplementation() {
+	        registerImmediate = function(handle) {
+	            process.nextTick(function () { runIfPresent(handle); });
+	        };
+	    }
+
+	    function canUsePostMessage() {
+	        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+	        // where `global.postMessage` means something completely different and can't be used for this purpose.
+	        if (global.postMessage && !global.importScripts) {
+	            var postMessageIsAsynchronous = true;
+	            var oldOnMessage = global.onmessage;
+	            global.onmessage = function() {
+	                postMessageIsAsynchronous = false;
+	            };
+	            global.postMessage("", "*");
+	            global.onmessage = oldOnMessage;
+	            return postMessageIsAsynchronous;
+	        }
+	    }
+
+	    function installPostMessageImplementation() {
+	        // Installs an event handler on `global` for the `message` event: see
+	        // * https://developer.mozilla.org/en/DOM/window.postMessage
+	        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+	        var messagePrefix = "setImmediate$" + Math.random() + "$";
+	        var onGlobalMessage = function(event) {
+	            if (event.source === global &&
+	                typeof event.data === "string" &&
+	                event.data.indexOf(messagePrefix) === 0) {
+	                runIfPresent(+event.data.slice(messagePrefix.length));
+	            }
+	        };
+
+	        if (global.addEventListener) {
+	            global.addEventListener("message", onGlobalMessage, false);
+	        } else {
+	            global.attachEvent("onmessage", onGlobalMessage);
+	        }
+
+	        registerImmediate = function(handle) {
+	            global.postMessage(messagePrefix + handle, "*");
+	        };
+	    }
+
+	    function installMessageChannelImplementation() {
+	        var channel = new MessageChannel();
+	        channel.port1.onmessage = function(event) {
+	            var handle = event.data;
+	            runIfPresent(handle);
+	        };
+
+	        registerImmediate = function(handle) {
+	            channel.port2.postMessage(handle);
+	        };
+	    }
+
+	    function installReadyStateChangeImplementation() {
+	        var html = doc.documentElement;
+	        registerImmediate = function(handle) {
+	            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+	            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+	            var script = doc.createElement("script");
+	            script.onreadystatechange = function () {
+	                runIfPresent(handle);
+	                script.onreadystatechange = null;
+	                html.removeChild(script);
+	                script = null;
+	            };
+	            html.appendChild(script);
+	        };
+	    }
+
+	    function installSetTimeoutImplementation() {
+	        registerImmediate = function(handle) {
+	            setTimeout(runIfPresent, 0, handle);
+	        };
+	    }
+
+	    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+	    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+	    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+	    // Don't get fooled by e.g. browserify environments.
+	    if ({}.toString.call(global.process) === "[object process]") {
+	        // For Node.js before 0.9
+	        installNextTickImplementation();
+
+	    } else if (canUsePostMessage()) {
+	        // For non-IE10 modern browsers
+	        installPostMessageImplementation();
+
+	    } else if (global.MessageChannel) {
+	        // For web workers, where supported
+	        installMessageChannelImplementation();
+
+	    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+	        // For IE 6–8
+	        installReadyStateChangeImplementation();
+
+	    } else {
+	        // For older browsers
+	        installSetTimeoutImplementation();
+	    }
+
+	    attachTo.setImmediate = setImmediate;
+	    attachTo.clearImmediate = clearImmediate;
+	}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(14)))
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports) {
 
 	// shim for using process in browser
 	var process = module.exports = {};
@@ -4328,9 +4486,9 @@
 	process.umask = function() { return 0; };
 
 
-/***/ },
-/* 14 */
-/***/ function(module, exports) {
+/***/ }),
+/* 15 */
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -4483,16 +4641,16 @@
 	  startsWithOneOf: startsWithOneOf
 	};
 
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length;n++)t[o][o.charAt(n)]=n}return t[o][r]}var r=String.fromCharCode,n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",e="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",t={},i={compressToBase64:function(o){if(null==o)return"";var r=i._compress(o,6,function(o){return n.charAt(o)});switch(r.length%4){default:case 0:return r;case 1:return r+"===";case 2:return r+"==";case 3:return r+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(e){return o(n,r.charAt(e))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(o){return null==o?"":""==o?null:i._decompress(o.length,16384,function(r){return o.charCodeAt(r)-32})},compressToUint8Array:function(o){for(var r=i.compress(o),n=new Uint8Array(2*r.length),e=0,t=r.length;t>e;e++){var s=r.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null===o||void 0===o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;t>e;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(o){return null==o?"":i._compress(o,6,function(o){return e.charAt(o)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(n){return o(e,r.charAt(n))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(o,r,n){if(null==o)return"";var e,t,i,s={},p={},u="",c="",a="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<o.length;i+=1)if(u=o.charAt(i),Object.prototype.hasOwnProperty.call(s,u)||(s[u]=f++,p[u]=!0),c=a+u,Object.prototype.hasOwnProperty.call(s,c))a=c;else{if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++),s[c]=f++,a=String(u)}if(""!==a){if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==r-1){d.push(n(m));break}v++}return d.join("")},decompress:function(o){return null==o?"":""==o?null:i._decompress(o.length,32768,function(r){return o.charCodeAt(r)})},_decompress:function(o,n,e){var t,i,s,p,u,c,a,l,f=[],h=4,d=4,m=3,v="",w=[],A={val:e(0),position:n,index:1};for(i=0;3>i;i+=1)f[i]=i;for(p=0,c=Math.pow(2,2),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(t=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 2:return""}for(f[3]=l,s=l,w.push(l);;){if(A.index>o)return"";for(p=0,c=Math.pow(2,m),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(l=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 2:return w.join("")}if(0==h&&(h=Math.pow(2,m),m++),f[l])v=f[l];else{if(l!==d)return null;v=s+s.charAt(0)}w.push(v),f[d++]=s+v.charAt(0),h--,s=v,0==h&&(h=Math.pow(2,m),m++)}}};return i}(); true?!(__WEBPACK_AMD_DEFINE_RESULT__ = function(){return LZString}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)):"undefined"!=typeof module&&null!=module&&(module.exports=LZString);
 
 
-/***/ },
-/* 16 */
-/***/ function(module, exports) {
+/***/ }),
+/* 17 */
+/***/ (function(module, exports) {
 
 	module.exports = {
 		"name": "gb-tracker-client",
@@ -4554,9 +4712,9 @@
 		}
 	};
 
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/*
 	 * Cookies.js - 1.2.3
@@ -4731,13 +4889,13 @@
 	    }
 	})(typeof window === 'undefined' ? this : window);
 
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(19);
+	var utils = __webpack_require__(20);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -5119,9 +5277,9 @@
 	  }
 	};
 
-/***/ },
-/* 19 */
-/***/ function(module, exports) {
+/***/ }),
+/* 20 */
+/***/ (function(module, exports) {
 
 	"use strict";
 
@@ -5137,17 +5295,17 @@
 	  }
 	};
 
-/***/ },
-/* 20 */
-18,
+/***/ }),
 /* 21 */
-18,
+19,
 /* 22 */
-/***/ function(module, exports, __webpack_require__) {
+19,
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(19);
+	var utils = __webpack_require__(20);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -5561,13 +5719,13 @@
 	  }
 	};
 
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(19);
+	var utils = __webpack_require__(20);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -5870,13 +6028,13 @@
 	  }
 	};
 
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(19);
+	var utils = __webpack_require__(20);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -7469,13 +7627,13 @@
 	  }
 	};
 
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(19);
+	var utils = __webpack_require__(20);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -7726,13 +7884,13 @@
 	  }
 	};
 
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(19);
+	var utils = __webpack_require__(20);
 	module.exports = {
 	  validation: {
 	    type: 'object',
@@ -8049,5 +8207,5 @@
 	  }
 	};
 
-/***/ }
+/***/ })
 /******/ ])));
