@@ -33,7 +33,7 @@ suite('Observer', ({ expect, spy, stub }) => {
     });
   });
 
-  describe.skip('resolve()', () => {
+  describe('resolve()', () => {
     it('should not call the observer if no changes', () => {
       const observer = spy();
 
@@ -42,11 +42,11 @@ suite('Observer', ({ expect, spy, stub }) => {
       expect(observer).to.not.be.called;
     });
 
-    it('should not call the observer if not a function', () => {
+    it.skip('should not call the observer if not a function', () => {
       expect(() => Observer.resolve(1, 2, {})).to.not.throw();
     });
 
-    it('should call the observer with the updated node', () => {
+    it.skip('should call the observer with the updated node', () => {
       const observer = spy();
 
       Observer.resolve(1, 2, (...args) => observer(...args));
@@ -54,7 +54,7 @@ suite('Observer', ({ expect, spy, stub }) => {
       expect(observer).to.be.calledWith(1, 2);
     });
 
-    it('should call resolve() on subtrees', () => {
+    it.skip('should call resolve() on subtrees', () => {
       const observer1 = spy();
       const observer2 = spy();
       const observer3 = spy();
@@ -76,7 +76,7 @@ suite('Observer', ({ expect, spy, stub }) => {
       expect(observer4).to.be.calledWith(undefined, 2);
     });
 
-    it('should not call resolve() on equal subtrees', () => {
+    it.skip('should not call resolve() on equal subtrees', () => {
       const observer1 = spy();
       const observer2 = spy();
       const observer3 = spy();
@@ -127,21 +127,53 @@ suite('Observer', ({ expect, spy, stub }) => {
       expect(observers.data.template).to.be.a('function');
     });
 
-    // describe('data', () => {
-    //   let emit;
-    //   let observers;
-    //
-    //   beforeEach(() => {
-    //     emit = spy();
-    //     observers = Observer.create(<any>{ emit });
-    //   });
-    //
-    //   describe('query', () => {
-    //     observers.data.query(undefined, { a: 'b' });
-    //
-    //     expect(emit).to.be.calledWith(Events.QUERY_UPDATED, { a: 'b' });
-    //   });
-    // });
+    describe('data', () => {
+      let emit;
+      let observers;
+
+      beforeEach(() => {
+        emit = spy();
+        observers = Observer.create(<any>{ emit });
+      });
+
+      describe('query', () => {
+        it('should observe emit QUERY_UPDATED event', () => {
+          observers.data.query(undefined, { a: 'b' });
+
+          expect(emit).to.be.calledWith(Events.QUERY_UPDATED, { a: 'b' });
+        });
+
+        it('should observe emit CORRECTED_QUERY_UPDATED event', () => {
+          observers.data.query.corrected(undefined, { a: 'b' });
+
+          expect(emit).to.be.calledWith(Events.CORRECTED_QUERY_UPDATED, { a: 'b' });
+        });
+
+        it('should observe emit DID_YOU_MEANS_UPDATED event', () => {
+          observers.data.query.didYouMeans(undefined, { a: 'b' });
+
+          expect(emit).to.be.calledWith(Events.DID_YOU_MEANS_UPDATED, { a: 'b' });
+        });
+
+        it('should observe emit ORIGINAL_QUERY_UPDATED event', () => {
+          observers.data.query.original(undefined, { a: 'b' });
+
+          expect(emit).to.be.calledWith(Events.ORIGINAL_QUERY_UPDATED, { a: 'b' });
+        });
+
+        it('should observe emit RELATED_QUERIES_UPDATED event', () => {
+          observers.data.query.related(undefined, { a: 'b' });
+
+          expect(emit).to.be.calledWith(Events.RELATED_QUERIES_UPDATED, { a: 'b' });
+        });
+
+        it('should observe emit QUERY_REWRITES_UPDATED event', () => {
+          observers.data.query.rewrites(undefined, { a: 'b' });
+
+          expect(emit).to.be.calledWith(Events.QUERY_REWRITES_UPDATED, { a: 'b' });
+        });
+      });
+    });
   });
 
   // describe('search', () => {
@@ -216,5 +248,4 @@ suite('Observer', ({ expect, spy, stub }) => {
   //     });
   //   });
   // });
-
 });
