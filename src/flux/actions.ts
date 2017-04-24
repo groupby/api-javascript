@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import { Request } from '../models/request';
 import Store from './store';
-import { thunk } from './utils';
+import { rayify, thunk } from './utils';
 
 namespace Actions {
   export const UPDATE_SEARCH = 'UPDATE_SEARCH';
@@ -26,8 +26,8 @@ namespace Actions {
   export const selectCollection = (id: string) =>
     thunk(SELECT_COLLECTION, { id });
 
-  export const updateSorts = (sorts: Store.Sort[]) =>
-    thunk(UPDATE_SORTS, { sorts });
+  export const updateSorts = (sorts: Store.Sort | Store.Sort[]) =>
+    thunk(UPDATE_SORTS, { sorts: rayify(sorts) });
 
   export const updateAutocompleteQuery = (query: string) =>
     thunk(UPDATE_AUTOCOMPLETE_QUERY, { query });

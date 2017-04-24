@@ -14,6 +14,18 @@ suite('actions', ({ expect, spy, stub }) => {
     });
   });
 
+  describe('selectRefinement()', () => {
+    it('should create a SELECT_REFINEMENT action', () => {
+      const navigationId = 'brand';
+      const index = 3;
+      const thunk = stub(utils, 'thunk');
+
+      Actions.selectRefinement(navigationId, index);
+
+      expect(thunk).to.be.calledWith(Actions.SELECT_REFINEMENT, { navigationId, index });
+    });
+  });
+
   describe('deselectRefinement()', () => {
     it('should create a DESELECT_REFINEMENT action', () => {
       const navigationId = 'brand';
@@ -49,13 +61,13 @@ suite('actions', ({ expect, spy, stub }) => {
   });
 
   describe('updateSorts()', () => {
-    it('should create an UPDATE_SORTS action', () => {
-      const sorts: any[] = [{ a: 'b' }];
+    it('should create a UPDATE_SORTS action', () => {
+      const sort = { field: 'price' };
       const thunk = stub(utils, 'thunk');
 
-      Actions.updateSorts(sorts);
+      Actions.updateSorts(sort);
 
-      expect(thunk).to.be.calledWith(Actions.UPDATE_SORTS, { sorts });
+      expect(thunk).to.be.calledWith(Actions.UPDATE_SORTS, { sorts: [sort] });
     });
   });
 
