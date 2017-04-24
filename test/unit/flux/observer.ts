@@ -128,6 +128,7 @@ suite('Observer', ({ expect, spy, stub }) => {
     });
 
     describe('data', () => {
+      const OBJ = { a: 'b' };
       let emit;
       let observers;
 
@@ -136,116 +137,151 @@ suite('Observer', ({ expect, spy, stub }) => {
         observers = Observer.create(<any>{ emit });
       });
 
+      describe('autocomplete', () => {
+        it('should emit AUTOCOMPLETE_UPDATED event', () => {
+          observers.data.autocomplete(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.AUTOCOMPLETE_UPDATED, OBJ);
+        });
+
+        it('should emit AUTOCOMPLETE_PRODUCTS_UPDATED event', () => {
+          observers.data.autocomplete.products(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.AUTOCOMPLETE_PRODUCTS_UPDATED, OBJ);
+        });
+
+        it('should emit AUTOCOMPLETE_QUERY_UPDATED event', () => {
+          observers.data.autocomplete.query(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.AUTOCOMPLETE_QUERY_UPDATED, OBJ);
+        });
+      });
+
+      describe('collections', () => {
+        it.skip('should emit COLLECTION_UPDATED event', () => {
+          observers.data.collections.bydId.brand(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(`${Events.COLLECTION_UPDATED}:brand`, OBJ);
+        });
+
+        it('should emit SELECTED_COLLECTION_UPDATED event', () => {
+          observers.data.collections.selected(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.SELECTED_COLLECTION_UPDATED, OBJ);
+        });
+      });
+
+      describe('details', () => {
+        it('should emit DETAILS_ID_UPDATED event', () => {
+          observers.data.details.id(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.DETAILS_ID_UPDATED, OBJ);
+        });
+
+        it('should emit DETAILS_PRODUCT_UPDATED event', () => {
+          observers.data.details.product(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.DETAILS_PRODUCT_UPDATED, OBJ);
+        });
+      });
+
+      describe('navigations', () => {
+        it.skip('should emit SELECTED_REFINEMENTS_UPDATED event', () => {
+          observers.data.navigations.bydId.brand.selected(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(`${Events.SELECTED_REFINEMENTS_UPDATED}:brand`, OBJ);
+        });
+      });
+
+      describe('page', () => {
+        it('should emit PAGE_UPDATED event', () => {
+          observers.data.page(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.PAGE_UPDATED, OBJ);
+        });
+
+        it('should emit CURRENT_PAGE_UPDATED event', () => {
+          observers.data.page.current(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.CURRENT_PAGE_UPDATED, OBJ);
+        });
+
+        it('should emit PAGE_SIZE_UPDATED event', () => {
+          observers.data.page.size(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.PAGE_SIZE_UPDATED, OBJ);
+        });
+      });
+
+      describe('products', () => {
+        it('should emit PRODUCTS_UPDATED event', () => {
+          observers.data.products(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.PRODUCTS_UPDATED, OBJ);
+        });
+      });
+
       describe('query', () => {
-        it('should observe emit QUERY_UPDATED event', () => {
-          observers.data.query(undefined, { a: 'b' });
+        it('should emit QUERY_UPDATED event', () => {
+          observers.data.query(undefined, OBJ);
 
-          expect(emit).to.be.calledWith(Events.QUERY_UPDATED, { a: 'b' });
+          expect(emit).to.be.calledWith(Events.QUERY_UPDATED, OBJ);
         });
 
-        it('should observe emit CORRECTED_QUERY_UPDATED event', () => {
-          observers.data.query.corrected(undefined, { a: 'b' });
+        it('should emit CORRECTED_QUERY_UPDATED event', () => {
+          observers.data.query.corrected(undefined, OBJ);
 
-          expect(emit).to.be.calledWith(Events.CORRECTED_QUERY_UPDATED, { a: 'b' });
+          expect(emit).to.be.calledWith(Events.CORRECTED_QUERY_UPDATED, OBJ);
         });
 
-        it('should observe emit DID_YOU_MEANS_UPDATED event', () => {
-          observers.data.query.didYouMeans(undefined, { a: 'b' });
+        it('should emit DID_YOU_MEANS_UPDATED event', () => {
+          observers.data.query.didYouMeans(undefined, OBJ);
 
-          expect(emit).to.be.calledWith(Events.DID_YOU_MEANS_UPDATED, { a: 'b' });
+          expect(emit).to.be.calledWith(Events.DID_YOU_MEANS_UPDATED, OBJ);
         });
 
-        it('should observe emit ORIGINAL_QUERY_UPDATED event', () => {
-          observers.data.query.original(undefined, { a: 'b' });
+        it('should emit ORIGINAL_QUERY_UPDATED event', () => {
+          observers.data.query.original(undefined, OBJ);
 
-          expect(emit).to.be.calledWith(Events.ORIGINAL_QUERY_UPDATED, { a: 'b' });
+          expect(emit).to.be.calledWith(Events.ORIGINAL_QUERY_UPDATED, OBJ);
         });
 
-        it('should observe emit RELATED_QUERIES_UPDATED event', () => {
-          observers.data.query.related(undefined, { a: 'b' });
+        it('should emit RELATED_QUERIES_UPDATED event', () => {
+          observers.data.query.related(undefined, OBJ);
 
-          expect(emit).to.be.calledWith(Events.RELATED_QUERIES_UPDATED, { a: 'b' });
+          expect(emit).to.be.calledWith(Events.RELATED_QUERIES_UPDATED, OBJ);
         });
 
-        it('should observe emit QUERY_REWRITES_UPDATED event', () => {
-          observers.data.query.rewrites(undefined, { a: 'b' });
+        it('should emit QUERY_REWRITES_UPDATED event', () => {
+          observers.data.query.rewrites(undefined, OBJ);
 
-          expect(emit).to.be.calledWith(Events.QUERY_REWRITES_UPDATED, { a: 'b' });
+          expect(emit).to.be.calledWith(Events.QUERY_REWRITES_UPDATED, OBJ);
+        });
+      });
+
+      describe('reditect', () => {
+        it('should emit REDIRECT event', () => {
+          observers.data.reditect(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.REDIRECT, OBJ);
+        });
+      });
+
+      describe('sorts', () => {
+        it('should emit SORTS_UPDATED event', () => {
+          observers.data.sorts(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.SORTS_UPDATED, OBJ);
+        });
+      });
+
+      describe('template', () => {
+        it('should emit TEMPLATE_UPDATED event', () => {
+          observers.data.template(undefined, OBJ);
+
+          expect(emit).to.be.calledWith(Events.TEMPLATE_UPDATED, OBJ);
         });
       });
     });
   });
-
-  // describe('search', () => {
-  //   let emit;
-  //   let observers;
-  //
-  //   beforeEach(() => {
-  //     emit = spy();
-  //     observers = Observer.create(<any>{ emit });
-  //   });
-  //
-  //   describe('request', () => {
-  //     it('should emit search event', () => {
-  //       observers.data.search.request(undefined, { a: 'b' });
-  //       expect(emit).to.be.calledWith(Events.SEARCH_REQ_UPDATED, { a: 'b' });
-  //       expect(emit).to.be.calledWith(Events.SEARCH, { a: 'b' });
-  //     });
-  //
-  //     it('should emit PAGE_CHANGED event', () => {
-  //       observers.data.search.request.skip(undefined, 23);
-  //       expect(emit).to.be.calledWith(Events.SEARCH_PAGE_UPDATED, 23);
-  //       expect(emit).to.be.calledWith(Events.PAGE_CHANGED, 23);
-  //     });
-  //
-  //     it('should emit COLLECTION_CHANGED event', () => {
-  //       observers.data.search.request.collection(undefined, 'somestring');
-  //       expect(emit).to.be.calledWith(Events.SEARCH_COLLECTION_UPDATED, 'somestring');
-  //       expect(emit).to.be.calledWith(Events.COLLECTION_CHANGED, 'somestring');
-  //     });
-  //
-  //     it('should emit QUERY_CHANGED event', () => {
-  //       observers.data.search.request.query(undefined, 'tomatoes');
-  //       expect(emit).to.be.calledWith(Events.SEARCH_QUERY_UPDATED, 'tomatoes');
-  //       expect(emit).to.be.calledWith(Events.QUERY_CHANGED, 'tomatoes');
-  //       expect(emit).to.be.calledWith(Events.REWRITE_QUERY, 'tomatoes');
-  //     });
-  //
-  //     it('should emit REFINEMENTS_CHANGED event', () => {
-  //       observers.data.search.request.refinements(undefined, [{ c: 'd' }]);
-  //       expect(emit).to.be.calledWith(Events.SEARCH_REFINEMENTS_UPDATED, [{ c: 'd' }]);
-  //       expect(emit).to.be.calledWith(Events.REFINEMENTS_CHANGED, [{ c: 'd' }]);
-  //     });
-  //
-  //     it('should emit SORT and SORT_CHANGED event', () => {
-  //       observers.data.search.request.sort(undefined, [{ e: 'f' }]);
-  //       expect(emit).to.be.calledWith(Events.SEARCH_SORT_UPDATED, [{ e: 'f' }]);
-  //       expect(emit).to.be.calledWith(Events.SORT, [{ e: 'f' }]);
-  //     });
-  //   });
-  //
-  //   describe('response', () => {
-  //     it('should emit REDIRECT event', () => {
-  //       observers.data.search.response(undefined, { redirect: '/toys.html' });
-  //       expect(emit).to.be.calledWith(Events.SEARCH_REDIRECT, '/toys.html');
-  //       expect(emit).to.be.calledWith(Events.REDIRECT, '/toys.html');
-  //     });
-  //
-  //     it('should emit RESULTS event', () => {
-  //       observers.data.search.response(undefined, { g: 'h', originalQuery: {} });
-  //       expect(emit).to.be.calledWith(Events.SEARCH_RES_UPDATED, { g: 'h', originalQuery: {} });
-  //       expect(emit).to.be.calledWith(Events.RESULTS, { g: 'h', originalQuery: {} });
-  //       expect(emit).to.be.calledWith(Events.RESET, { g: 'h', originalQuery: {} });
-  //     });
-  //
-  //     it('should emit DETAILS event', () => {
-  //       observers.data.search.response(undefined, {
-  //         originalQuery: { customUrlParams: [{ key: DETAIL_QUERY_INDICATOR, value: 'yo' }] },
-  //         records: [{ i: 'j' }]
-  //       });
-  //       expect(emit).to.be.calledWith(Events.SEARCH_DETAILS, { i: 'j' });
-  //       expect(emit).to.be.calledWith(Events.DETAILS, { i: 'j' });
-  //     });
-  //   });
-  // });
 });
