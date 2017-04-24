@@ -5,7 +5,9 @@ import { BrowserBridge } from '../core/bridge';
 import { Query, QueryConfiguration } from '../core/query';
 import { SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
 import { Navigation, RefinementResults, Results } from '../models/response';
+import Actions from './actions';
 import { Pager } from './pager';
+import Store from './store';
 
 export namespace Events {
   // query events
@@ -67,7 +69,7 @@ export interface FluxBridgeConfig {
 
 export class FluxCapacitor extends EventEmitter {
 
-  store: redux.Store<any>;
+  store: redux.Store<Store.State> = Store.create();
 
   query: Query;
   bridge: BrowserBridge;
@@ -94,22 +96,26 @@ export class FluxCapacitor extends EventEmitter {
     this.page = new Pager(this);
   }
 
-  search(originalQuery: string = this.originalQuery): Promise<Results> {
-    this.query.withQuery(originalQuery);
-    this.emit(Events.SEARCH, this.query.raw);
-    return this.bridge.search(this.query)
-      .then((results) => {
-        const oldQuery = this.originalQuery;
-        Object.assign(this, { results, originalQuery });
+  // search(originalQuery: string = this.originalQuery): Promise<Results> {
+  //   this.query.withQuery(originalQuery);
+  //   this.emit(Events.SEARCH, this.query.raw);
+  //   return this.bridge.search(this.query)
+  //     .then((results) => {
+  //       const oldQuery = this.originalQuery;
+  //       Object.assign(this, { results, originalQuery });
+  //
+  //       if (results.redirect) {
+  //         this.emit(Events.REDIRECT, results.redirect);
+  //       }
+  //       this.emit(Events.RESULTS, results);
+  //       this.emitQueryChanged(oldQuery, originalQuery);
+  //
+  //       return results;
+  //     });
+  // }
 
-        if (results.redirect) {
-          this.emit(Events.REDIRECT, results.redirect);
-        }
-        this.emit(Events.RESULTS, results);
-        this.emitQueryChanged(oldQuery, originalQuery);
-
-        return results;
-      });
+  searchV2(query: string = this.originalQuery) {
+    this.store.dispatch(Actions.updateSearch({ query }));
   }
 
   refinements(navigationName: string): Promise<RefinementResults> {
@@ -120,64 +126,72 @@ export class FluxCapacitor extends EventEmitter {
       });
   }
 
-  rewrite(query: string, config: RewriteConfig = {}): Promise<string> {
-    let search: Promise<any>;
-    if (config.skipSearch) {
-      this.emitQueryChanged(this.originalQuery, query);
-      search = Promise.resolve(this.query.withQuery(this.originalQuery = query));
-    } else {
-      search = this.search(query);
-    }
-    return search.then(() => this.emit(Events.REWRITE_QUERY, query))
-      .then(() => query);
-  }
-
   resetRecall() {
     this.query = new Query().withConfiguration(this.filteredRequest);
   }
 
-  reset(query: string = this.originalQuery): Promise<string> {
-    this.resetRecall();
-    this.emit(Events.PAGE_CHANGED, { pageNumber: 1 });
-    return this.search(query)
-      .then((res) => this.emit(Events.RESET, res))
-      .then(() => query);
+  // reset(query: string = this.originalQuery): Promise<string> {
+  //   this.resetRecall();
+  //   this.emit(Events.PAGE_CHANGED, { pageNumber: 1 });
+  //   return this.search(query)
+  //     .then((res) => this.emit(Events.RESET, res))
+  //     .then(() => query);
+  // }
+
+  reset(query: string = null) {
+    this.store.dispatch(Actions.updateSearch({ query, refinements: [], clear: true }));
   }
 
-  resize(pageSize: number, resetOffset?: boolean): Promise<Results> {
-    this.query.withPageSize(pageSize);
-    if (resetOffset) {
-      return this.page.switchPage(1);
-    } else {
-      const total = this.page.restrictTotalRecords(this.page.fromResult, pageSize);
-      const page = this.page.getPage(total);
-      return this.page.switchPage(page);
-    }
+  // resize(pageSize: number, resetOffset?: boolean): Promise<Results> {
+  //   this.query.withPageSize(pageSize);
+  //   if (resetOffset) {
+  //     return this.page.switchPage(1);
+  //   } else {
+  //     const total = this.page.restrictTotalRecords(this.page.fromResult, pageSize);
+  //     const page = this.page.getPage(total);
+  //     return this.page.switchPage(page);
+  //   }
+  // }
+
+  resize(pageSize: number) {
+    this.store.dispatch(Actions.updatePageSize(pageSize));
   }
 
-  sort(sort: Sort, clearSorts: Sort[] = [sort]): Promise<Results> {
-    this.query.withoutSorts(...clearSorts).withSorts(sort);
-    return this.page.reset()
-      .then((res) => {
-        this.emit(Events.SORT, this.query.raw.sort);
-        return res;
-      });
+  // sort(sort: Sort, clearSorts: Sort[] = [sort]): Promise<Results> {
+  //   this.query.withoutSorts(...clearSorts).withSorts(sort);
+  //   return this.page.reset()
+  //     .then((res) => {
+  //       this.emit(Events.SORT, this.query.raw.sort);
+  //       return res;
+  //     });
+  // }
+
+  sort(sort: Sort | Sort[]) {
+    this.store.dispatch(Actions.updateSorts(sort));
   }
 
-  refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {
-    this.query.withSelectedRefinements(refinement);
-    if (config.skipSearch) {
-      return Promise.resolve(this.navigationInfo);
-    }
-    return this.doRefinement(config);
+  // refine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {
+  //   this.query.withSelectedRefinements(refinement);
+  //   if (config.skipSearch) {
+  //     return Promise.resolve(this.navigationInfo);
+  //   }
+  //   return this.doRefinement(config);
+  // }
+
+  refine(navigationName: string, index: number) {
+    this.store.dispatch(Actions.selectRefinement(navigationName, index));
   }
 
-  unrefine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {
-    this.query.withoutSelectedRefinements(refinement);
-    if (config.skipSearch) {
-      return Promise.resolve(this.navigationInfo);
-    }
-    return this.doRefinement(config);
+  // unrefine(refinement: FluxRefinement, config: RefinementConfig = { reset: true }): Promise<NavigationInfo> {
+  //   this.query.withoutSelectedRefinements(refinement);
+  //   if (config.skipSearch) {
+  //     return Promise.resolve(this.navigationInfo);
+  //   }
+  //   return this.doRefinement(config);
+  // }
+
+  unrefine(navigationName: string, index: number) {
+    this.store.dispatch(Actions.deselectRefinement(navigationName, index));
   }
 
   details(id: string, navigationName: string = 'id'): Promise<Results> {
@@ -193,41 +207,45 @@ export class FluxCapacitor extends EventEmitter {
       });
   }
 
-  switchCollection(collection: string): Promise<Results> {
-    this.query.withConfiguration(<any>{ collection, refinements: [], sort: [], skip: 0 });
-    return this.search()
-      .then((res) => {
-        this.emit(Events.COLLECTION_CHANGED, collection);
-        return res;
-      });
+  // switchCollection(collection: string): Promise<Results> {
+  //   this.query.withConfiguration(<any>{ collection, refinements: [], sort: [], skip: 0 });
+  //   return this.search()
+  //     .then((res) => {
+  //       this.emit(Events.COLLECTION_CHANGED, collection);
+  //       return res;
+  //     });
+  // }
+
+  switchCollection(collection: string) {
+    this.store.dispatch(Actions.selectCollection(collection));
   }
 
-  private emitQueryChanged(oldQuery: string, newQuery: string) {
-    if (oldQuery.toLowerCase() !== newQuery.toLowerCase()) {
-      this.emit(Events.QUERY_CHANGED, newQuery);
-    }
-  }
-
-  private get filteredRequest() {
-    return filterObject(this.query.raw, '!{query,refinements,skip}');
-  }
-
-  private resetPaging(reset: boolean): Promise<Results> {
-    return reset ? this.page.reset() : this.search();
-  }
-
-  private doRefinement({ reset }: RefinementConfig): Promise<NavigationInfo> {
-    return this.resetPaging(reset)
-      .then(() => this.emit(Events.REFINEMENTS_CHANGED, this.navigationInfo))
-      .then(() => this.navigationInfo);
-  }
-
-  private get navigationInfo(): NavigationInfo {
-    return {
-      available: this.results.availableNavigation,
-      selected: this.results.selectedNavigation,
-    };
-  }
+  // private emitQueryChanged(oldQuery: string, newQuery: string) {
+  //   if (oldQuery.toLowerCase() !== newQuery.toLowerCase()) {
+  //     this.emit(Events.QUERY_CHANGED, newQuery);
+  //   }
+  // }
+  //
+  // private get filteredRequest() {
+  //   return filterObject(this.query.raw, '!{query,refinements,skip}');
+  // }
+  //
+  // private resetPaging(reset: boolean): Promise<Results> {
+  //   return reset ? this.page.reset() : this.search();
+  // }
+  //
+  // private doRefinement({ reset }: RefinementConfig): Promise<NavigationInfo> {
+  //   return this.resetPaging(reset)
+  //     .then(() => this.emit(Events.REFINEMENTS_CHANGED, this.navigationInfo))
+  //     .then(() => this.navigationInfo);
+  // }
+  //
+  // private get navigationInfo(): NavigationInfo {
+  //   return {
+  //     available: this.results.availableNavigation,
+  //     selected: this.results.selectedNavigation,
+  //   };
+  // }
 }
 
 export interface NavigationInfo {

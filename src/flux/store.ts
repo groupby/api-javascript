@@ -211,7 +211,7 @@ namespace Store {
   export function create() {
     return redux.createStore<State>(
       reducer,
-      redux.applyMiddleware(thunk)
+      redux.applyMiddleware(thunk),
     );
   }
 }
