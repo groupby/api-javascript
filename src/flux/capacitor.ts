@@ -201,18 +201,8 @@ export class FluxCapacitor extends EventEmitter {
     this.store.dispatch(Actions.deselectRefinement(navigationName, index));
   }
 
-  // TODO: update to store implementation
-  details(id: string, navigationName: string = 'id'): Promise<Results> {
-    return this.bridge.search(new Query()
-      .withConfiguration(this.query.raw, '{area,collection,language,fields}')
-      .withSelectedRefinements({ type: 'Value', navigationName, value: id })
-      .withPageSize(1))
-      .then((res) => {
-        if (res.records.length) {
-          this.emit(Events.DETAILS, res.records[0]);
-        }
-        return res;
-      });
+  details(id: string) {
+    this.store.dispatch(Actions.updateDetailsId(id));
   }
 
   // switchCollection(collection: string): Promise<Results> {

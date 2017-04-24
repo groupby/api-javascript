@@ -154,6 +154,7 @@ namespace Store {
     field: string; // post
     label: string; // post
     or?: boolean; // post
+    more?: boolean; // post
     sort?: Sort; // post
     selected: number[]; // pre
   }

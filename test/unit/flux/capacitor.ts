@@ -213,6 +213,17 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
       });
     });
 
+    describe('details()', () => {
+      it('should dispatch updateDetailsId()', () => {
+        const id = '123123';
+        const updateDetailsId = stub(Actions, 'updateDetailsId');
+
+        flux.details(id);
+
+        expect(updateDetailsId).to.be.calledWith(id);
+      });
+    });
+
     describe('switchCollection()', () => {
       it('should dispatch selectCollection()', () => {
         const selectCollection = stub(Actions, 'selectCollection');
