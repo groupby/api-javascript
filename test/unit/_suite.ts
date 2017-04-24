@@ -17,7 +17,7 @@ export default <Suite>suite<Utils>((tests) => {
 export interface Utils {
   expect: Chai.ExpectStatic;
   spy: Sinon.SinonSpyStatic;
-  stub: Sinon.SinonSpyStatic;
+  stub: Sinon.SinonStubStatic;
 }
 
 export type Suite = UtilsSuite & {

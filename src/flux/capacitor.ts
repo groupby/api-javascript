@@ -6,6 +6,7 @@ import { Query, QueryConfiguration } from '../core/query';
 import { SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
 import { Navigation, RefinementResults, Results } from '../models/response';
 import Actions from './actions';
+import Observer from './observer';
 import { Pager } from './pager';
 import Store from './store';
 
@@ -51,6 +52,9 @@ export namespace Events {
 
   // redirect event
   export const REDIRECT = 'redirect';
+
+  // error events
+  export const ERROR_BRIDGE = 'error:bridge';
 }
 
 export { Pager };
@@ -75,10 +79,12 @@ export class FluxCapacitor extends EventEmitter {
   bridge: BrowserBridge;
   results: Results;
   page: Pager;
-  private originalQuery: string = '';
+  originalQuery: string = '';
 
   constructor(endpoint: string, config: FluxConfiguration = {}, mask?: string) {
     super();
+
+    this.store.subscribe(Observer.listen(this));
 
     const bridgeConfig: FluxBridgeConfig = config.bridge || {};
     this.bridge = new BrowserBridge(endpoint, bridgeConfig.https, bridgeConfig);
@@ -114,10 +120,11 @@ export class FluxCapacitor extends EventEmitter {
   //     });
   // }
 
-  searchV2(query: string = this.originalQuery) {
+  search(query: string = this.originalQuery) {
     this.store.dispatch(Actions.updateSearch({ query }));
   }
 
+  // TODO: update to store implementation
   refinements(navigationName: string): Promise<RefinementResults> {
     return this.bridge.refinements(this.query, navigationName)
       .then((results) => {
@@ -126,9 +133,9 @@ export class FluxCapacitor extends EventEmitter {
       });
   }
 
-  resetRecall() {
-    this.query = new Query().withConfiguration(this.filteredRequest);
-  }
+  // resetRecall() {
+  //   this.query = new Query().withConfiguration(this.filteredRequest);
+  // }
 
   // reset(query: string = this.originalQuery): Promise<string> {
   //   this.resetRecall();
@@ -138,8 +145,8 @@ export class FluxCapacitor extends EventEmitter {
   //     .then(() => query);
   // }
 
-  reset(query: string = null) {
-    this.store.dispatch(Actions.updateSearch({ query, refinements: [], clear: true }));
+  reset(query: string = null, refinements: any[] = []) {
+    this.store.dispatch(Actions.updateSearch({ query, refinements, clear: true }));
   }
 
   // resize(pageSize: number, resetOffset?: boolean): Promise<Results> {
@@ -166,7 +173,7 @@ export class FluxCapacitor extends EventEmitter {
   //     });
   // }
 
-  sort(sort: Sort | Sort[]) {
+  sort(sort: Store.Sort | Store.Sort[]) {
     this.store.dispatch(Actions.updateSorts(sort));
   }
 
@@ -194,6 +201,7 @@ export class FluxCapacitor extends EventEmitter {
     this.store.dispatch(Actions.deselectRefinement(navigationName, index));
   }
 
+  // TODO: update to store implementation
   details(id: string, navigationName: string = 'id'): Promise<Results> {
     return this.bridge.search(new Query()
       .withConfiguration(this.query.raw, '{area,collection,language,fields}')
@@ -246,18 +254,4 @@ export class FluxCapacitor extends EventEmitter {
   //     selected: this.results.selectedNavigation,
   //   };
   // }
-}
-
-export interface NavigationInfo {
-  available: Navigation[];
-  selected: Navigation[];
-}
-
-export interface RefinementConfig {
-  reset?: boolean;
-  skipSearch?: boolean;
-}
-
-export interface RewriteConfig {
-  skipSearch?: boolean;
 }

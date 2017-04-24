@@ -1,4 +1,7 @@
 import * as mock from 'xhr-mock';
+import Actions from '../../../src/flux/actions';
+import Observer from '../../../src/flux/observer';
+import Store from '../../../src/flux/store';
 import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../../../src/index';
 import suite from '../_suite';
 
@@ -9,11 +12,18 @@ const SELECTED_REFINEMENT: SelectedValueRefinement = { type: 'Value', navigation
 const REFINEMENT_RESULT = { availableNavigation: 'a', selectedNavigation: 'b' };
 const DETAILS_RESULT = { records: [{}] };
 
-suite('FluxCapacitor', ({ expect, spy }) => {
+suite('FluxCapacitor', ({ expect, spy, stub }) => {
+  const LISTENER = () => null;
+  let create: Sinon.SinonStub;
+  let listen: Sinon.SinonStub;
+  let subscribe: Sinon.SinonSpy;
   let flux: FluxCapacitor;
 
   beforeEach(() => {
     mock.setup();
+    subscribe = spy();
+    create = stub(Store, 'create').returns({ subscribe });
+    listen = stub(Observer, 'listen').returns(LISTENER);
     flux = new FluxCapacitor(CUSTOMER_ID);
   });
 
@@ -28,6 +38,12 @@ suite('FluxCapacitor', ({ expect, spy }) => {
       expect(flux.bridge).to.be.ok;
       expect(flux.query).to.be.ok;
       expect(flux.results).to.not.be.ok;
+    });
+
+    it('should set up store and observer', () => {
+      expect(listen).to.be.calledWith(flux);
+      expect(subscribe).to.be.calledWith(LISTENER);
+      expect(create).to.be.called;
     });
 
     it('should accept a mask for configuration', () => {
@@ -96,6 +112,115 @@ suite('FluxCapacitor', ({ expect, spy }) => {
       flux.on(Events.ERROR_BRIDGE, () => done());
 
       flux.bridge.errorHandler(<any>{});
+    });
+  });
+
+  describe('actions', () => {
+    let dispatch: Sinon.SinonSpy;
+
+    beforeEach(() => {
+      dispatch = spy();
+      flux.store = <any>{ dispatch };
+    });
+
+    describe('search()', () => {
+      it('should dispatch updateSearch()', () => {
+        const query = 'half moon';
+        const updateSearch = stub(Actions, 'updateSearch');
+
+        flux.search(query);
+
+        expect(updateSearch).to.be.calledWith({ query });
+      });
+
+      it('should fallback to previous query', () => {
+        const query = flux.originalQuery = 'half moon';
+        const updateSearch = stub(Actions, 'updateSearch');
+
+        flux.search();
+
+        expect(updateSearch).to.be.calledWith({ query });
+      });
+    });
+
+    describe('reset()', () => {
+      it('should dispatch updateSearch()', () => {
+        const query = 'half moon';
+        const refinements = [{ a: 'b' }, { c: 'd' }];
+        const updateSearch = stub(Actions, 'updateSearch');
+
+        flux.reset(query, refinements);
+
+        expect(updateSearch).to.be.calledWith({ query, refinements, clear: true });
+      });
+
+      it('should fallback to null query and empty refinements', () => {
+        const updateSearch = stub(Actions, 'updateSearch');
+
+        flux.reset();
+
+        expect(updateSearch).to.be.calledWith({ query: null, refinements: [], clear: true });
+      });
+    });
+
+    describe('resize()', () => {
+      it('should dispatch updatePageSize()', () => {
+        const updatePageSize = stub(Actions, 'updatePageSize');
+
+        flux.resize(24);
+
+        expect(updatePageSize).to.be.calledWith(24);
+      });
+    });
+
+    describe('sort()', () => {
+      it('should dispatch updateSorts()', () => {
+        const sort = { field: 'price', descending: true };
+        const updateSorts = stub(Actions, 'updateSorts');
+
+        flux.sort(sort);
+
+        expect(updateSorts).to.be.calledWith(sort);
+      });
+
+      it('should accept multiple sorts', () => {
+        const sorts = [{ field: 'price', descending: true }, { field: 'popularity' }];
+        const updateSorts = stub(Actions, 'updateSorts');
+
+        flux.sort(sorts);
+
+        expect(updateSorts).to.be.calledWith(sorts);
+      });
+    });
+
+    describe('refine()', () => {
+      it('should dispatch selectRefinement()', () => {
+        const selectRefinement = stub(Actions, 'selectRefinement');
+
+        flux.refine('brand', 3);
+
+        expect(selectRefinement).to.be.calledWith('brand', 3);
+      });
+    });
+
+    describe('unrefine()', () => {
+      it('should dispatch deselectRefinement()', () => {
+        const deselectRefinement = stub(Actions, 'deselectRefinement');
+
+        flux.unrefine('brand', 3);
+
+        expect(deselectRefinement).to.be.calledWith('brand', 3);
+      });
+    });
+
+    describe('switchCollection()', () => {
+      it('should dispatch selectCollection()', () => {
+        const selectCollection = stub(Actions, 'selectCollection');
+
+        flux.switchCollection('products');
+
+        expect(selectCollection).to.be.calledWith('products');
+      });
     });
   });
 
