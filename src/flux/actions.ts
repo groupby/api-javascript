@@ -43,7 +43,9 @@ namespace Actions {
 
   export interface Search {
     query?: string;
-    refinements?: Search.Refinement[];
+    // refinements?: Search.Refinement[];
+    navigationId?: string;
+    index?: number;
 
     /**
      * only for refinements

@@ -10,7 +10,7 @@ namespace Store {
     data?: {
       query: Query; // mixed
 
-      sorts: Sort[]; // pre
+      sorts: Indexed.Selectable<Sort.Labelled>; // pre
       products: Product[]; // post
       collections: Indexed.Selectable<Collection>; // mixed
       navigations: Indexed<Navigation>; // mixed
@@ -64,6 +64,12 @@ namespace Store {
   export interface Sort {
     field: string;
     descending?: boolean;
+  }
+
+  export namespace Sort {
+    export interface Labelled extends Sort {
+      label: string;
+    }
   }
 
   export interface Page {

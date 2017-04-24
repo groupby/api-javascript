@@ -20,6 +20,15 @@ export function updateCollections(state: Store.Indexed.Selectable<Store.Collecti
   }
 }
 
+export function updateDetails(state: Store.Details, action) {
+  switch (action) {
+    case Actions.UPDATE_DETAILS_ID:
+      return { ...state, id: action.id };
+    default:
+      return state;
+  }
+}
+
 export function updateErrors(state, action) {
   switch (action) {
     // case Actions.UPDATE_ERRORS:
@@ -30,21 +39,58 @@ export function updateErrors(state, action) {
 }
 
 export function updateNavigations(state: Store.Indexed<Store.Navigation>, action) {
+  const navigationId = action.navigationId;
+  const refinementIndex = action.index;
   switch (action) {
     case Actions.UPDATE_SEARCH:
+      // TODO: add case for clear
+      if (action.clear) {
+        const byIds = state.allIds.reduce(
+          (newById, index) => Object.assign(newById, { [index]: { ...state.byId[index], selected: [] } }), { },
+        );
+        if (!(navigationId && action.index)) {
+          return {
+            ...state,
+            byId: byIds,
+          };
+        } else {
+          return {
+            ...state,
+            byId: {
+              ...byIds,
+              [navigationId]: {
+                ...state.byId[refinementIndex],
+                // TODO: maybe check if already there
+                selected: refinementIndex,
+              },
+            },
+          };
+        }
+      }
     case Actions.SELECT_REFINEMENT:
-      return { ...state,
-        byId: {
-          [action.navigationId]: {
-            selected: state.byId[action.navigationId].selected.concat(action.index),
+      if (navigationId && refinementIndex) {
+        return {
+          ...state,
+          byId: {
+            ...state.byId,
+            [navigationId]: {
+              ...state.byId[navigationId],
+              // TODO: maybe check if already there
+              selected: state.byId[navigationId].selected.concat(refinementIndex),
+            },
           },
-        },
-      };
+        };
+      } else {
+        return state;
+      }
     case Actions.DESELECT_REFINEMENT:
-      return { ...state,
+      return {
+        ...state,
         byId: {
-          [action.navigationId]: {
-            selected: state.byId[action.navigationId].selected.filter((index) => index !== action.index),
+          ...state.byId,
+          [navigationId]: {
+            ...state.byId[navigationId],
+            selected: state.byId[navigationId].selected.filter((index) => index !== refinementIndex),
           },
         },
       };
@@ -56,11 +102,15 @@ export function updateNavigations(state: Store.Indexed<Store.Navigation>, action
 export function updatePage(state: Store.Page, action) {
   switch (action) {
     case Actions.UPDATE_SEARCH:
+    case Actions.UPDATE_SORTS:
+    case Actions.SELECT_COLLECTION:
+    case Actions.SELECT_REFINEMENT:
+    case Actions.DESELECT_REFINEMENT:
       return { ...state, current: 1 };
     case Actions.UPDATE_CURRENT_PAGE:
       return { ...state, current: action.page };
     case Actions.UPDATE_PAGE_SIZE:
-      return { ...state, size: action.size };
+      return { ...state, current: 1, size: action.size };
     default:
       return state;
   }
@@ -93,10 +143,19 @@ export function updateRedirect(state, action) {
   }
 }
 
-export function updateSorts(state: Store.Sort, action) {
+export function updateSorts(state: Store.Indexed.Selectable<Store.Sort.Labelled>, action) {
   switch (action) {
     case Actions.UPDATE_SORTS:
-      return { ...state, field: action.field, descending: !!action.descending };
+      return { ...state, selected: action.label };
+    default:
+      return state;
+  }
+}
+
+export function updateTemplate(state, action) {
+  switch (action) {
+    // case Actions.UPDATE_TEMPLATE:
+    //   return { ...state };
     default:
       return state;
   }
@@ -115,6 +174,7 @@ export default redux.combineReducers({
   data: redux.combineReducers({
     autocomplete: updateAutocomplete,
     collections: updateCollections,
+    details: updateDetails,
     errors: updateErrors,
     navigations: updateNavigations,
     page: updatePage,
@@ -122,6 +182,7 @@ export default redux.combineReducers({
     query: updateQuery,
     redirect: updateRedirect,
     sorts: updateSorts,
+    template: updateTemplate,
     warnings: updateWarnings,
   }),
 });
