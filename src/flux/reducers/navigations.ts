@@ -4,7 +4,7 @@ import Store from '../store';
 export default function updateNavigations(state: Store.Indexed<Store.Navigation>, action) {
   const navigationId = action.navigationId;
   const refinementIndex = action.index;
-  switch (action) {
+  switch (action.type) {
     case Actions.UPDATE_SEARCH:
       // TODO: add case for clear
       if (action.clear) {

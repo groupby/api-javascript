@@ -2,7 +2,7 @@ import Actions from '../actions';
 import Store from '../store';
 
 export default function updatePage(state: Store.Page, action) {
-  switch (action) {
+  switch (action.type) {
     case Actions.UPDATE_SEARCH:
     case Actions.UPDATE_SORTS:
     case Actions.SELECT_COLLECTION:

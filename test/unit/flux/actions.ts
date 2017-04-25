@@ -5,7 +5,7 @@ import Selectors from '../../../src/flux/selectors';
 import * as utils from '../../../src/flux/utils';
 import suite from '../_suite';
 
-suite.only('Actions', ({ expect, spy, stub }) => {
+suite('Actions', ({ expect, spy, stub }) => {
   let actions: Actions;
   const bridge: any = { a: 'b' };
 

@@ -2,7 +2,7 @@ import Actions from '../actions';
 import Store from '../store';
 
 export default function updateAutocomplete(state: Store.Autocomplete, action) {
-  switch (action) {
+  switch (action.type) {
     case Actions.UPDATE_AUTOCOMPLETE_QUERY:
       return { ...state, query: action.query };
     case Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS:
