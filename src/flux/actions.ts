@@ -55,53 +55,53 @@ class Actions {
       if (Selectors.hasMoreRefinements(state, navigationId)) {
         this.bridge.refinements(Selectors.searchRequest(state), navigationId)
           .then(({ navigation: { name, refinements } }) =>
-            dispatch(this.addMoreRefinements(name, refinements.map(ResponseAdapter.extractRefinement))));
+            dispatch(this.receiveMoreRefinements(name, refinements.map(ResponseAdapter.extractRefinement))));
       }
     }
 
   // response action creators
-  addMoreRefinements = (navigationId: string, refinements: any) =>
-    thunk(Actions.ADD_MORE_REFINEMENTS, { navigationId, refinements })
-
-  updateSearchResponse = (results: Results) =>
+  receiveSearchResponse = (results: Results) =>
     (dispatch: Dispatch<any>, getStore: () => Store.State) => {
       const state = getStore();
-      dispatch(this.updateQuery(ResponseAdapter.extractQuery(results, this.linkMapper)));
-      dispatch(this.updateProducts(results.records.map((product) => product.allMeta)));
-      dispatch(this.updateCollectionCount(state.data.collections.selected, results.totalRecordCount));
+      dispatch(this.receiveRedirect(results.redirect));
+      dispatch(this.receiveQuery(ResponseAdapter.extractQuery(results, this.linkMapper)));
+      dispatch(this.receiveProducts(results.records.map((product) => product.allMeta)));
       // tslint:disable-next-line max-line-length
-      dispatch(this.updateNavigations(ResponseAdapter.combineNavigations(results.availableNavigation, results.selectedNavigation)));
-      dispatch(this.updatePage(ResponseAdapter.extractPage(state, results)));
-      dispatch(this.updateTemplate(ResponseAdapter.extractTemplate(results.template)));
-      dispatch(this.updateRedirect(results.redirect));
+      dispatch(this.receiveNavigations(ResponseAdapter.combineNavigations(results.availableNavigation, results.selectedNavigation)));
+      dispatch(this.receivePage(ResponseAdapter.extractPage(state, results)));
+      dispatch(this.receiveTemplate(ResponseAdapter.extractTemplate(results.template)));
+      dispatch(this.receiveCollectionCount(state.data.collections.selected, results.totalRecordCount));
     }
 
-  updateQuery = (query: Query) =>
-    thunk(Actions.UPDATE_QUERY, query)
+  receiveQuery = (query: Query) =>
+    thunk(Actions.RECEIVE_QUERY, query)
 
-  updateProducts = (products: Store.Product[]) =>
-    thunk(Actions.UPDATE_PRODUCTS, { products })
+  receiveProducts = (products: Store.Product[]) =>
+    thunk(Actions.RECEIVE_PRODUCTS, { products })
 
-  updateCollectionCount = (collection: string, count: number) =>
-    thunk(Actions.UPDATE_COLLECTION_COUNT, { collection, count })
+  receiveCollectionCount = (collection: string, count: number) =>
+    thunk(Actions.RECEIVE_COLLECTION_COUNT, { collection, count })
 
-  updateNavigations = (navigations: Store.Navigation[]) =>
-    thunk(Actions.UPDATE_NAVIGATIONS, { navigations })
+  receiveNavigations = (navigations: Store.Navigation[]) =>
+    thunk(Actions.RECEIVE_NAVIGATIONS, { navigations })
 
-  updatePage = (page: Page) =>
-    thunk(Actions.UPDATE_PAGE, page)
+  receivePage = (page: Page) =>
+    thunk(Actions.RECEIVE_PAGE, page)
 
-  updateTemplate = (template: Store.Template) =>
-    thunk(Actions.UPDATE_TEMPLATE, { template })
+  receiveTemplate = (template: Store.Template) =>
+    thunk(Actions.RECEIVE_TEMPLATE, { template })
 
-  updateRedirect = (redirect: string) =>
-    thunk(Actions.UPDATE_REDIRECT, { redirect })
+  receiveRedirect = (redirect: string) =>
+    thunk(Actions.RECEIVE_REDIRECT, { redirect })
 
-  updateAutocompleteSuggestions = (suggestions: string[], category: Store.Autocomplete.Category) =>
-    thunk(Actions.UPDATE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, category })
+  receiveMoreRefinements = (navigationId: string, refinements: any) =>
+    thunk(Actions.RECEIVE_MORE_REFINEMENTS, { navigationId, refinements })
 
-  updateDetailsProduct = (product: Store.Product) =>
-    thunk(Actions.UPDATE_DETAILS_PRODUCT, { product })
+  receiveAutocompleteSuggestions = (suggestions: string[], category: Store.Autocomplete.Category) =>
+    thunk(Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, category })
+
+  receiveDetailsProduct = (product: Store.Product) =>
+    thunk(Actions.RECEIVE_DETAILS_PRODUCT, { product })
 }
 
 namespace Actions {
@@ -117,16 +117,16 @@ namespace Actions {
   export const UPDATE_CURRENT_PAGE = 'UPDATE_CURRENT_PAGE';
 
   // response actions
-  export const ADD_MORE_REFINEMENTS = 'ADD_MORE_REFINEMENTS';
-  export const UPDATE_AUTOCOMPLETE_SUGGESTIONS = 'UPDATE_AUTOCOMPLETE_SUGGESTIONS';
-  export const UPDATE_DETAILS_PRODUCT = 'UPDATE_DETAILS_PRODUCT';
-  export const UPDATE_QUERY = 'UPDATE_AUTOCOMPLETE_SUGGESTIONS';
-  export const UPDATE_PRODUCTS = 'UPDATE_PRODUCTS';
-  export const UPDATE_COLLECTION_COUNT = 'UPDATE_COLLECTION_COUNT';
-  export const UPDATE_NAVIGATIONS = 'UPDATE_NAVIGATIONS';
-  export const UPDATE_PAGE = 'UPDATE_PAGE';
-  export const UPDATE_TEMPLATE = 'UPDATE_TEMPLATE';
-  export const UPDATE_REDIRECT = 'UPDATE_TEMPLATE';
+  export const RECEIVE_MORE_REFINEMENTS = 'RECEIVE_MORE_REFINEMENTS';
+  export const RECEIVE_AUTOCOMPLETE_SUGGESTIONS = 'RECEIVE_AUTOCOMPLETE_SUGGESTIONS';
+  export const RECEIVE_DETAILS_PRODUCT = 'RECEIVE_DETAILS_PRODUCT';
+  export const RECEIVE_QUERY = 'RECEIVE_QUERY';
+  export const RECEIVE_PRODUCTS = 'RECEIVE_PRODUCTS';
+  export const RECEIVE_COLLECTION_COUNT = 'RECEIVE_COLLECTION_COUNT';
+  export const RECEIVE_NAVIGATIONS = 'RECEIVE_NAVIGATIONS';
+  export const RECEIVE_PAGE = 'RECEIVE_PAGE';
+  export const RECEIVE_TEMPLATE = 'RECEIVE_TEMPLATE';
+  export const RECEIVE_REDIRECT = 'RECEIVE_REDIRECT';
 }
 
 export default Actions;

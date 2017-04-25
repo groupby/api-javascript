@@ -36,23 +36,11 @@ export class Pager {
     }
   }
 
-  get totalRecords(): number {
-    return this.results.totalRecordCount;
-  }
-
-  get pageSize(): number {
-    // TODO move this default into the reducer setup
-    return this.state.data.page.size || 10;
-  }
-
-  get currentPage(): number {
-    return this.state.data.page.current;
-  }
-
   build(): Page {
-    const pageSize = this.pageSize;
+    // TODO move this default into the reducer setup
+    const pageSize = this.state.data.page.size || 10;
     const currentPage = this.state.data.page.current;
-    const totalRecords = this.totalRecords;
+    const totalRecords = this.results.totalRecordCount;
     const finalPage = this.finalPage(pageSize, totalRecords);
 
     return {
@@ -62,7 +50,7 @@ export class Pager {
       previous: this.previousPage(currentPage),
       range: this.pageNumbers(currentPage, finalPage, this.state.data.page.limit),
       to: this.toResult(currentPage, pageSize, totalRecords),
-      total: this.totalRecords,
+      total: totalRecords,
     };
   }
 
@@ -86,7 +74,7 @@ export class Pager {
   }
 
   getPage(record: number, pageSize: number): number {
-    return Math.ceil(record / this.pageSize);
+    return Math.ceil(record / pageSize);
   }
 
   transformPages(currentPage: number, finalPage: number, limit: number): (value: number) => number {
