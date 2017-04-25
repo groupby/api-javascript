@@ -1,8 +1,9 @@
 import { expect } from 'chai';
 import * as suite from 'mocha-suite';
+import * as sinon from 'sinon';
 
 export default <Suite>suite<Utils>((tests) => {
-  let sandbox: Sinon.SinonSandbox;
+  let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
@@ -16,8 +17,8 @@ export default <Suite>suite<Utils>((tests) => {
 
 export interface Utils {
   expect: Chai.ExpectStatic;
-  spy: Sinon.SinonSpyStatic;
-  stub: Sinon.SinonStubStatic;
+  spy: sinon.SinonSpyStatic;
+  stub: sinon.SinonStubStatic;
 }
 
 export type Suite = UtilsSuite & {

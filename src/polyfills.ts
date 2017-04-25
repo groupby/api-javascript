@@ -1,5 +1,10 @@
+import * as arrayFind from 'array.prototype.find';
+import * as arrayFindIndex from 'array.prototype.findIndex';
+import * as objectAssign from 'es6-object-assign';
+import * as promise from 'es6-promise';
 import 'es6-symbol/implement';
-require('array.prototype.find').shim();
-require('array.prototype.findindex').shim();
-require('es6-object-assign').polyfill();
-require('es6-promise').polyfill();
+
+arrayFind.shim();
+arrayFindIndex.shim();
+objectAssign.polyfill();
+promise.polyfill();

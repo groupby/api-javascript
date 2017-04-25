@@ -19,9 +19,11 @@ class Actions {
     (dispatch: Dispatch<any>, getStore: () => Store.State) => {
       const state = getStore();
       if (Selectors.hasMoreRefinements(state, navigationId)) {
-        this.bridge.refinements(Selectors.searchRequest(state), navigationId)
-          .then(({ navigation: { name, refinements } }) =>
-            dispatch(this.receiveMoreRefinements(name, refinements.map(ResponseAdapter.extractRefinement))));
+        return this.bridge.refinements(Selectors.searchRequest(state), navigationId)
+          .then(({ navigation: { name, refinements } }) => {
+            const remapped = refinements.map(ResponseAdapter.extractRefinement);
+            return dispatch(this.receiveMoreRefinements(name, remapped));
+          });
       }
     }
 

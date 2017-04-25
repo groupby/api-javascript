@@ -38,8 +38,8 @@ module.exports = {
         exclude: path.resolve(__dirname, 'node_modules'),
         loader: 'awesome-typescript-loader',
         options: {
-          inlineSourceMap: true,
-          sourceMap: true
+          sourceMap: false,
+          inlineSourceMap: true
         }
       })
   }

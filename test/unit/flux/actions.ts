@@ -1,3 +1,4 @@
+import * as sinon from 'sinon';
 import { BrowserBridge } from '../../../src/core/bridge';
 import Actions from '../../../src/flux/actions';
 import ResponseAdapter from '../../../src/flux/adapters/response';
@@ -15,6 +16,73 @@ suite('Actions', ({ expect, spy, stub }) => {
     it('should set properties', () => {
       expect(actions['bridge']).to.eq(bridge);
       expect(actions['linkMapper']).to.be.a('function');
+    });
+  });
+
+  describe('fetch action creators', () => {
+    describe('fetchMoreRefinements()', () => {
+      it('should return a thunk', () => {
+        const thunk = actions.fetchMoreRefinements('brand');
+
+        expect(thunk).to.be.a('function');
+      });
+
+      it('should not fetch if more refinements not available', () => {
+        const navigationId = 'brand';
+        const state = { a: 'b' };
+        const dispatch = spy();
+        const getStore = spy(() => state);
+        const hasMoreRefinements = stub(Selectors, 'hasMoreRefinements').returns(false);
+        const action = actions.fetchMoreRefinements(navigationId);
+
+        action(dispatch, getStore);
+
+        expect(getStore).to.be.called;
+        expect(hasMoreRefinements).to.be.calledWith(state, navigationId);
+        expect(dispatch).to.not.be.called;
+      });
+
+      it('should fetch more refinements', (done) => {
+        const name = 'brand';
+        const state = { a: 'b' };
+        const search = { e: 'f' };
+        const action = actions.fetchMoreRefinements(name);
+        const refinementsStub = actions['bridge'].refinements
+          = stub().resolves({ navigation: { name, refinements: ['c', 'd'] } });
+        const searchRequest = stub(Selectors, 'searchRequest').returns(search);
+        stub(Selectors, 'hasMoreRefinements').returns(true);
+        stub(actions, 'receiveMoreRefinements');
+        stub(ResponseAdapter, 'extractRefinement').callsFake((s) => s);
+
+        const builtAction = action(() => null, () => state)
+          .then(() => {
+            expect(searchRequest).to.be.calledWith(state);
+            expect(refinementsStub).to.be.calledWith(search, name);
+            done();
+          });
+      });
+
+      it('should store more refinements result', (done) => {
+        const name = 'brand';
+        const state = { a: 'b' };
+        const moreRefinementsAction = { e: 'f' };
+        const action = actions.fetchMoreRefinements(name);
+        const dispatch = spy();
+        const extractRefinement = stub(ResponseAdapter, 'extractRefinement').callsFake((value) => value);
+        const receiveMoreRefinements = stub(actions, 'receiveMoreRefinements').returns(moreRefinementsAction);
+        actions['bridge'].refinements = stub().resolves({ navigation: { name, refinements: ['c', 'd'] } });
+        stub(Selectors, 'hasMoreRefinements').returns(true);
+        stub(Selectors, 'searchRequest');
+
+        const builtAction = action(dispatch, () => state)
+          .then(() => {
+            expect(extractRefinement).to.be.calledWith('c');
+            expect(extractRefinement).to.be.calledWith('d');
+            expect(receiveMoreRefinements).to.be.calledWith(name, ['c', 'd']);
+            expect(dispatch).to.be.calledWith(moreRefinementsAction);
+            done();
+          });
+      });
     });
   });
 
