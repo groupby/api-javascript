@@ -10,6 +10,7 @@ namespace Store {
     data?: {
       query: Query; // mixed
 
+      recordCount: number; // post
       sorts: Indexed.Selectable<Sort.Labelled>; // pre
       products: Product[]; // post
       collections: Indexed.Selectable<Collection>; // mixed

@@ -13,6 +13,16 @@ export default function updatePage(state: Store.Page, action) {
       return { ...state, current: action.page };
     case Actions.UPDATE_PAGE_SIZE:
       return { ...state, current: 1, size: action.size };
+    case Actions.RECEIVE_PAGE:
+      return {
+        ...state,
+        previous: action.previous,
+        next: action.next,
+        last: action.last,
+        from: action.from,
+        to: action.to,
+        
+      };
     default:
       return state;
   }
