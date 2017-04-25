@@ -204,7 +204,7 @@ suite('Actions', ({ expect, spy, stub }) => {
         expect(combineNavigations).to.be.calledWith(results.availableNavigation, results.selectedNavigation);
         expect(dispatch).to.be.calledWith(receiveNavigationsAction);
         expect(receivePage).to.be.calledWith(page);
-        expect(extractPage).to.be.calledWith(state, results);
+        expect(extractPage).to.be.calledWith(state);
         expect(dispatch).to.be.calledWith(receivePageAction);
         expect(receiveTemplate).to.be.calledWith(template);
         expect(extractTemplate).to.be.calledWith(results.template);
@@ -315,6 +315,17 @@ suite('Actions', ({ expect, spy, stub }) => {
         actions.receiveAutocompleteSuggestions(suggestions, categoryValues);
 
         expect(thunk).to.be.calledWith(Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, categoryValues });
+      });
+    });
+
+    describe('receiveDetailsProduct()', () => {
+      it('should create a RECEIVE_DETAILS_PRODUCT action', () => {
+        const product: any = { a: 'b' };
+        const thunk = stub(utils, 'thunk');
+
+        actions.receiveDetailsProduct(product);
+
+        expect(thunk).to.be.calledWith(Actions.RECEIVE_DETAILS_PRODUCT, { product });
       });
     });
   });

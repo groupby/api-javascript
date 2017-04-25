@@ -8,7 +8,7 @@ const MAX_RECORDS = 10000;
 
 export class Pager {
 
-  constructor(private state: Store.State, private results: Results) { }
+  constructor(private state: Store.State) { }
 
   previousPage(currentPage: number) {
     return currentPage > 1 ? currentPage - 1 : null;
@@ -40,7 +40,7 @@ export class Pager {
     // TODO move this default into the reducer setup
     const pageSize = this.state.data.page.size || 10;
     const currentPage = this.state.data.page.current;
-    const totalRecords = this.results.totalRecordCount;
+    const totalRecords = this.state.data.recordCount;
     const finalPage = this.finalPage(pageSize, totalRecords);
 
     return {
@@ -50,7 +50,6 @@ export class Pager {
       previous: this.previousPage(currentPage),
       range: this.pageNumbers(currentPage, finalPage, this.state.data.page.limit),
       to: this.toResult(currentPage, pageSize, totalRecords),
-      total: totalRecords,
     };
   }
 

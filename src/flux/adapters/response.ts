@@ -111,8 +111,8 @@ namespace Response {
       Object.assign(zones, { [key]: Response.extractZone(template.zones[key]) }), {}),
   });
 
-  export const extractPage = (store: Store.State, results: Results): Page =>
-    new Pager(store, results).build();
+  export const extractPage = (store: Store.State): Page =>
+    new Pager(store).build();
 }
 
 export default Response;

@@ -69,7 +69,7 @@ class Actions {
       dispatch(this.receiveProducts(results.records.map((product) => product.allMeta), results.totalRecordCount));
       // tslint:disable-next-line max-line-length
       dispatch(this.receiveNavigations(ResponseAdapter.combineNavigations(results.availableNavigation, results.selectedNavigation)));
-      dispatch(this.receivePage(ResponseAdapter.extractPage(state, results)));
+      dispatch(this.receivePage(ResponseAdapter.extractPage(state)));
       dispatch(this.receiveTemplate(ResponseAdapter.extractTemplate(results.template)));
       dispatch(this.receiveCollectionCount(state.data.collections.selected, results.totalRecordCount));
     }
