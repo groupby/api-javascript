@@ -2,7 +2,7 @@ import * as redux from 'redux';
 import thunk from 'redux-thunk';
 import { Request } from '../models/request';
 import { Results } from '../models/response';
-import reducer from './reducer';
+import reducer from './reducers';
 
 namespace Store {
 

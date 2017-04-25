@@ -14,6 +14,17 @@ class Actions {
     this.linkMapper = LinkMapper(paths.search);
   }
 
+  // fetch action creators
+  fetchMoreRefinements = (navigationId: string) =>
+    (dispatch: Dispatch<any>, getStore: () => Store.State) => {
+      const state = getStore();
+      if (Selectors.hasMoreRefinements(state, navigationId)) {
+        this.bridge.refinements(Selectors.searchRequest(state), navigationId)
+          .then(({ navigation: { name, refinements } }) =>
+            dispatch(this.receiveMoreRefinements(name, refinements.map(ResponseAdapter.extractRefinement))));
+      }
+    }
+
   // request action creators
   updateSearch = (search: Search) =>
     thunk(Actions.UPDATE_SEARCH, search)
@@ -34,10 +45,6 @@ class Actions {
     conditional((state) => state.data.sorts.selected !== id,
       Actions.UPDATE_SORTS, { id })
 
-  updateAutocompleteQuery = (query: string) =>
-    conditional((state) => state.data.autocomplete.query !== query,
-      Actions.UPDATE_AUTOCOMPLETE_QUERY, { query })
-
   updatePageSize = (size: number) =>
     conditional((state) => state.data.page.size !== size,
       Actions.UPDATE_PAGE_SIZE, { size })
@@ -49,15 +56,9 @@ class Actions {
   updateDetailsId = (id: string) =>
     thunk(Actions.UPDATE_DETAILS_ID, { id })
 
-  fetchMoreRefinements = (navigationId: string) =>
-    (dispatch: Dispatch<any>, getStore: () => Store.State) => {
-      const state = getStore();
-      if (Selectors.hasMoreRefinements(state, navigationId)) {
-        this.bridge.refinements(Selectors.searchRequest(state), navigationId)
-          .then(({ navigation: { name, refinements } }) =>
-            dispatch(this.receiveMoreRefinements(name, refinements.map(ResponseAdapter.extractRefinement))));
-      }
-    }
+  updateAutocompleteQuery = (query: string) =>
+    conditional((state) => state.data.autocomplete.query !== query,
+      Actions.UPDATE_AUTOCOMPLETE_QUERY, { query })
 
   // response action creators
   receiveSearchResponse = (results: Results) =>
@@ -65,7 +66,7 @@ class Actions {
       const state = getStore();
       dispatch(this.receiveRedirect(results.redirect));
       dispatch(this.receiveQuery(ResponseAdapter.extractQuery(results, this.linkMapper)));
-      dispatch(this.receiveProducts(results.records.map((product) => product.allMeta)));
+      dispatch(this.receiveProducts(results.records.map((product) => product.allMeta), results.totalRecordCount));
       // tslint:disable-next-line max-line-length
       dispatch(this.receiveNavigations(ResponseAdapter.combineNavigations(results.availableNavigation, results.selectedNavigation)));
       dispatch(this.receivePage(ResponseAdapter.extractPage(state, results)));
@@ -76,8 +77,8 @@ class Actions {
   receiveQuery = (query: Query) =>
     thunk(Actions.RECEIVE_QUERY, query)
 
-  receiveProducts = (products: Store.Product[]) =>
-    thunk(Actions.RECEIVE_PRODUCTS, { products })
+  receiveProducts = (products: Store.Product[], recordCount: number) =>
+    thunk(Actions.RECEIVE_PRODUCTS, { products, recordCount })
 
   receiveCollectionCount = (collection: string, count: number) =>
     thunk(Actions.RECEIVE_COLLECTION_COUNT, { collection, count })
