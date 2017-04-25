@@ -11,7 +11,7 @@ export default function updateNavigations(state: Store.Indexed<Store.Navigation>
         const byIds = state.allIds.reduce(
           (newById, index) => Object.assign(newById, { [index]: { ...state.byId[index], selected: [] } }), { },
         );
-        if (!(navigationId && action.index)) {
+        if (!(navigationId && refinementIndex != null)) {
           return {
             ...state,
             byId: byIds,
@@ -22,16 +22,16 @@ export default function updateNavigations(state: Store.Indexed<Store.Navigation>
             byId: {
               ...byIds,
               [navigationId]: {
-                ...state.byId[refinementIndex],
+                ...state.byId[navigationId],
                 // TODO: maybe check if already there
-                selected: refinementIndex,
+                selected: [refinementIndex],
               },
             },
           };
         }
       }
     case Actions.SELECT_REFINEMENT:
-      if (navigationId && refinementIndex) {
+      if (navigationId && refinementIndex != null) {
         return {
           ...state,
           byId: {
@@ -47,16 +47,18 @@ export default function updateNavigations(state: Store.Indexed<Store.Navigation>
         return state;
       }
     case Actions.DESELECT_REFINEMENT:
-      return {
-        ...state,
-        byId: {
-          ...state.byId,
-          [navigationId]: {
-            ...state.byId[navigationId],
-            selected: state.byId[navigationId].selected.filter((index) => index !== refinementIndex),
+      if (navigationId && refinementIndex != null) {
+        return {
+          ...state,
+          byId: {
+            ...state.byId,
+            [navigationId]: {
+              ...state.byId[navigationId],
+              selected: state.byId[navigationId].selected.filter((index) => index !== refinementIndex),
+            },
           },
-        },
-      };
+        };
+      }
     default:
       return state;
   }

@@ -5,45 +5,37 @@ import suite from '../../_suite';
 
 suite.only('autocomplete', ({ expect }) => {
   let actions: Actions;
+  const query = 'brown shoes';
+  const category = { field: 'a', values: ['b'] };
+  const suggestions = ['e', 'f', 'g'];
+  const products = [];
+  const state: Store.Autocomplete = {
+    category,
+    products,
+    query,
+    suggestions,
+  };
   beforeEach(() => actions = new Actions(<any>{}, <any>{}));
 
   describe('autocompleteUpdate()', () => {
-    it('should update state on UPDATE_AUTOCOMPLETE_QUERY', () => {
-      const query = 'brown shoes';
-      const category = { field: 'a', values: ['b'] };
-      const products = [];
-      const suggestions = [];
-      const state: Store.Autocomplete = {
-        category,
-        products,
-        query: 'red shoes',
-        suggestions,
-      };
+    it('should update query state on UPDATE_AUTOCOMPLETE_QUERY', () => {
+      const newQuery = 'red shoes';
       const newState = {
         category,
         products,
-        query,
+        query: newQuery,
         suggestions,
       };
 
-      const reducer = autocomplete(state, { type: Actions.UPDATE_AUTOCOMPLETE_QUERY, query });
+      const reducer = autocomplete(state, { type: Actions.UPDATE_AUTOCOMPLETE_QUERY, query: newQuery });
 
       expect(reducer).to.eql(newState);
     });
 
     it('should update state on RECEIVE_AUTOCOMPLETE_SUGGESTIONS', () => {
-      const query = 'brown shoes';
       const categoryValues = ['a', 'c', 'd'];
-      const suggestions = ['e', 'f', 'g'];
-      const products = [];
-      const state: Store.Autocomplete = {
-        category: { field: 'a', values: ['b'] },
-        products,
-        query,
-        suggestions,
-      };
       const newState = {
-        category: { field: 'a', values: categoryValues },
+        category: { ...category, values: categoryValues },
         products,
         query,
         suggestions,
@@ -59,13 +51,6 @@ suite.only('autocomplete', ({ expect }) => {
     });
 
     it('should return state on default', () => {
-      const state: Store.Autocomplete = {
-        category: { field: 'a', values: ['b'] },
-        products: [],
-        query: 'red shoes',
-        suggestions: [],
-      };
-
       const reducer = autocomplete(state, {});
 
       expect(reducer).to.eql(state);
