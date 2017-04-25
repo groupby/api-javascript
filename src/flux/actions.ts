@@ -177,7 +177,6 @@ export interface Page {
   last: number;
   from: number;
   to: number;
-  total: number;
   range: number[];
 }
 

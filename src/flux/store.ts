@@ -109,11 +109,6 @@ namespace Store {
     to: number; // post
 
     /**
-     * the total number of products returned by this search
-     */
-    total: number; // post
-
-    /**
      * displayed number range (in <gb-pages>)
      */
     range: number[]; // post

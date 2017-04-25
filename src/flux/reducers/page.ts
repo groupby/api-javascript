@@ -16,12 +16,12 @@ export default function updatePage(state: Store.Page, action) {
     case Actions.RECEIVE_PAGE:
       return {
         ...state,
-        previous: action.previous,
-        next: action.next,
-        last: action.last,
         from: action.from,
+        last: action.last,
+        next: action.next,
+        previous: action.previous,
+        range: action.range,
         to: action.to,
-        
       };
     default:
       return state;
