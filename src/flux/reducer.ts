@@ -48,54 +48,54 @@ export function updateNavigations(state: Store.Indexed<Store.Navigation>, action
         const byIds = state.allIds.reduce(
           (newById, index) => Object.assign(newById, { [index]: { ...state.byId[index], selected: [] } }), { },
         );
-        if (!(navigationId && action.index)) {
-          return {
+  if (!(navigationId && action.index)) {
+    return {
             ...state,
-            byId: byIds,
-          };
-        } else {
-          return {
+      byId: byIds,
+    };
+  } else {
+    return {
             ...state,
-            byId: {
+      byId: {
               ...byIds,
-              [navigationId]: {
+        [navigationId]: {
                 ...state.byId[refinementIndex],
-                // TODO: maybe check if already there
-                selected: refinementIndex,
-              },
-            },
-          };
-        }
-      }
-    case Actions.SELECT_REFINEMENT:
-      if (navigationId && refinementIndex) {
-        return {
-          ...state,
-          byId: {
-            ...state.byId,
-            [navigationId]: {
-              ...state.byId[navigationId],
-              // TODO: maybe check if already there
-              selected: state.byId[navigationId].selected.concat(refinementIndex),
-            },
-          },
-        };
-      } else {
-        return state;
-      }
-    case Actions.DESELECT_REFINEMENT:
-      return {
-        ...state,
-        byId: {
-          ...state.byId,
-          [navigationId]: {
-            ...state.byId[navigationId],
-            selected: state.byId[navigationId].selected.filter((index) => index !== refinementIndex),
-          },
+          // TODO: maybe check if already there
+          selected: refinementIndex,
         },
-      };
+      },
+    };
+  }
+}
+    case Actions.SELECT_REFINEMENT:
+if (navigationId && refinementIndex) {
+  return {
+          ...state,
+    byId: {
+            ...state.byId,
+      [navigationId]: {
+              ...state.byId[navigationId],
+        // TODO: maybe check if already there
+        selected: state.byId[navigationId].selected.concat(refinementIndex),
+      },
+    },
+  };
+} else {
+  return state;
+}
+    case Actions.DESELECT_REFINEMENT:
+return {
+        ...state,
+  byId: {
+          ...state.byId,
+    [navigationId]: {
+            ...state.byId[navigationId],
+      selected: state.byId[navigationId].selected.filter((index) => index !== refinementIndex),
+    },
+  },
+};
     default:
-      return state;
+return state;
   }
 }
 
@@ -146,7 +146,7 @@ export function updateRedirect(state, action) {
 export function updateSorts(state: Store.Indexed.Selectable<Store.Sort.Labelled>, action) {
   switch (action) {
     case Actions.UPDATE_SORTS:
-      return { ...state, selected: action.label };
+      return { ...state, selected: action.id };
     default:
       return state;
   }

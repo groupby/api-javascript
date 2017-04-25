@@ -1,83 +1,74 @@
 import { Results } from '../models/response';
+import { Page } from './actions';
 import { Events, FluxCapacitor } from './capacitor';
+import Store from './store';
 import range = require('lodash.range');
 
 const MAX_RECORDS = 10000;
 
 export class Pager {
 
-  constructor(private flux: FluxCapacitor) { }
+  constructor(private state: Store.State, private results: Results) { }
 
-  next(): Promise<Results> {
-    return this.switchPage(this.nextPage);
+  previousPage(currentPage: number) {
+    return currentPage > 1 ? currentPage - 1 : null;
   }
 
-  prev(): Promise<Results> {
-    return this.switchPage(this.previousPage);
+  nextPage(currentPage: number, finalPage: number) {
+    return (currentPage + 1 <= finalPage) ? currentPage + 1 : null;
   }
 
-  last(): Promise<Results> {
-    return this.switchPage(this.finalPage);
+  finalPage(pageSize: number, totalRecords: number) {
+    return Math.max(this.getPage(this.restrictTotalRecords(totalRecords, pageSize), pageSize), 1);
   }
 
-  reset(): Promise<Results> {
-    return this.switchPage(this.firstPage);
+  fromResult(currentPage: number, pageSize: number) {
+    return currentPage * pageSize + 1;
+    // TODO move the default value into reducer setup
+    // return this.flux.query.build().skip + 1 || 1;
   }
 
-  get currentPage(): number {
-    return this.getPage(this.fromResult);
-  }
-
-  get previousPage(): number | null {
-    return (this.currentPage - 1 >= this.firstPage) ? this.currentPage - 1 : null;
-  }
-
-  get nextPage(): number | null {
-    return (this.currentPage + 1 <= this.finalPage) ? this.currentPage + 1 : null;
-  }
-
-  get firstPage(): number {
-    return 1;
-  }
-
-  get finalPage(): number {
-    return Math.max(this.getPage(this.restrictTotalRecords(this.totalRecords, this.pageSize)), 1);
-  }
-
-  get fromResult(): number {
-    return this.flux.query.build().skip + 1 || 1;
-  }
-
-  get toResult(): number {
-    if ((this.currentPage * this.pageSize) > this.totalRecords) {
-      return ((this.currentPage - 1) * this.pageSize) + (this.totalRecords % this.currentPage);
+  toResult(currentPage: number, pageSize: number, totalRecords: number) {
+    if ((currentPage * pageSize) > totalRecords) {
+      return ((currentPage - 1) * pageSize) + (totalRecords % currentPage);
     } else {
-      return this.currentPage * this.pageSize;
+      return currentPage * pageSize;
     }
   }
 
   get totalRecords(): number {
-    return this.flux.results ? this.flux.results.totalRecordCount : 0;
+    return this.results.totalRecordCount;
   }
 
-  pageExists(page: number): boolean {
-    return page <= this.finalPage && page >= this.firstPage;
+  get pageSize(): number {
+    // TODO move this default into the reducer setup
+    return this.state.data.page.size || 10;
   }
 
-  pageNumbers(limit: number = 5): number[] {
-    return range(1, Math.min(this.finalPage + 1, limit + 1))
-      .map(this.transformPages(limit));
+  get currentPage(): number {
+    return this.state.data.page.current;
   }
 
-  switchPage(page: number): Promise<Results | void> {
-    if (this.pageExists(page)) {
-      const skip = (page - 1) * this.pageSize;
-      this.flux.query.skip(skip);
-      this.flux.emit(Events.PAGE_CHANGED, { pageNumber: page });
-      return this.flux.search();
-    } else {
-      return Promise.reject(new Error(`page ${page} does not exist`));
-    }
+  build(): Page {
+    const pageSize = this.pageSize;
+    const currentPage = this.state.data.page.current;
+    const totalRecords = this.totalRecords;
+    const finalPage = this.finalPage(pageSize, totalRecords);
+
+    return {
+      from: this.fromResult(currentPage, pageSize),
+      last: finalPage,
+      next: this.nextPage(currentPage, finalPage),
+      previous: this.previousPage(currentPage),
+      range: this.pageNumbers(currentPage, finalPage, this.state.data.page.limit),
+      to: this.toResult(currentPage, pageSize, totalRecords),
+      total: this.totalRecords,
+    };
+  }
+
+  pageNumbers(currentPage: number, finalPage: number, limit: number): number[] {
+    return range(1, Math.min(finalPage + 1, limit + 1))
+      .map(this.transformPages(currentPage, finalPage, limit));
   }
 
   restrictTotalRecords(total: number, pageSize: number): number {
@@ -94,28 +85,24 @@ export class Pager {
     }
   }
 
-  getPage(record: number): number {
+  getPage(record: number, pageSize: number): number {
     return Math.ceil(record / this.pageSize);
   }
 
-  private transformPages(limit: number): (value: number) => number {
+  transformPages(currentPage: number, finalPage: number, limit: number): (value: number) => number {
     const border = Math.ceil(limit / 2);
     return (value: number): number => {
       // account for 0-indexed pages
-      if (this.currentPage <= border || limit > this.finalPage) {
+      if (currentPage <= border || limit > finalPage) {
         // pages start at beginning
         return value;
-      } else if (this.currentPage > this.finalPage - border) {
+      } else if (currentPage > finalPage - border) {
         // pages start and end in the middle
-        return value + this.finalPage - limit;
+        return value + finalPage - limit;
       } else {
         // pages end at last page
-        return value + this.currentPage - border;
+        return value + currentPage - border;
       }
     };
-  }
-
-  private get pageSize(): number {
-    return this.flux.query.build().pageSize || 10;
   }
 }

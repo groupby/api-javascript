@@ -126,7 +126,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
     describe('search()', () => {
       it('should dispatch updateSearch()', () => {
         const query = 'half moon';
-        const updateSearch = stub(Actions, 'updateSearch');
+        const updateSearch = stub(flux.actions, 'updateSearch');
 
         flux.search(query);
 
@@ -135,7 +135,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
 
       it('should fallback to previous query', () => {
         const query = flux.originalQuery = 'half moon';
-        const updateSearch = stub(Actions, 'updateSearch');
+        const updateSearch = stub(flux.actions, 'updateSearch');
 
         flux.search();
 
@@ -146,16 +146,18 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
     describe('reset()', () => {
       it('should dispatch updateSearch()', () => {
         const query = 'half moon';
+        const field = 'brand';
+        const index = 8;
         const refinements = [{ a: 'b' }, { c: 'd' }];
-        const updateSearch = stub(Actions, 'updateSearch');
+        const updateSearch = stub(flux.actions, 'updateSearch');
 
-        flux.reset(query, refinements);
+        flux.reset(query, { field, index });
 
-        expect(updateSearch).to.be.calledWith({ query, refinements, clear: true });
+        expect(updateSearch).to.be.calledWith({ query, field, index, clear: true });
       });
 
       it('should fallback to null query and empty refinements', () => {
-        const updateSearch = stub(Actions, 'updateSearch');
+        const updateSearch = stub(flux.actions, 'updateSearch');
 
         flux.reset();
 
@@ -165,7 +167,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
 
     describe('resize()', () => {
       it('should dispatch updatePageSize()', () => {
-        const updatePageSize = stub(Actions, 'updatePageSize');
+        const updatePageSize = stub(flux.actions, 'updatePageSize');
 
         flux.resize(24);
 
@@ -176,7 +178,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
     describe('sort()', () => {
       it('should dispatch updateSorts()', () => {
         const sort = { field: 'price', descending: true };
-        const updateSorts = stub(Actions, 'updateSorts');
+        const updateSorts = stub(flux.actions, 'updateSorts');
 
         flux.sort(sort);
 
@@ -185,7 +187,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
 
       it('should accept multiple sorts', () => {
         const sorts = [{ field: 'price', descending: true }, { field: 'popularity' }];
-        const updateSorts = stub(Actions, 'updateSorts');
+        const updateSorts = stub(flux.actions, 'updateSorts');
 
         flux.sort(sorts);
 
@@ -195,7 +197,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
 
     describe('refine()', () => {
       it('should dispatch selectRefinement()', () => {
-        const selectRefinement = stub(Actions, 'selectRefinement');
+        const selectRefinement = stub(flux.actions, 'selectRefinement');
 
         flux.refine('brand', 3);
 
@@ -205,7 +207,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
 
     describe('unrefine()', () => {
       it('should dispatch deselectRefinement()', () => {
-        const deselectRefinement = stub(Actions, 'deselectRefinement');
+        const deselectRefinement = stub(flux.actions, 'deselectRefinement');
 
         flux.unrefine('brand', 3);
 
@@ -216,7 +218,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
     describe('details()', () => {
       it('should dispatch updateDetailsId()', () => {
         const id = '123123';
-        const updateDetailsId = stub(Actions, 'updateDetailsId');
+        const updateDetailsId = stub(flux.actions, 'updateDetailsId');
 
         flux.details(id);
 
@@ -226,7 +228,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
 
     describe('switchCollection()', () => {
       it('should dispatch selectCollection()', () => {
-        const selectCollection = stub(Actions, 'selectCollection');
+        const selectCollection = stub(flux.actions, 'selectCollection');
 
         flux.switchCollection('products');
 

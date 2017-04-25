@@ -2,105 +2,119 @@ import Actions from '../../../src/flux/actions';
 import * as utils from '../../../src/flux/utils';
 import suite from '../_suite';
 
-suite('actions', ({ expect, spy, stub }) => {
-  describe('updateSearch()', () => {
-    it('should create an UPDATE_SEARCH action', () => {
-      const data: any = { a: 'b' };
-      const thunk = stub(utils, 'thunk');
+suite('Actions', ({ expect, spy, stub }) => {
+  let actions: Actions;
+  const bridge: any = { a: 'b' };
 
-      Actions.updateSearch(data);
+  beforeEach(() => actions = new Actions(bridge, { search: '/search' }));
 
-      expect(thunk).to.be.calledWith(Actions.UPDATE_SEARCH, data);
+  describe('constructor()', () => {
+    it('should set properties', () => {
+      expect(actions['bridge']).to.be.a('function');
+      expect(actions['linkMapper']).to.be.a('function');
     });
   });
 
-  describe('selectRefinement()', () => {
-    it('should create a SELECT_REFINEMENT action', () => {
-      const navigationId = 'brand';
-      const index = 3;
-      const thunk = stub(utils, 'thunk');
+  describe('request action creators', () => {
+    describe('updateSearch()', () => {
+      it('should create an UPDATE_SEARCH action', () => {
+        const data: any = { a: 'b' };
+        const thunk = stub(utils, 'thunk');
 
-      Actions.selectRefinement(navigationId, index);
+        actions.updateSearch(data);
 
-      expect(thunk).to.be.calledWith(Actions.SELECT_REFINEMENT, { navigationId, index });
+        expect(thunk).to.be.calledWith(Actions.UPDATE_SEARCH, data);
+      });
     });
-  });
 
-  describe('deselectRefinement()', () => {
-    it('should create a DESELECT_REFINEMENT action', () => {
-      const navigationId = 'brand';
-      const index = 3;
-      const thunk = stub(utils, 'thunk');
+    describe('selectRefinement()', () => {
+      it('should create a SELECT_REFINEMENT action', () => {
+        const navigationId = 'brand';
+        const index = 3;
+        const thunk = stub(utils, 'thunk');
 
-      Actions.deselectRefinement(navigationId, index);
+        actions.selectRefinement(navigationId, index);
 
-      expect(thunk).to.be.calledWith(Actions.DESELECT_REFINEMENT, { navigationId, index });
+        expect(thunk).to.be.calledWith(Actions.SELECT_REFINEMENT, { navigationId, index });
+      });
     });
-  });
 
-  describe('selectCollection()', () => {
-    it('should create a SELECT_COLLECTION action', () => {
-      const id = 'products';
-      const thunk = stub(utils, 'thunk');
+    describe('deselectRefinement()', () => {
+      it('should create a DESELECT_REFINEMENT action', () => {
+        const navigationId = 'brand';
+        const index = 3;
+        const thunk = stub(utils, 'thunk');
 
-      Actions.selectCollection(id);
+        actions.deselectRefinement(navigationId, index);
 
-      expect(thunk).to.be.calledWith(Actions.SELECT_COLLECTION, { id });
+        expect(thunk).to.be.calledWith(Actions.DESELECT_REFINEMENT, { navigationId, index });
+      });
     });
-  });
 
-  describe('updateAutocompleteQuery()', () => {
-    it('should create an UPDATE_AUTOCOMPLETE_QUERY action', () => {
-      const query = 'William Shake';
-      const thunk = stub(utils, 'thunk');
+    describe('selectCollection()', () => {
+      it('should create a SELECT_COLLECTION action', () => {
+        const id = 'products';
+        const thunk = stub(utils, 'thunk');
 
-      Actions.updateAutocompleteQuery(query);
+        actions.selectCollection(id);
 
-      expect(thunk).to.be.calledWith(Actions.UPDATE_AUTOCOMPLETE_QUERY, { query });
+        expect(thunk).to.be.calledWith(Actions.SELECT_COLLECTION, { id });
+      });
     });
-  });
 
-  describe('updateSorts()', () => {
-    it('should create a UPDATE_SORTS action', () => {
-      const sort = { field: 'price' };
-      const thunk = stub(utils, 'thunk');
+    describe('updateAutocompleteQuery()', () => {
+      it('should create an UPDATE_AUTOCOMPLETE_QUERY action', () => {
+        const query = 'William Shake';
+        const thunk = stub(utils, 'thunk');
 
-      Actions.updateSorts(sort);
+        actions.updateAutocompleteQuery(query);
 
-      expect(thunk).to.be.calledWith(Actions.UPDATE_SORTS, { sorts: [sort] });
+        expect(thunk).to.be.calledWith(Actions.UPDATE_AUTOCOMPLETE_QUERY, { query });
+      });
     });
-  });
 
-  describe('updatePageSize()', () => {
-    it('should create an UPDATE_PAGE_SIZE action', () => {
-      const size = 34;
-      const thunk = stub(utils, 'thunk');
+    describe('updateSorts()', () => {
+      it('should create a UPDATE_SORTS action', () => {
+        const sort = { field: 'price' };
+        const thunk = stub(utils, 'thunk');
 
-      Actions.updatePageSize(size);
+        actions.updateSorts(sort);
 
-      expect(thunk).to.be.calledWith(Actions.UPDATE_PAGE_SIZE, { size });
+        expect(thunk).to.be.calledWith(Actions.UPDATE_SORTS, { sorts: [sort] });
+      });
     });
-  });
 
-  describe('updateCurrentPage()', () => {
-    it('should create an UPDATE_CURRENT_PAGE action', () => {
-      const page = 4;
-      const thunk = stub(utils, 'thunk');
+    describe('updatePageSize()', () => {
+      it('should create an UPDATE_PAGE_SIZE action', () => {
+        const size = 34;
+        const thunk = stub(utils, 'thunk');
 
-      Actions.updateCurrentPage(page);
+        actions.updatePageSize(size);
 
-      expect(thunk).to.be.calledWith(Actions.UPDATE_CURRENT_PAGE, { page });
+        expect(thunk).to.be.calledWith(Actions.UPDATE_PAGE_SIZE, { size });
+      });
     });
-  });
 
-  describe('updateDetailsId()', () => {
-    it('should create an UPDATE_CURRENT_PAGE action', () => {
-      const id = '123';
-      const thunk = stub(utils, 'thunk');
+    describe('updateCurrentPage()', () => {
+      it('should create an UPDATE_CURRENT_PAGE action', () => {
+        const page = 4;
+        const thunk = stub(utils, 'thunk');
 
-      Actions.updateDetailsId(id);
+        actions.updateCurrentPage(page);
 
-      expect(thunk).to.be.calledWith(Actions.UPDATE_DETAILS_ID, { id });
+        expect(thunk).to.be.calledWith(Actions.UPDATE_CURRENT_PAGE, { page });
+      });
+    });
+
+    describe('updateDetailsId()', () => {
+      it('should create an UPDATE_CURRENT_PAGE action', () => {
+        const id = '123';
+        const thunk = stub(utils, 'thunk');
+
+        actions.updateDetailsId(id);
+
+        expect(thunk).to.be.calledWith(Actions.UPDATE_DETAILS_ID, { id });
+      });
     });
   });
 });

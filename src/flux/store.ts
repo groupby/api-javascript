@@ -44,15 +44,8 @@ namespace Store {
   }
 
   export namespace Query {
-    export interface Related {
-      value: string; // post
-      url: string; // post (generated)
-    }
-
-    export interface DidYouMean {
-      value: string; // post
-      url: string; // post (generated)
-    }
+    export type Related = Linkable;
+    export type DidYouMean = Linkable;
   }
 
   export interface Collection {
@@ -84,6 +77,15 @@ namespace Store {
     current: number; // pre
 
     /**
+     * number of first page
+     */
+    first: 1; // static
+    /**
+     * maximum number of page numbers to display
+     */
+    limit: number; // static
+
+    /**
      * number of next page
      */
     previous: number; // post
@@ -91,10 +93,6 @@ namespace Store {
      * number of previous page
      */
     next: number; // post
-    /**
-     * number of first page
-     */
-    first: 1; // static
     /**
      * number of last page
      */
@@ -108,6 +106,11 @@ namespace Store {
      * end of displayed products
      */
     to: number; // post
+
+    /**
+     * the total number of products returned by this search
+     */
+    total: number; // post
 
     /**
      * displayed number range (in <gb-pages>)
@@ -125,8 +128,19 @@ namespace Store {
 
   export type Zone = ContentZone | RichContentZone | RecordZone;
 
+  export namespace Zone {
+    export type Type = 'content' | 'rich_content' | 'record';
+
+    export namespace Type {
+      export const CONTENT = 'content';
+      export const RICH_CONTENT = 'rich_content';
+      export const RECORD = 'record';
+    }
+  }
+
   export interface BaseZone {
     name: string;
+    type: Zone.Type;
   }
 
   export interface ContentZone extends BaseZone {
@@ -154,25 +168,15 @@ namespace Store {
     [key: string]: any; // post
   }
 
-  export type Navigation = ValueNavigation | RangeNavigation;
-
-  export interface BaseNavigation {
+  export interface Navigation {
     field: string; // post
     label: string; // post
-    or?: boolean; // post
     more?: boolean; // post
-    sort?: Sort; // post
+    range?: boolean; // post
+    or?: boolean; // post
     selected: number[]; // pre
-  }
-
-  export interface ValueNavigation extends BaseNavigation {
-    range?: false; // post
-    refinements: ValueRefinement[]; // post
-  }
-
-  export interface RangeNavigation extends BaseNavigation {
-    range: true; // post
-    refinements: RangeRefinement[]; // post
+    refinements: Array<ValueRefinement | RangeRefinement>; // post
+    sort?: Sort; // post
   }
 
   export interface BaseRefinement {
@@ -193,7 +197,7 @@ namespace Store {
   export interface Autocomplete {
     query: string; // pre
     suggestions: string[]; // post
-    categories: Autocomplete.Category[]; // static & post
+    category: Autocomplete.Category; // static & post
     products: Product[]; // post
   }
 
@@ -213,6 +217,11 @@ namespace Store {
     export interface Selectable<T> extends Indexed<T> {
       selected: string;
     }
+  }
+
+  export interface Linkable {
+    value: string; // post
+    url: string; // post (generated)
   }
 
   export function create() {

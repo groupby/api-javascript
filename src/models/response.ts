@@ -37,6 +37,27 @@ export interface Template {
   zones: any;
 }
 
+export type Zone = ContentZone | RichContentZone | RecordZone;
+
+export interface BaseZone {
+  name: string;
+}
+
+export interface ContentZone extends BaseZone {
+  type: 'Content';
+  content: string;
+}
+
+export interface RichContentZone extends BaseZone {
+  type: 'Rich_Content';
+  content: string;
+}
+
+export interface RecordZone extends BaseZone {
+  type: 'Records';
+  records: Record[];
+}
+
 export interface PageInfo {
   recordStart: number;
   recordEnd: number;
@@ -53,6 +74,7 @@ export interface Record {
   id: string;
   url: string;
   title: string;
+  collection: string;
   snippet?: string;
   allMeta: any;
 }
@@ -63,14 +85,16 @@ export interface Navigation {
   type: RefinementType;
   range?: boolean;
   or?: boolean;
+  moreRefinements?: boolean;
   ignored?: boolean;
   sort?: SortType;
-  refinements: Array<ValueRefinement | RangeRefinement>;
+  refinements: Array<ValueRefinement & RangeRefinement>;
   metadata: any[];
 }
 
 export interface Refinement {
   exclude?: boolean;
+  count: number;
   type: RefinementType;
 }
 

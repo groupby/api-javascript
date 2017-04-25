@@ -1,11 +1,11 @@
-import { RangeRefinement, Refinement, ValueRefinement } from './response';
+import { RefinementType } from './response';
 
 export type SortOrder = 'Ascending' | 'Descending';
 
 export interface Request {
   // query parameters
   query?: string;
-  refinements?: SelectedRefinement[];
+  refinements?: Refinement[];
 
   // query configuration
   fields?: string[];
@@ -46,14 +46,19 @@ export interface CustomUrlParam {
   value: string;
 }
 
-export interface SelectedRefinement extends Refinement {
+export interface Refinement {
+  type: RefinementType;
   navigationName: string;
+  exclude?: boolean;
 }
 
-export interface SelectedRangeRefinement extends SelectedRefinement, RangeRefinement {
+export interface RangeRefinement extends Refinement {
+  low?: number;
+  high?: number;
 }
 
-export interface SelectedValueRefinement extends SelectedRefinement, ValueRefinement {
+export interface ValueRefinement extends Refinement {
+  value: string;
 }
 
 export interface RestrictNavigation {
