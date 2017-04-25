@@ -97,8 +97,8 @@ class Actions {
   receiveMoreRefinements = (navigationId: string, refinements: any) =>
     thunk(Actions.RECEIVE_MORE_REFINEMENTS, { navigationId, refinements })
 
-  receiveAutocompleteSuggestions = (suggestions: string[], category: Store.Autocomplete.Category) =>
-    thunk(Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, category })
+  receiveAutocompleteSuggestions = (suggestions: string[], categoryValues: string[]) =>
+    thunk(Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, categoryValues })
 
   receiveDetailsProduct = (product: Store.Product) =>
     thunk(Actions.RECEIVE_DETAILS_PRODUCT, { product })
