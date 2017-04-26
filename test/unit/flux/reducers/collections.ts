@@ -51,26 +51,26 @@ suite('collections', ({ expect, spy }) => {
         byId: {
           Department: {
             ...Department,
-      total,
+            total,
           },
-    Main,
+          Main,
         },
-  selected,
+        selected,
       };
 
-const reducer = collections(state, {
-  type: Actions.RECEIVE_COLLECTION_COUNT,
-  collection: allIds[0],
-  count: total,
-});
+      const reducer = collections(state, {
+        type: Actions.RECEIVE_COLLECTION_COUNT,
+        collection: allIds[0],
+        count: total,
+      });
 
-expect(reducer).to.eql(newState);
+      expect(reducer).to.eql(newState);
     });
 
-it('should return state on default', () => {
-  const reducer = collections(state, {});
+    it('should return state on default', () => {
+      const reducer = collections(state, {});
 
-  expect(reducer).to.eql(state);
-});
+      expect(reducer).to.eql(state);
+    });
   });
 });

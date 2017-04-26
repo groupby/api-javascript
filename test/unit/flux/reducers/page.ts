@@ -3,7 +3,7 @@ import page from '../../../../src/flux/reducers/page';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite.only('page', ({ expect }) => {
+suite('page', ({ expect }) => {
   let actions: Actions;
   const size: 10;
   const current: 3;

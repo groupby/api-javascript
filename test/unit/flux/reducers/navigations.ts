@@ -3,7 +3,7 @@ import navigations from '../../../../src/flux/reducers/navigations';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite.only('navigations', ({ expect }) => {
+suite('navigations', ({ expect }) => {
   let actions: Actions;
   const allIds = ['Format', 'Section'];
   const Format = {

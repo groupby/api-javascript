@@ -3,7 +3,7 @@ import details from '../../../../src/flux/reducers/details';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite.only('details', ({ expect }) => {
+suite('details', ({ expect }) => {
   let actions: Actions;
   const id = '19283';
   const product = {
