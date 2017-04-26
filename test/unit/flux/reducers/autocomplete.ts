@@ -3,7 +3,7 @@ import autocomplete from '../../../../src/flux/reducers/autocomplete';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite.only('autocomplete', ({ expect }) => {
+suite('autocomplete', ({ expect }) => {
   let actions: Actions;
   const query = 'brown shoes';
   const category = { field: 'a', values: ['b'] };

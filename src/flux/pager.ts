@@ -19,7 +19,7 @@ export class Pager {
   }
 
   finalPage(pageSize: number, totalRecords: number) {
-    return Math.max(this.getPage(this.restrictTotalRecords(totalRecords, pageSize), pageSize), 1);
+    return Math.max(this.getPage(pageSize, this.restrictTotalRecords(pageSize, totalRecords)), 1);
   }
 
   fromResult(currentPage: number, pageSize: number) {
@@ -41,44 +41,44 @@ export class Pager {
     const pageSize = this.state.data.page.size || 10;
     const currentPage = this.state.data.page.current;
     const totalRecords = this.state.data.recordCount;
-    const finalPage = this.finalPage(pageSize, totalRecords);
+    const last = this.finalPage(pageSize, totalRecords);
 
     return {
       from: this.fromResult(currentPage, pageSize),
-      last: finalPage,
-      next: this.nextPage(currentPage, finalPage),
+      last,
+      next: this.nextPage(currentPage, last),
       previous: this.previousPage(currentPage),
-      range: this.pageNumbers(currentPage, finalPage, this.state.data.page.limit),
+      range: this.pageNumbers(currentPage, last, this.state.data.page.limit),
       to: this.toResult(currentPage, pageSize, totalRecords),
     };
   }
 
-  pageNumbers(currentPage: number, finalPage: number, limit: number): number[] {
+  pageNumbers(currentPage: number, finalPage: number, limit: number) {
     return range(1, Math.min(finalPage + 1, limit + 1))
       .map(this.transformPages(currentPage, finalPage, limit));
   }
 
-  restrictTotalRecords(total: number, pageSize: number): number {
-    if (total > MAX_RECORDS) {
+  restrictTotalRecords(pageSize: number, totalRecords: number) {
+    if (totalRecords > MAX_RECORDS) {
       return MAX_RECORDS - (MAX_RECORDS % pageSize);
-    } else if ((total + pageSize) > MAX_RECORDS) {
+    } else if ((totalRecords + pageSize) > MAX_RECORDS) {
       if (MAX_RECORDS % pageSize === 0) {
         return MAX_RECORDS;
       } else {
-        return total - (total % pageSize);
+        return totalRecords - (totalRecords % pageSize);
       }
     } else {
-      return total;
+      return totalRecords;
     }
   }
 
-  getPage(record: number, pageSize: number): number {
-    return Math.ceil(record / pageSize);
+  getPage(pageSize: number, totalRecords: number) {
+    return Math.ceil(totalRecords / pageSize);
   }
 
-  transformPages(currentPage: number, finalPage: number, limit: number): (value: number) => number {
+  transformPages(currentPage: number, finalPage: number, limit: number) {
     const border = Math.ceil(limit / 2);
-    return (value: number): number => {
+    return (value: number) => {
       // account for 0-indexed pages
       if (currentPage <= border || limit > finalPage) {
         // pages start at beginning

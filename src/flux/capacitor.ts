@@ -3,7 +3,7 @@ import * as redux from 'redux';
 import filterObject = require('filter-object');
 import { BrowserBridge } from '../core/bridge';
 import { Query, QueryConfiguration } from '../core/query';
-import { RangeRefinement, Sort, ValueRefinement } from '../models/request';
+import { SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
 import { Navigation, RefinementResults, Results } from '../models/response';
 import ActionPack from './actions';
 import Observer from './observer';
@@ -59,7 +59,7 @@ export namespace Events {
 }
 
 export { Pager };
-export type FluxRefinement = ValueRefinement | RangeRefinement;
+export type FluxRefinement = SelectedValueRefinement | SelectedRangeRefinement;
 
 export interface FluxConfiguration extends QueryConfiguration {
   bridge?: FluxBridgeConfig;

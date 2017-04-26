@@ -1,3 +1,8 @@
+import * as clone from 'clone';
+import deepEqual = require('deep-equal');
+import filterObject = require('filter-object');
+import * as qs from 'qs';
+
 import {
   Biasing,
   CustomUrlParam,
@@ -7,19 +12,15 @@ import {
   SelectedRangeRefinement,
   SelectedRefinement,
   SelectedValueRefinement,
-  Sort
+  Sort,
 } from '../models/request';
 import {
   Navigation,
   RangeRefinement,
   Refinement,
-  ValueRefinement
+  ValueRefinement,
 } from '../models/response';
 import { NavigationConverter } from '../utils/converter';
-import * as clone from 'clone';
-import * as deepEqual from 'deep-equal';
-import filterObject = require('filter-object');
-import * as qs from 'qs';
 
 const REFINEMENT_MASK = '{navigationName,value,low,high}';
 
@@ -75,7 +76,9 @@ export class Query {
   withoutSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
     refinements.forEach((refinement) => {
       const index = this.request.refinements.findIndex((ref) => deepEqual(ref, refinement));
-      if (index > -1) this.request.refinements.splice(index, 1);
+      if (index > -1) {
+        this.request.refinements.splice(index, 1);
+      }
     });
     return this;
   }
@@ -144,7 +147,7 @@ export class Query {
       navigationName,
       value,
       exclude,
-      type: 'Value'
+      type: 'Value',
     });
   }
 
@@ -154,7 +157,7 @@ export class Query {
       low,
       high,
       exclude,
-      type: 'Range'
+      type: 'Range',
     });
   }
 
@@ -239,7 +242,7 @@ export class Query {
   }
 
   private clearEmptyArrays(request: Request): Request {
-    for (let key in request) {
+    for (const key in request) {
       if (request[key] instanceof Array && request[key].length === 0) {
         delete request[key];
       }

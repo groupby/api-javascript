@@ -5,7 +5,7 @@ export type SortOrder = 'Ascending' | 'Descending';
 export interface Request {
   // query parameters
   query?: string;
-  refinements?: Refinement[];
+  refinements?: SelectedRefinement[];
 
   // query configuration
   fields?: string[];
@@ -46,18 +46,18 @@ export interface CustomUrlParam {
   value: string;
 }
 
-export interface Refinement {
+export interface SelectedRefinement {
   type: RefinementType;
   navigationName: string;
   exclude?: boolean;
 }
 
-export interface RangeRefinement extends Refinement {
+export interface SelectedRangeRefinement extends SelectedRefinement {
   low?: number;
   high?: number;
 }
 
-export interface ValueRefinement extends Refinement {
+export interface SelectedValueRefinement extends SelectedRefinement {
   value: string;
 }
 
