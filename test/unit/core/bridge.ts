@@ -131,9 +131,9 @@ suite('Bridge', ({ expect, spy }) => {
     query = new Query('shoes');
 
     bridge.search(query)
-      .catch((err) => {
-        expect(err.data).to.eq('error');
-        expect(err.status).to.eq(400);
+      .catch(({ response }) => {
+        expect(response.data).to.eq('error');
+        expect(response.status).to.eq(400);
         done();
       });
   });
@@ -145,9 +145,9 @@ suite('Bridge', ({ expect, spy }) => {
 
     query = new Query('shoes');
 
-    bridge.search(query, (err) => {
-      expect(err.data).to.eq('error');
-      expect(err.status).to.eq(400);
+    bridge.search(query, ({ response }) => {
+      expect(response.data).to.eq('error');
+      expect(response.status).to.eq(400);
       done();
     });
   });
@@ -174,10 +174,10 @@ suite('Bridge', ({ expect, spy }) => {
     query = new Query('shoes');
 
     bridge.search(query)
-      .catch((err) => {
-        expect(err.data).to.eq('error');
-        expect(err.status).to.eq(400);
-        expect(errorHandler.calledWith(err)).to.be.true;
+      .catch(({ response }) => {
+        expect(response.data).to.eq('error');
+        expect(response.status).to.eq(400);
+        expect(errorHandler.calledWith(response)).to.be.true;
         done();
       });
   });
