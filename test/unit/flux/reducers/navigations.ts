@@ -1,5 +1,5 @@
 import Actions from '../../../../src/flux/actions';
-import navigations, { createByIdsFactory } from '../../../../src/flux/reducers/navigations';
+import navigations from '../../../../src/flux/reducers/navigations';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
