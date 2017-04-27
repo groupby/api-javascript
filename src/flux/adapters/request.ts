@@ -14,10 +14,13 @@ namespace Request {
   export const extractRefinements = (state: Store.State) =>
     state.data.navigations.allIds.map((id) => state.data.navigations.byId[id])
       .reduce((allRefinements, navigation) =>
-        allRefinements.concat((<any[]>navigation.refinements).map(({ low, high, value }) =>
-          navigation.range
-            ? { navigationName: navigation.field, type: 'Range', high, low }
-            : { navigationName: navigation.field, type: 'Value', value })), []);
+        [
+          ...allRefinements,
+          ...(<any[]>navigation.refinements).map(({ low, high, value }) =>
+            navigation.range
+              ? { navigationName: navigation.field, type: 'Range', high, low }
+              : { navigationName: navigation.field, type: 'Value', value }),
+        ], []);
 }
 
 export default Request;
