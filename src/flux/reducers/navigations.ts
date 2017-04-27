@@ -8,19 +8,19 @@ export default function updateNavigations(state: Store.Indexed<Store.Navigation>
     case Actions.UPDATE_SEARCH:
       // TODO: add case for clear
       if (action.clear) {
-        const byIds = state.allIds.reduce(
+        const byId = state.allIds.reduce(
           (navs, nav) => Object.assign(navs, { [nav]: {...state.byId[nav], selected: []} }), {},
         );
         if (!(navigationId && refinementIndex != null)) {
           return {
             ...state,
-            byId: byIds,
+            byId,
           };
         } else {
           return {
             ...state,
             byId: {
-              ...byIds,
+              ...byId,
               [navigationId]: {
                 ...state.byId[navigationId],
                 // TODO: maybe check if already there
@@ -32,14 +32,14 @@ export default function updateNavigations(state: Store.Indexed<Store.Navigation>
       }
     case Actions.RECEIVE_NAVIGATIONS:
       const navigations = action.navigations;
-      const newIds = navigations.map((nav) => nav.field);
-      const byIds = navigations.reduce(
+      const allIds = navigations.map((nav) => nav.field);
+      const byId = navigations.reduce(
         (navs, nav) => Object.assign(navs, { [nav.field]: {...nav, selected: []} }), {},
       );
       return {
         ...state,
-        allIds: newIds,
-        byId: byIds,
+        allIds,
+        byId,
       };
     case Actions.SELECT_REFINEMENT:
       if (navigationId && refinementIndex != null) {
