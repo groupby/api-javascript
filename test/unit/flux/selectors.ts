@@ -17,14 +17,14 @@ suite('selectors', ({ expect, stub }) => {
     it('should return false if navigation does not exist', () => {
       const navigation = stub(Selectors, 'navigation');
 
-      expect(Selectors.isRefinementDeselected({}, 'my navigation', 4)).to.be.falsy;
+      expect(Selectors.isRefinementDeselected({}, 'my navigation', 4)).to.not.be.ok;
     });
 
     it('should return false if refinement is selected already', () => {
       const navigation = { selected: [4] };
       const navigationStub = stub(Selectors, 'navigation').returns(navigation);
 
-      expect(Selectors.isRefinementDeselected({}, 'my navigation', 4)).to.be.falsy;
+      expect(Selectors.isRefinementDeselected({}, 'my navigation', 4)).to.not.be.ok;
     });
 
     it('should return true if refinement is not selected already', () => {
@@ -39,14 +39,14 @@ suite('selectors', ({ expect, stub }) => {
     it('should return false if navigation does not exist', () => {
       const navigation = stub(Selectors, 'navigation');
 
-      expect(Selectors.isRefinementSelected({}, 'my navigation', 4)).to.be.falsy;
+      expect(Selectors.isRefinementSelected({}, 'my navigation', 4)).to.not.be.ok;
     });
 
     it('should return false if refinement is deselected already', () => {
       const navigation = { selected: [8, 3] };
       const navigationStub = stub(Selectors, 'navigation').returns(navigation);
 
-      expect(Selectors.isRefinementSelected({}, 'my navigation', 4)).to.be.falsy;
+      expect(Selectors.isRefinementSelected({}, 'my navigation', 4)).to.not.be.ok;
     });
 
     it('should return true if refinement is selected already', () => {
@@ -61,13 +61,13 @@ suite('selectors', ({ expect, stub }) => {
     it('should return false if navigation does not exist', () => {
       const navigation = stub(Selectors, 'navigation');
 
-      expect(Selectors.hasMoreRefinements({}, 'my navigation')).to.be.falsy;
+      expect(Selectors.hasMoreRefinements({}, 'my navigation')).to.not.be.ok;
     });
 
     it('should return false if navigation has no more refinements', () => {
       const navigationStub = stub(Selectors, 'navigation').returns({});
 
-      expect(Selectors.hasMoreRefinements({}, 'my navigation')).to.be.falsy;
+      expect(Selectors.hasMoreRefinements({}, 'my navigation')).to.not.be.ok;
     });
 
     it('should return true if navigation has more refinements', () => {
