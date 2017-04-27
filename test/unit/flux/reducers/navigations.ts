@@ -86,6 +86,48 @@ suite('navigations', ({ expect }) => {
       expect(reducer).to.eql(newState);
     });
 
+    it('should update navigations state on RECEIVE_NAVIGATIONS', () => {
+      const newNavs = {
+        Colour: {
+          field: 'colour',
+          label: 'Colour',
+          more: true,
+          or: true,
+          selected: [],
+          refinements: [
+            { value: 'red', total: 23 },
+            { value: 'green', total: 199 },
+            { value: 'blue', total: 213 },
+          ],
+        },
+        Size: {
+          field: 'size',
+          label: 'Size',
+          more: false,
+          or: false,
+          selected: [],
+          refinements: [
+            { value: 'small', total: 123 },
+            { value: 'medium', total: 309 },
+            { value: 'large', total: 13 },
+          ],
+        },
+      };
+      const newState = {
+        allIds: ['Colour', 'Size'],
+        byId: {
+          ...newNavs,
+        },
+      };
+
+      const reducer = navigations(state, {
+        type: Actions.RECEIVE_NAVIGATIONS,
+        navigations: newNavs,
+      });
+
+      expect(reducer).to.eql(newState);
+    });
+
     it('should add selected refinement state on SELECT_REFINEMENT', () => {
       const newState = {
         allIds,
@@ -123,6 +165,31 @@ suite('navigations', ({ expect }) => {
         type: Actions.DESELECT_REFINEMENT,
         navigationId: 'Format',
         index: 0,
+      });
+
+      expect(reducer).to.eql(newState);
+    });
+
+    it('should update refinements state on RECEIVE_MORE_REFINEMENTS', () => {
+      const refinements = [
+        { value: 'Paper back', total: 400 },
+        { value: 'ebook', total: 2000 },
+      ];
+      const newState = {
+        allIds,
+        byId: {
+          Format: {
+            ...Format,
+            refinements: state.byId['Format'].refinements.concat(refinements),
+          },
+          Section,
+        },
+      };
+
+      const reducer = navigations(state, {
+        type: Actions.RECEIVE_MORE_REFINEMENTS,
+        navigationId: 'Format',
+        refinements,
       });
 
       expect(reducer).to.eql(newState);

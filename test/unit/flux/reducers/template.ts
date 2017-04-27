@@ -3,7 +3,7 @@ import template from '../../../../src/flux/reducers/template';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite.only('template', ({ expect }) => {
+suite('template', ({ expect }) => {
   let actions: Actions;
   const state: Store.Template = {
     name: 'idk',

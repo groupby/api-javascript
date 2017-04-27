@@ -3,7 +3,7 @@ import redirect from '../../../../src/flux/reducers/redirect';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite.only('redirect', ({ expect }) => {
+suite('redirect', ({ expect }) => {
   let actions: Actions;
   const state = '/go-here';
   beforeEach(() => actions = new Actions(<any>{}, <any>{}));

@@ -3,7 +3,7 @@ import sorts from '../../../../src/flux/reducers/sorts';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite.only('sorts', ({ expect }) => {
+suite('sorts', ({ expect }) => {
   let actions: Actions;
   const byId = {
     ['Price low to high']: { label: 'Price low to high', field: 'price', descending: false},

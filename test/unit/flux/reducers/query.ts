@@ -3,7 +3,7 @@ import query from '../../../../src/flux/reducers/query';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite.only('query', ({ expect }) => {
+suite('query', ({ expect }) => {
   let actions: Actions;
   const original = 'yelloww';
   const corrected = 'yellow';

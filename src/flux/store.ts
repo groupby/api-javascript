@@ -50,6 +50,9 @@ namespace Store {
   }
 
   export interface Collection {
+    /**
+     * byId key
+     */
     name: string; // static
     label: string; // static
     total: number; // post
@@ -62,6 +65,9 @@ namespace Store {
 
   export namespace Sort {
     export interface Labelled extends Sort {
+      /**
+       * byId key
+       */
       label: string;
     }
   }
@@ -165,6 +171,9 @@ namespace Store {
   }
 
   export interface Navigation {
+    /**
+     * byId key
+     */
     field: string; // post
     label: string; // post
     more?: boolean; // post

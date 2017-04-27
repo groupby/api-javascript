@@ -3,7 +3,7 @@ import recordCount from '../../../../src/flux/reducers/record-count';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite.only('record-count', ({ expect }) => {
+suite('record-count', ({ expect }) => {
   let actions: Actions;
   const state = 2934;
   beforeEach(() => actions = new Actions(<any>{}, <any>{}));
