@@ -1,4 +1,5 @@
 import Adapter from '../../../../src/flux/adapters/response';
+import * as paging from '../../../../src/flux/pager';
 import suite from '../../_suite';
 
 suite('response adapters', ({ expect, stub }) => {
@@ -138,18 +139,91 @@ suite('response adapters', ({ expect, stub }) => {
 
   describe('appendSelectedRefinements()', () => {
     it('should set selected on availble navigation', () => {
-      const available: any = { refinements: ['a', 'b'] };
-      const selected: any = { refinements: ['c', 'd'] };
+      const available: any = { refinements: ['a', 'b', 'c', 'd'] };
+      const selected: any = { refinements: ['a', 'd'] };
       const refinementsMatch = stub(Adapter, 'refinementsMatch')
         .callsFake((lhs, rhs) => lhs === rhs);
 
       Adapter.appendSelectedRefinements(available, selected);
 
-      expect(available.selected).to.eql([0, 0]);
-      expect(refinementsMatch).to.be.calledWith('a', 'c');
+      expect(available.selected).to.eql([0, 3]);
+      expect(refinementsMatch).to.be.calledWith('a', 'a');
       expect(refinementsMatch).to.be.calledWith('a', 'd');
-      expect(refinementsMatch).to.be.calledWith('b', 'c');
       expect(refinementsMatch).to.be.calledWith('b', 'd');
+      expect(refinementsMatch).to.be.calledWith('c', 'd');
+      expect(refinementsMatch).to.be.calledWith('d', 'd');
+    });
+  });
+
+  describe('combineNavigations()', () => {
+    it('should append selected refinements to available navigation');
+  });
+
+  describe('extractZone()', () => {
+    it('should extract a content zone', () => {
+      const content = 'Canada Day Sale!';
+      const name = 'my zone';
+      const zone: any = { type: 'Content', name, content };
+
+      expect(Adapter.extractZone(zone)).to.eql({ type: 'content', name, content });
+    });
+
+    it('should extract a rich content zone', () => {
+      const content = 'Canada Day Sale!';
+      const name = 'my zone';
+      const zone: any = { type: 'Rich_Content', name, content };
+
+      expect(Adapter.extractZone(zone)).to.eql({ type: 'rich_content', name, content });
+    });
+
+    it('should extract a record zone', () => {
+      const records = [{ allMeta: { a: 'b' } }, { allMeta: { c: 'd' } }];
+      const name = 'my zone';
+      const zone: any = { type: 'Records', name, records };
+
+      expect(Adapter.extractZone(zone)).to.eql({
+        type: 'record',
+        name,
+        products: [{ a: 'b' }, { c: 'd' }],
+      });
+    });
+  });
+
+  describe('extractTemplate()', () => {
+    it('should convert template structure', () => {
+      const template: any = {
+        name: 'banner',
+        ruleName: 'my rule',
+        zones: {
+          'zone 1': 'a',
+          'zone 2': 'b',
+        },
+      };
+      const extractZone = stub(Adapter, 'extractZone').returns('x');
+
+      expect(Adapter.extractTemplate(template)).to.eql({
+        name: 'banner',
+        rule: 'my rule',
+        zones: {
+          'zone 1': 'x',
+          'zone 2': 'x',
+        },
+      });
+      expect(extractZone).to.be.calledWith('a');
+      expect(extractZone).to.be.calledWith('b');
+    });
+  });
+
+  describe('extractPage()', () => {
+    it('should build page information', () => {
+      const store = { a: 'b' };
+      const pageInfo = { c: 'd' };
+      const build = stub().returns(pageInfo);
+      const Pager = stub(paging, 'Pager').returns({ build });
+
+      expect(Adapter.extractPage(store)).to.eql(pageInfo);
+      expect(Pager).to.be.calledWith(store);
+      expect(build).to.be.called;
     });
   });
 });
