@@ -1,4 +1,4 @@
-import * as axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { Request } from '../models/request';
 import { Record, RefinementResults, Results } from '../models/response';
 import { Query } from './query';
@@ -15,7 +15,7 @@ export interface RawRecord extends Record {
   _snippet?: string;
 }
 
-export type BridgeCallback = (err?: Error, res?: Results) => void;
+export type BridgeCallback = <T>(err?: Error, res?: T) => void;
 
 export type BridgeQuery = string | Query | Request;
 
@@ -36,18 +36,20 @@ export abstract class AbstractBridge {
     this.config = Object.assign({}, DEFAULT_CONFIG, config);
   }
 
-  search(query: BridgeQuery, callback?: BridgeCallback): Promise<Results> {
+  search(query: BridgeQuery, callback?: BridgeCallback) {
     const { request, queryParams } = this.extractRequest(query);
     if (request === null) {
       return this.generateError(INVALID_QUERY_ERROR, callback);
     }
 
-    const response = this.fireRequest(this.bridgeUrl, request, queryParams)
-      .then((res) => res.records ? Object.assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
+    const response = this.fireRequest<Results>(this.bridgeUrl, request, queryParams)
+      .then((res) => res.records ? Object.assign(res, {
+        records: res.records.map(this.convertRecordFields),
+       }) : res);
     return this.handleResponse(response, callback);
   }
 
-  refinements(query: BridgeQuery, navigationName: string, callback?: BridgeCallback): Promise<RefinementResults> {
+  refinements(query: BridgeQuery, navigationName: string, callback?: BridgeCallback) {
     const { request } = this.extractRequest(query);
     if (request === null) {
       return this.generateError(INVALID_QUERY_ERROR, callback);
@@ -55,17 +57,17 @@ export abstract class AbstractBridge {
 
     const refinementsRequest = { originalQuery: request, navigationName };
 
-    const response = this.fireRequest(this.refinementsUrl, refinementsRequest);
+    const response = this.fireRequest<RefinementResults>(this.refinementsUrl, refinementsRequest);
     return this.handleResponse(response, callback);
   }
 
   protected abstract augmentRequest(request: any): any;
 
-  private handleResponse<T>(response: PromiseLike<T>, callback: (error?: Error, results?: T) => void) {
+  private handleResponse<T>(response: Promise<T>, callback: (error?: Error, results?: T) => void): Promise<T> {
     if (callback) {
       response.then((res) => callback(undefined, res), (err) => callback(err));
     } else {
-      return <Promise<T>>response;
+      return response;
     }
   }
 
@@ -88,7 +90,7 @@ export abstract class AbstractBridge {
     }
   }
 
-  private fireRequest(url: string, body: Request | any, queryParams: any = {}): Axios.IPromise<any> {
+  private fireRequest<T>(url: string, body: Request | any, queryParams: any = {}): Promise<T> {
     const options = {
       data: this.augmentRequest(body),
       headers: this.headers,
@@ -98,11 +100,12 @@ export abstract class AbstractBridge {
       timeout: this.config.timeout,
       url,
     };
+
     return axios(options)
       .then((res) => res.data)
       .catch((err) => {
         if (this.errorHandler) {
-          this.errorHandler(err);
+          this.errorHandler(err.response);
         }
         throw err;
       });
