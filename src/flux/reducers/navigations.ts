@@ -9,7 +9,7 @@ export default function updateNavigations(state: Store.Indexed<Store.Navigation>
       // TODO: add case for clear
       if (action.clear) {
         const byIds = state.allIds.reduce(
-          (newById, id) => Object.assign(newById, { [id]: { ...state.byId[id], selected: [] } }), { },
+          (navs, nav) => Object.assign(navs, { [nav]: {...state.byId[nav], selected: []} }), {},
         );
         if (!(navigationId && refinementIndex != null)) {
           return {
@@ -32,9 +32,9 @@ export default function updateNavigations(state: Store.Indexed<Store.Navigation>
       }
     case Actions.RECEIVE_NAVIGATIONS:
       const navigations = action.navigations;
-      const newIds = Object.keys(navigations);
-      const byIds = newIds.reduce(
-        (newById, id) => Object.assign(newById, { [id]: { ...navigations[id], selected: [] } }), { },
+      const newIds = navigations.map((nav) => nav.field);
+      const byIds = navigations.reduce(
+        (navs, nav) => Object.assign(navs, { [nav.field]: {...nav, selected: []} }), {},
       );
       return {
         ...state,
@@ -90,5 +90,13 @@ export default function updateNavigations(state: Store.Indexed<Store.Navigation>
       }
     default:
       return state;
+  }
+
+  function createByIds(navigations) {
+    return navigations.reduce((navs, nav) => {
+      const id = nav.field || nav;
+      const content = state.byId[id] || nav;
+      return Object.assign(navs, { [nav.field]: { ...nav, selected: [] } }), {};
+    });
   }
 }

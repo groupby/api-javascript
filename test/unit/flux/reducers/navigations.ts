@@ -87,8 +87,8 @@ suite('navigations', ({ expect }) => {
     });
 
     it('should update navigations state on RECEIVE_NAVIGATIONS', () => {
-      const newNavs = {
-        Colour: {
+      const newNavs = [
+        {
           field: 'colour',
           label: 'Colour',
           more: true,
@@ -99,8 +99,7 @@ suite('navigations', ({ expect }) => {
             { value: 'green', total: 199 },
             { value: 'blue', total: 213 },
           ],
-        },
-        Size: {
+        }, {
           field: 'size',
           label: 'Size',
           more: false,
@@ -112,11 +111,12 @@ suite('navigations', ({ expect }) => {
             { value: 'large', total: 13 },
           ],
         },
-      };
+      ];
       const newState = {
-        allIds: ['Colour', 'Size'],
+        allIds: ['colour', 'size'],
         byId: {
-          ...newNavs,
+          colour: newNavs[0],
+          size: newNavs[1],
         },
       };
 
