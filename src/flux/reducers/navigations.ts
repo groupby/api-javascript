@@ -91,12 +91,4 @@ export default function updateNavigations(state: Store.Indexed<Store.Navigation>
     default:
       return state;
   }
-
-  function createByIds(navigations) {
-    return navigations.reduce((navs, nav) => {
-      const id = nav.field || nav;
-      const content = state.byId[id] || nav;
-      return Object.assign(navs, { [nav.field]: { ...nav, selected: [] } }), {};
-    });
-  }
 }
