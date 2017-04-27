@@ -1,5 +1,6 @@
 import { EventEmitter } from 'eventemitter3';
 import * as redux from 'redux';
+import { Sayt } from 'sayt';
 import filterObject = require('filter-object');
 import { BrowserBridge } from '../core/bridge';
 import { Query, QueryConfiguration } from '../core/query';
@@ -79,6 +80,7 @@ export class FluxCapacitor extends EventEmitter {
 
   query: Query;
   bridge: BrowserBridge;
+  sayt: Sayt;
   results: Results;
   originalQuery: string = '';
 
@@ -98,7 +100,15 @@ export class FluxCapacitor extends EventEmitter {
         bridgeConfig.errorHandler(err);
       }
     };
-    this.actions = new ActionPack(this.bridge, { search: '/search' });
+
+    this.sayt = new Sayt({
+      autocomplete: { language: config.language },
+      collection: config.collection,
+      productSearch: { area: config.area },
+      subdomain: endpoint,
+    });
+
+    this.actions = new ActionPack(this, { search: '/search' });
 
     this.query = new Query().withConfiguration(filterObject(config, ['*', '!{bridge}']), mask);
   }

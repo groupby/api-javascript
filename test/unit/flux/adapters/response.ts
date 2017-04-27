@@ -226,4 +226,14 @@ suite('response adapters', ({ expect, stub }) => {
       expect(build).to.be.called;
     });
   });
+  //
+  // describe('extractAutocompleteSuggestions()', () => {
+  //   it('should remap search term values', () => {
+  //     const response = { result: { searchTerms: [{ value: 'a' }, { value: 'b' }] } };
+  //
+  //     const { suggestions } = Adapter.extractAutocompleteSuggestions(response);
+  //
+  //     expect(suggestions).to.eql(['a', 'b']);
+  //   });
+  // });
 });

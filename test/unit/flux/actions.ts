@@ -8,13 +8,13 @@ import suite from '../_suite';
 
 suite('Actions', ({ expect, spy, stub }) => {
   let actions: Actions;
-  const bridge: any = { a: 'b' };
+  const flux: any = { a: 'b' };
 
-  beforeEach(() => actions = new Actions(bridge, { search: '/search' }));
+  beforeEach(() => actions = new Actions(flux, { search: '/search' }));
 
   describe('constructor()', () => {
     it('should set properties', () => {
-      expect(actions['bridge']).to.eq(bridge);
+      expect(actions['flux']).to.eq(flux);
       expect(actions['linkMapper']).to.be.a('function');
     });
   });
@@ -47,17 +47,17 @@ suite('Actions', ({ expect, spy, stub }) => {
         const state = { a: 'b' };
         const search = { e: 'f' };
         const action = actions.fetchMoreRefinements(name);
-        const refinementsStub = actions['bridge'].refinements
-          = stub().resolves({ navigation: { name, refinements: ['c', 'd'] } });
+        const refinements = stub().resolves({ navigation: { name, refinements: ['c', 'd'] } });
         const searchRequest = stub(Selectors, 'searchRequest').returns(search);
         stub(Selectors, 'hasMoreRefinements').returns(true);
         stub(actions, 'receiveMoreRefinements');
         stub(ResponseAdapter, 'extractRefinement').callsFake((s) => s);
+        actions['flux'] = <any>{ bridge: { refinements } };
 
         const builtAction = action(() => null, () => state)
           .then(() => {
             expect(searchRequest).to.be.calledWith(state);
-            expect(refinementsStub).to.be.calledWith(search, name);
+            expect(refinements).to.be.calledWith(search, name);
             done();
           });
       });
@@ -70,9 +70,10 @@ suite('Actions', ({ expect, spy, stub }) => {
         const dispatch = spy();
         const extractRefinement = stub(ResponseAdapter, 'extractRefinement').callsFake((value) => value);
         const receiveMoreRefinements = stub(actions, 'receiveMoreRefinements').returns(moreRefinementsAction);
-        actions['bridge'].refinements = stub().resolves({ navigation: { name, refinements: ['c', 'd'] } });
         stub(Selectors, 'hasMoreRefinements').returns(true);
         stub(Selectors, 'searchRequest');
+        // tslint:disable-next-line max-line-length
+        actions['flux'] = <any>{ bridge: { refinements: stub().resolves({ navigation: { name, refinements: ['c', 'd'] } }) } };
 
         const builtAction = action(dispatch, () => state)
           .then(() => {

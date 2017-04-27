@@ -1,5 +1,7 @@
 import { Dispatch } from 'redux';
-import { BrowserBridge } from '../core/bridge';
+import { QueryTimeAutocompleteConfig, QueryTimeProductSearchConfig, Sayt } from 'sayt';
+import { BridgeQuery, BrowserBridge } from '../core/bridge';
+import { FluxCapacitor } from '../flux/capacitor';
 import { Request } from '../models/request';
 import { RefinementResults, Results } from '../models/response';
 import { rayify } from '../utils';
@@ -11,7 +13,7 @@ import { conditional, LinkMapper, thunk } from './utils';
 class Actions {
   private linkMapper: (value: string) => Store.Linkable;
 
-  constructor(private bridge: BrowserBridge, paths: Paths) {
+  constructor(private flux: FluxCapacitor, paths: Paths) {
     this.linkMapper = LinkMapper(paths.search);
   }
 
@@ -20,13 +22,24 @@ class Actions {
     (dispatch: Dispatch<any>, getStore: () => Store.State) => {
       const state = getStore();
       if (Selectors.hasMoreRefinements(state, navigationId)) {
-        return this.bridge.refinements(Selectors.searchRequest(state), navigationId)
+        return this.flux.bridge.refinements(Selectors.searchRequest(state), navigationId)
           .then(({ navigation: { name, refinements } }) => {
             const remapped = refinements.map(ResponseAdapter.extractRefinement);
             return dispatch(this.receiveMoreRefinements(name, remapped));
           });
       }
     }
+
+  fetchProducts = (request: Request) => (dispatch: Dispatch<any>, getStore: () => Store.State) =>
+    this.flux.bridge.search(request)
+      .then((res) => dispatch(this.receiveSearchResponse(res)))
+
+  fetchAutocompleteSuggestions = (query: string, config: QueryTimeAutocompleteConfig) =>
+    (dispatch: Dispatch<any>, getStore: () => Store.State) => this.flux.sayt.autocomplete(query, config)
+      .then((res) => {
+        const { suggestions, categoryValues } = ResponseAdapter.extractAutocompleteSuggestions(res);
+        dispatch(this.receiveAutocompleteSuggestions(suggestions, categoryValues));
+      })
 
   // request action creators
   updateSearch = (search: Search) =>

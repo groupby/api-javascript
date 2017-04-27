@@ -92,6 +92,7 @@
     "lodash.range": "^3.2.0",
     "qs": "^6.4.0",
     "redux": "^3.6.0",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.2.0",
+    "sayt": "^0.1.7"
   }
 }
