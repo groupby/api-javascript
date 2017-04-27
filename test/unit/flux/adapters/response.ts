@@ -226,4 +226,81 @@ suite('response adapters', ({ expect, stub }) => {
       expect(build).to.be.called;
     });
   });
+
+  describe('extractAutocompleteSuggestions()', () => {
+    it('should remap search term values', () => {
+      const response = { result: { searchTerms: [{ value: 'a' }, { value: 'b' }] } };
+
+      const { suggestions } = Adapter.extractAutocompleteSuggestions(response);
+
+      expect(suggestions).to.eql(['a', 'b']);
+    });
+
+    it('should extract category values', () => {
+      const brand = { a: 'b' };
+      const values = ['x', 'y'];
+      const searchTerm = { value: 'a', additionalInfo: { brand } };
+      const response = { result: { searchTerms: [searchTerm] } };
+      const extractCategoryValues = stub(Adapter, 'extractCategoryValues').returns(values);
+
+      const { categoryValues } = Adapter.extractAutocompleteSuggestions(response, 'brand');
+
+      expect(categoryValues).to.eq(values);
+      expect(extractCategoryValues).to.be.calledWith(searchTerm);
+    });
+
+    it('should should ignore category if not specified', () => {
+      const response = { result: { searchTerms: [{}] } };
+      const extractCategoryValues = stub(Adapter, 'extractCategoryValues');
+
+      Adapter.extractAutocompleteSuggestions(response);
+
+      expect(extractCategoryValues).to.not.be.called;
+    });
+
+    it('should should ignore category if no search terms', () => {
+      const response = { result: { searchTerms: [] } };
+      const extractCategoryValues = stub(Adapter, 'extractCategoryValues');
+
+      Adapter.extractAutocompleteSuggestions(response, 'brand');
+
+      expect(extractCategoryValues).to.not.be.called;
+    });
+  });
+
+  describe('extractCategoryValues()', () => {
+    it('should return an array of category values', () => {
+      const brand = ['a', 'b'];
+
+      const values = Adapter.extractCategoryValues({ additionalInfo: { brand } }, 'brand');
+
+      expect(values).to.eq(brand);
+    });
+
+    it('should default to empty array', () => {
+      const values = Adapter.extractCategoryValues({ additionalInfo: {} }, 'brand');
+
+      expect(values).to.eql([]);
+    });
+  });
+
+  describe('extractAutocompleteProducts()', () => {
+    it('should call extractProduct()', () => {
+      const extractProduct = stub(Adapter, 'extractProduct').returns('x');
+
+      const products = Adapter.extractAutocompleteProducts({ result: { products: ['a', 'b'] }});
+
+      expect(products).to.eql(['x', 'x']);
+      expect(extractProduct).to.be.calledWith('a');
+      expect(extractProduct).to.be.calledWith('b');
+    });
+  });
+
+  describe('extractProduct()', () => {
+    it('should return the allMeta property', () => {
+      const allMeta = { a: 'b' };
+
+      expect(Adapter.extractProduct({ allMeta })).to.eq(allMeta);
+    });
+  });
 });
