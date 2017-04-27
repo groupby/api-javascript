@@ -78,6 +78,7 @@
     "@types/clone": "^0.1.30",
     "@types/deep-equal": "^1.0.0",
     "@types/qs": "^6.2.31",
+    "array-includes": "^3.0.3",
     "array.prototype.find": "^2.0.0",
     "array.prototype.findindex": "^2.0.0",
     "axios": "^0.12.0",

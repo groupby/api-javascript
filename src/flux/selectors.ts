@@ -18,17 +18,17 @@ namespace Selectors {
     state.data.navigations.byId[navigationId];
 
   export const isRefinementDeselected = (state: Store.State, navigationId: string, index: number) => {
-    const nav = navigation(state, navigationId);
+    const nav = Selectors.navigation(state, navigationId);
     return nav && !nav.selected.includes(index);
   };
 
   export const isRefinementSelected = (state: Store.State, navigationId: string, index: number) => {
-    const nav = navigation(state, navigationId);
+    const nav = Selectors.navigation(state, navigationId);
     return nav && nav.selected.includes(index);
   };
 
   export const hasMoreRefinements = (state: Store.State, navigationId: string) => {
-    const nav = navigation(state, navigationId);
+    const nav = Selectors.navigation(state, navigationId);
     return nav && nav.more;
   };
 }

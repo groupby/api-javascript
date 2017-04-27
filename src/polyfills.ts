@@ -1,3 +1,4 @@
+import * as arrayIncludes from 'array-includes';
 import * as arrayFind from 'array.prototype.find';
 import * as arrayFindIndex from 'array.prototype.findIndex';
 import * as objectAssign from 'es6-object-assign';
@@ -6,5 +7,6 @@ import 'es6-symbol/implement';
 
 arrayFind.shim();
 arrayFindIndex.shim();
+arrayIncludes.shim();
 objectAssign.polyfill();
 promise.polyfill();
