@@ -3,7 +3,7 @@ import collections from '../../../../src/flux/reducers/collections';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite('collections', ({ expect, spy }) => {
+suite('collections', ({ expect }) => {
   let actions: Actions;
   const allIds = ['Department', 'Main'];
   const Department = {

@@ -3,7 +3,7 @@ import products from '../../../../src/flux/reducers/products';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
-suite('products', ({ expect, spy }) => {
+suite('products', ({ expect }) => {
   let actions: Actions;
 
   const state: Store.Product[] = [
