@@ -6,6 +6,7 @@
       "ES6",
       "ES2016.Array.Include"
     ],
+    "types": ["node"],
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "ES5",

@@ -107,16 +107,16 @@ suite('Query', ({ expect }) => {
         type: 'Value',
         value: 'Nike',
       })
-      .withRefinements('material', {
+      .withRefinements('material', <any>{
         type: 'Value',
         value: 'wool',
       })
-      .withRefinements('year', {
+      .withRefinements('year', <any>{
         exclude: false,
         high: 2009,
         low: 2000,
         type: 'Range',
-      }, {
+      }, <any>{
         high: 2011,
         low: 2010,
         type: 'Range',
