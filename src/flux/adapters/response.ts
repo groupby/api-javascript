@@ -57,8 +57,9 @@ namespace Response {
   export const appendSelectedRefinements = (available: Store.Navigation, selected: Navigation) => {
     available.selected = selected.refinements.reduce((indices, refinement) => {
       // tslint:disable-next-line max-line-length
-      const index = (<any>available.refinements.findIndex)((availableRef) => refinementsMatch(availableRef, <any>refinement));
-      if (index > -1) {
+      const index = (<any>available.refinements.findIndex)((availableRef) =>
+        Response.refinementsMatch(availableRef, <any>refinement));
+      if (index !== -1) {
         indices.push(index);
       }
       return indices;

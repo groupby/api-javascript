@@ -1,1 +1,1 @@
-export const rayify = (arr: any | any[]): any[] => Array.isArray(arr) ? arr : [arr];
+export const rayify = <T>(arr: T | T[]): T[] => Array.isArray(arr) ? arr : [arr];

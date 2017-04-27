@@ -1,19 +1,19 @@
-import Actions from '../../../../src/flux/actions';
+import Actions, { Page } from '../../../../src/flux/actions';
 import page from '../../../../src/flux/reducers/page';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';
 
 suite('page', ({ expect }) => {
   let actions: Actions;
-  const size: 10;
-  const current: 3;
-  const limit: 5;
-  const previous: 2;
-  const next: 4;
-  const last: 39;
-  const from: 21;
-  const to: 30;
-  const range: [1, 2, 3, 4, 5];
+  const size = 10;
+  const current = 3;
+  const limit = 5;
+  const previous = 2;
+  const next = 4;
+  const last = 39;
+  const from = 21;
+  const to = 30;
+  const range = [1, 2, 3, 4, 5];
   const state: Store.Page = {
     size, current, limit, previous, next, last, from, to, range,
   };

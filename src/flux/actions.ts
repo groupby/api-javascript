@@ -2,10 +2,11 @@ import { Dispatch } from 'redux';
 import { BrowserBridge } from '../core/bridge';
 import { Request } from '../models/request';
 import { RefinementResults, Results } from '../models/response';
+import { rayify } from '../utils';
 import ResponseAdapter from './adapters/response';
 import Selectors from './selectors';
 import Store from './store';
-import { conditional, LinkMapper, rayify, thunk } from './utils';
+import { conditional, LinkMapper, thunk } from './utils';
 
 class Actions {
   private linkMapper: (value: string) => Store.Linkable;
