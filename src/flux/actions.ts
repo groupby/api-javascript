@@ -30,15 +30,22 @@ class Actions {
       }
     }
 
-  fetchProducts = (request: Request) => (dispatch: Dispatch<any>, getStore: () => Store.State) =>
+  fetchProducts = (request: Request) => (dispatch: Dispatch<any>) =>
     this.flux.bridge.search(request)
       .then((res) => dispatch(this.receiveSearchResponse(res)))
 
   fetchAutocompleteSuggestions = (query: string, config: QueryTimeAutocompleteConfig) =>
-    (dispatch: Dispatch<any>, getStore: () => Store.State) => this.flux.sayt.autocomplete(query, config)
+    (dispatch: Dispatch<any>) => this.flux.sayt.autocomplete(query, config)
       .then((res) => {
         const { suggestions, categoryValues } = ResponseAdapter.extractAutocompleteSuggestions(res);
         dispatch(this.receiveAutocompleteSuggestions(suggestions, categoryValues));
+      })
+
+  fetchAutocompleteProducts = (query: string, config: QueryTimeProductSearchConfig) =>
+    (dispatch: Dispatch<any>) => this.flux.sayt.productSearch(query, config)
+      .then((res) => {
+        const products = ResponseAdapter.extractAutocompleteProducts(res);
+        dispatch(this.receiveAutocompleteProducts(products));
       })
 
   // request action creators
@@ -82,7 +89,7 @@ class Actions {
       const state = getStore();
       dispatch(this.receiveRedirect(results.redirect));
       dispatch(this.receiveQuery(ResponseAdapter.extractQuery(results, this.linkMapper)));
-      dispatch(this.receiveProducts(results.records.map((product) => product.allMeta), results.totalRecordCount));
+      dispatch(this.receiveProducts(results.records.map(ResponseAdapter.extractProduct), results.totalRecordCount));
       // tslint:disable-next-line max-line-length
       dispatch(this.receiveNavigations(ResponseAdapter.combineNavigations(results.availableNavigation, results.selectedNavigation)));
       dispatch(this.receivePage(ResponseAdapter.extractPage(state)));
@@ -117,6 +124,9 @@ class Actions {
   receiveAutocompleteSuggestions = (suggestions: string[], categoryValues: string[]) =>
     thunk(Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, categoryValues })
 
+  receiveAutocompleteProducts = (products: Store.Product[]) =>
+    thunk(Actions.RECEIVE_AUTOCOMPLETE_PRODUCTS, { products })
+
   receiveDetailsProduct = (product: Store.Product) =>
     thunk(Actions.RECEIVE_DETAILS_PRODUCT, { product })
 }
@@ -137,6 +147,7 @@ namespace Actions {
   // TODO
   export const RECEIVE_MORE_REFINEMENTS = 'RECEIVE_MORE_REFINEMENTS';
   export const RECEIVE_AUTOCOMPLETE_SUGGESTIONS = 'RECEIVE_AUTOCOMPLETE_SUGGESTIONS';
+  export const RECEIVE_AUTOCOMPLETE_PRODUCTS = 'RECEIVE_AUTOCOMPLETE_PRODUCTS';
   export const RECEIVE_DETAILS_PRODUCT = 'RECEIVE_DETAILS_PRODUCT';
   export const RECEIVE_QUERY = 'RECEIVE_QUERY';
   // TODO

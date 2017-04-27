@@ -116,17 +116,17 @@ namespace Response {
     new Pager(store).build();
 
   // tslint:disable-next-line max-line-length
-  export const extractAutocompleteSuggestions = ({ result }: any, category?: string): { suggestions: string[], categoryValues: string[] } => {
-    return {
-      categoryValues: category ? extractCategoryValues({ additionalInfo: {} } || result.searchTerms[0], category) : [],
-      suggestions: result.searchTerms.map(({ value }) => value),
-    };
-  };
+  export const extractAutocompleteSuggestions = ({ result }: any, category?: string): { suggestions: string[], categoryValues: string[] } => ({
+    categoryValues: category && result.searchTerms[0] ? Response.extractCategoryValues(result.searchTerms[0], category) : [],
+    suggestions: result.searchTerms.map(({ value }) => value),
+  });
 
   // tslint:disable-next-line max-line-length
-  export const extractCategoryValues = ({ additionalInfo }: { additionalInfo: { [key: string]: any } }, category: string) => {
-    return additionalInfo[category] || [];
-  };
+  export const extractCategoryValues = ({ additionalInfo }: { additionalInfo: { [key: string]: any } }, category: string) => additionalInfo[category] || [];
+
+  export const extractAutocompleteProducts = ({ result: { products } }: any) => products.map(Response.extractProduct);
+
+  export const extractProduct = ({ allMeta }) => allMeta;
 }
 
 export default Response;

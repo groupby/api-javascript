@@ -85,6 +85,99 @@ suite('Actions', ({ expect, spy, stub }) => {
           });
       });
     });
+
+    describe('fetchProducts()', () => {
+      it('should return a thunk', () => {
+        const thunk = actions.fetchProducts({});
+
+        expect(thunk).to.be.a('function');
+      });
+
+      it('should call flux.bridge.search()', (done) => {
+        const request = { a: 'b' };
+        const response = { c: 'd' };
+        const receiveSearchResponseAction = () => null;
+        const dispatch = spy();
+        const search = stub().resolves(response);
+        const receiveSearchResponse = stub(actions, 'receiveSearchResponse').returns(receiveSearchResponseAction);
+        const action = actions.fetchProducts(request);
+        actions['flux'] = <any>{ bridge: { search } };
+
+        action(dispatch)
+          .then(() => {
+            expect(search).to.be.calledWith(request);
+            expect(receiveSearchResponse).to.be.calledWith(response);
+            expect(dispatch).to.be.calledWith(receiveSearchResponseAction);
+            done();
+          });
+      });
+    });
+
+    describe('fetchAutocompleteSuggestions()', () => {
+      it('should return a thunk', () => {
+        const thunk = actions.fetchAutocompleteSuggestions('', {});
+
+        expect(thunk).to.be.a('function');
+      });
+
+      it('should call flux.sayt.autocomplete()', (done) => {
+        const query = 'red app';
+        const config = { a: 'b' };
+        const response = { c: 'd' };
+        const suggestions = ['e', 'f'];
+        const categoryValues = ['g', 'h'];
+        const receiveAutocompleteSuggestionsAction = () => null;
+        const dispatch = spy();
+        const autocomplete = stub().resolves(response);
+        const extractAutocompleteSuggestions = stub(ResponseAdapter, 'extractAutocompleteSuggestions')
+          .returns({ suggestions, categoryValues });
+        const receiveAutocompleteSuggestions = stub(actions, 'receiveAutocompleteSuggestions')
+          .returns(receiveAutocompleteSuggestionsAction);
+        const action = actions.fetchAutocompleteSuggestions(query, config);
+        actions['flux'] = <any>{ sayt: { autocomplete } };
+
+        action(dispatch)
+          .then(() => {
+            expect(autocomplete).to.be.calledWith(query, config);
+            expect(extractAutocompleteSuggestions).to.be.calledWith(response);
+            expect(receiveAutocompleteSuggestions).to.be.calledWith(suggestions, categoryValues);
+            expect(dispatch).to.be.calledWith(receiveAutocompleteSuggestionsAction);
+            done();
+          });
+      });
+    });
+
+    describe('fetchAutocompleteProducts()', () => {
+      it('should return a thunk', () => {
+        const thunk = actions.fetchAutocompleteProducts('', {});
+
+        expect(thunk).to.be.a('function');
+      });
+
+      it('should call flux.sayt.productSearch()', (done) => {
+        const query = 'red app';
+        const config = { a: 'b' };
+        const response = { c: 'd' };
+        const products = ['e', 'f'];
+        const receiveAutocompleteProductsAction = () => null;
+        const dispatch = spy();
+        const productSearch = stub().resolves(response);
+        const extractAutocompleteProducts = stub(ResponseAdapter, 'extractAutocompleteProducts').returns(products);
+        const receiveAutocompleteProducts = stub(actions, 'receiveAutocompleteProducts')
+          .returns(receiveAutocompleteProductsAction);
+        const action = actions.fetchAutocompleteProducts(query, config);
+        actions['flux'] = <any>{ sayt: { productSearch } };
+
+        action(dispatch)
+          .then(() => {
+            expect(productSearch).to.be.calledWith(query, config);
+            expect(extractAutocompleteProducts).to.be.calledWith(response);
+            expect(receiveAutocompleteProducts).to.be.calledWith(products);
+            expect(dispatch).to.be.calledWith(receiveAutocompleteProductsAction);
+            done();
+          });
+      });
+    });
   });
 
   describe('request action creators', () => {
@@ -249,6 +342,7 @@ suite('Actions', ({ expect, spy, stub }) => {
         const dispatch = spy();
         const extractQuery = stub(ResponseAdapter, 'extractQuery').returns(query);
         const combineNavigations = stub(ResponseAdapter, 'combineNavigations').returns(navigations);
+        const extractProduct = stub(ResponseAdapter, 'extractProduct').returns('x');
         const extractPage = stub(ResponseAdapter, 'extractPage').returns(page);
         const extractTemplate = stub(ResponseAdapter, 'extractTemplate').returns(template);
         const receiveRedirect = stub(actions, 'receiveRedirect').returns(receiveRedirectAction);
@@ -267,7 +361,9 @@ suite('Actions', ({ expect, spy, stub }) => {
         expect(receiveQuery).to.be.calledWith(query);
         expect(extractQuery).to.be.calledWith(results, linkMapper);
         expect(dispatch).to.be.calledWith(receiveQueryAction);
-        expect(receiveProducts).to.be.calledWith([{ u: 'v' }, { w: 'x' }], results.totalRecordCount);
+        expect(receiveProducts).to.be.calledWith(['x', 'x'], results.totalRecordCount);
+        expect(extractProduct).to.be.calledWith({ allMeta: { u: 'v' } });
+        expect(extractProduct).to.be.calledWith({ allMeta: { w: 'x' } });
         expect(dispatch).to.be.calledWith(receiveProductsAction);
         expect(receiveNavigations).to.be.calledWith(navigations);
         expect(combineNavigations).to.be.calledWith(results.availableNavigation, results.selectedNavigation);
