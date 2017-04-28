@@ -8,6 +8,7 @@ GroupBy Search API
 ![license](https://img.shields.io/github/license/groupby/api-javascript.svg)
 [![npm](https://img.shields.io/npm/dm/groupby-api.svg)](https://www.npmjs.com/package/groupby-api)
 [![npm](https://img.shields.io/npm/v/groupby-api.svg)](https://www.npmjs.com/package/groupby-api)
+[![Greenkeeper badge](https://badges.greenkeeper.io/groupby/api-javascript.svg)](https://greenkeeper.io/)
 
 Please follow the steps carefully to ensure a successful build.
 
