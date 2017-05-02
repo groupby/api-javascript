@@ -151,7 +151,7 @@ export class FluxCapacitor extends EventEmitter {
       }
     };
 
-    this.sayt = new Sayt({
+    this.sayt = new Sayt(<any>{
       autocomplete: { language: config.language },
       collection: config.collection,
       productSearch: { area: config.area },
@@ -159,8 +159,6 @@ export class FluxCapacitor extends EventEmitter {
     });
 
     this.actions = new ActionPack(this, { search: '/search' });
-    //
-    // this.query = new Query().withConfiguration(filterObject(config, ['*', '!{bridge}']), mask);
   }
 
   search(query: string = this.originalQuery) {

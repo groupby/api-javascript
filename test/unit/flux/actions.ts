@@ -393,12 +393,11 @@ suite('Actions', ({ expect, spy, stub }) => {
     describe('receiveProducts()', () => {
       it('should create a RECEIVE_PRODUCTS action', () => {
         const products: any = ['a', 'b'];
-        const recordCount = 10;
         const thunk = stub(utils, 'thunk');
 
-        actions.receiveProducts(products, recordCount);
+        actions.receiveProducts(products);
 
-        expect(thunk).to.be.calledWith(Actions.RECEIVE_PRODUCTS, { products, recordCount });
+        expect(thunk).to.be.calledWith(Actions.RECEIVE_PRODUCTS, { products });
       });
     });
 

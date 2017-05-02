@@ -24,7 +24,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
     subscribe = spy();
     create = stub(Store, 'create').returns({ subscribe });
     listen = stub(Observer, 'listen').returns(LISTENER);
-    flux = new FluxCapacitor(CUSTOMER_ID);
+    flux = new FluxCapacitor({ customerId: CUSTOMER_ID });
   });
 
   afterEach(() => {
@@ -49,17 +49,17 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
     it('should accept a mask for configuration', () => {
       const config: any = { a: 'something', b: 'Ascending' };
 
-      flux = new FluxCapacitor(CUSTOMER_ID, config);
+      flux = new FluxCapacitor(config);
 
       expect(flux.query.raw).to.contain.keys('a', 'b');
 
-      flux = new FluxCapacitor(CUSTOMER_ID, config, '{refinements,area}');
+      flux = new FluxCapacitor(config);
 
       expect(flux.query.raw).to.not.contain.keys('a', 'b');
     });
 
     it('should strip fields from configuration', () => {
-      flux = new FluxCapacitor(CUSTOMER_ID, <any>{
+      flux = new FluxCapacitor(<any>{
         a: 'something',
         b: 'Ascending',
         bridge: {
@@ -73,20 +73,20 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
 
     it('should set headers on bridge', () => {
       const headers = { c: 'd' };
-      flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { headers } });
+      flux = new FluxCapacitor(<any>{ bridge: { headers } });
 
       expect(flux.bridge.headers).to.eq(headers);
     });
 
     it('should set HTTPS on bridge', () => {
-      flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { https: true } });
+      flux = new FluxCapacitor({ customerId: CUSTOMER_ID, network: { https: true } });
 
       expect(flux.bridge.baseUrl).to.eq('https://services-cors.groupbycloud.com:443/api/v1');
     });
 
     it('should add default event listener', (done) => {
       const error: any = { a: 'b' };
-      flux = new FluxCapacitor(CUSTOMER_ID);
+      flux = new FluxCapacitor(<any>{});
       flux.on(Events.ERROR_BRIDGE, (err) => {
         expect(err).to.eq(error);
         done();
@@ -99,7 +99,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
 
     it('should set configured errorHandler on bridge', () => {
       const errorHandler = spy();
-      flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { errorHandler } });
+      flux = new FluxCapacitor(<any>{ network: { errorHandler } });
       const error: any = { a: 'b' };
 
       flux.bridge.errorHandler(error);
@@ -108,7 +108,7 @@ suite('FluxCapacitor', ({ expect, spy, stub }) => {
     });
 
     it('should not override default errorHandler on bridge', (done) => {
-      flux = new FluxCapacitor(CUSTOMER_ID, { bridge: { errorHandler: () => null } });
+      flux = new FluxCapacitor(<any>{ network: { errorHandler: () => null } });
       flux.on(Events.ERROR_BRIDGE, () => done());
 
       flux.bridge.errorHandler(<any>{});
