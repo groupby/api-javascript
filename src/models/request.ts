@@ -38,7 +38,7 @@ export interface Request {
 
 export interface Sort {
   field: string;
-  order: SortOrder;
+  order?: SortOrder;
 }
 
 export interface CustomUrlParam {

@@ -10,8 +10,7 @@ namespace Store {
     data?: {
       query: Query; // mixed
 
-      recordCount: number; // post
-      sorts: Indexed.Selectable<Sort.Labelled>; // pre
+      sorts: Indexed.Selectable<Sort.Labeled>; // pre
       products: Product[]; // post
       collections: Indexed.Selectable<Collection>; // mixed
       navigations: Indexed<Navigation>; // mixed
@@ -23,6 +22,8 @@ namespace Store {
       template: Template; // post
 
       details: Details; // mixed
+
+      recordCount: number; // post
 
       redirect?: string; // post
 
@@ -64,7 +65,7 @@ namespace Store {
   }
 
   export namespace Sort {
-    export interface Labelled extends Sort {
+    export interface Labeled extends Sort {
       /**
        * byId key
        */

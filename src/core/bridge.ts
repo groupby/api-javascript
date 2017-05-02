@@ -36,7 +36,7 @@ export abstract class AbstractBridge {
     this.config = Object.assign({}, DEFAULT_CONFIG, config);
   }
 
-  search(query: BridgeQuery, callback?: BridgeCallback) {
+  search(query: BridgeQuery, callback?: BridgeCallback): Promise<Results> {
     const { request, queryParams } = this.extractRequest(query);
     if (request === null) {
       return this.generateError(INVALID_QUERY_ERROR, callback);

@@ -10,7 +10,7 @@ suite('sorts', ({ expect }) => {
     ['Price high to low']: {label: 'Price high to low', field: 'price', descending: true},
   };
   const allIds = [];
-  const state: Store.Indexed.Selectable<Store.Sort.Labelled> = {
+  const state: Store.Indexed.Selectable<Store.Sort.Labeled> = {
     allIds,
     byId,
     selected: 'Price low to high',
@@ -25,7 +25,7 @@ suite('sorts', ({ expect }) => {
         selected: newSelected,
       };
 
-      const reducer = sorts(state, { type: Actions.UPDATE_SORTS, id: newSelected });
+      const reducer = sorts(state, { type: Actions.SELECT_SORT, id: newSelected });
 
       expect(reducer).to.eql(newState);
     });

@@ -1,19 +1,19 @@
 import Actions from '../actions';
 import Store from '../store';
+import Action = Actions.Query;
 
-export default function updateQuery(state: Store.Query, action) {
+export type State = Store.Query;
+
+export default function updateQuery(state: State, action): State {
   switch (action.type) {
-    case Actions.UPDATE_SEARCH:
-      return { ...state, original: action.query };
-    case Actions.RECEIVE_QUERY:
-      return {
-        ...state,
-        corrected: action.corrected,
-        didYouMean: action.didYouMean,
-        related: action.related,
-        rewrites: action.rewrites,
-      };
-    default:
-      return state;
+    case Actions.UPDATE_SEARCH: return updateOriginal(state, action);
+    case Actions.RECEIVE_QUERY: return receiveQuery(state, action);
+    default: return state;
   }
 }
+
+export const updateOriginal = (state: State, { query: original }: Action.UpdateOriginal) =>
+  ({ ...state, original });
+
+export const receiveQuery = (state: State, { corrected, didYouMean, related, rewrites }: Action.ReceiveQuery) =>
+  ({ ...state, corrected, didYouMean, related, rewrites });

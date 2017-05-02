@@ -6,29 +6,27 @@ import range = require('lodash.range');
 
 const MAX_RECORDS = 10000;
 
-export class Pager {
+namespace Pager {
 
-  constructor(private state: Store.State) { }
-
-  previousPage(currentPage: number) {
+  export function previousPage(currentPage: number) {
     return currentPage > 1 ? currentPage - 1 : null;
   }
 
-  nextPage(currentPage: number, finalPage: number) {
+  export function nextPage(currentPage: number, finalPage: number) {
     return (currentPage + 1 <= finalPage) ? currentPage + 1 : null;
   }
 
-  finalPage(pageSize: number, totalRecords: number) {
-    return Math.max(this.getPage(pageSize, this.restrictTotalRecords(pageSize, totalRecords)), 1);
+  export function finalPage(pageSize: number, totalRecords: number) {
+    return Math.max(Pager.getPage(pageSize, Pager.restrictTotalRecords(pageSize, totalRecords)), 1);
   }
 
-  fromResult(currentPage: number, pageSize: number) {
+  export function fromResult(currentPage: number, pageSize: number) {
     return currentPage * pageSize + 1;
     // TODO move the default value into reducer setup
     // return this.flux.query.build().skip + 1 || 1;
   }
 
-  toResult(currentPage: number, pageSize: number, totalRecords: number) {
+  export function toResult(currentPage: number, pageSize: number, totalRecords: number) {
     if ((currentPage * pageSize) > totalRecords) {
       return ((currentPage - 1) * pageSize) + (totalRecords % currentPage);
     } else {
@@ -36,29 +34,29 @@ export class Pager {
     }
   }
 
-  build(): Page {
+  export function build(state: Store.State): Page {
     // TODO move this default into the reducer setup
-    const pageSize = this.state.data.page.size || 10;
-    const currentPage = this.state.data.page.current;
-    const totalRecords = this.state.data.recordCount;
-    const last = this.finalPage(pageSize, totalRecords);
+    const pageSize = state.data.page.size || 10;
+    const currentPage = state.data.page.current;
+    const totalRecords = state.data.recordCount;
+    const last = Pager.finalPage(pageSize, totalRecords);
 
     return {
-      from: this.fromResult(currentPage, pageSize),
+      from: Pager.fromResult(currentPage, pageSize),
       last,
-      next: this.nextPage(currentPage, last),
-      previous: this.previousPage(currentPage),
-      range: this.pageNumbers(currentPage, last, this.state.data.page.limit),
-      to: this.toResult(currentPage, pageSize, totalRecords),
+      next: Pager.nextPage(currentPage, last),
+      previous: Pager.previousPage(currentPage),
+      range: Pager.pageNumbers(currentPage, last, state.data.page.limit),
+      to: Pager.toResult(currentPage, pageSize, totalRecords),
     };
   }
 
-  pageNumbers(currentPage: number, finalPage: number, limit: number) {
+  export function pageNumbers(currentPage: number, finalPage: number, limit: number) {
     return range(1, Math.min(finalPage + 1, limit + 1))
-      .map(this.transformPages(currentPage, finalPage, limit));
+      .map(Pager.transformPages(currentPage, finalPage, limit));
   }
 
-  restrictTotalRecords(pageSize: number, totalRecords: number) {
+  export function restrictTotalRecords(pageSize: number, totalRecords: number) {
     if (totalRecords > MAX_RECORDS) {
       return MAX_RECORDS - (MAX_RECORDS % pageSize);
     } else if ((totalRecords + pageSize) > MAX_RECORDS) {
@@ -72,11 +70,11 @@ export class Pager {
     }
   }
 
-  getPage(pageSize: number, totalRecords: number) {
+  export function getPage(pageSize: number, totalRecords: number) {
     return Math.ceil(totalRecords / pageSize);
   }
 
-  transformPages(currentPage: number, finalPage: number, limit: number) {
+  export function transformPages(currentPage: number, finalPage: number, limit: number) {
     const border = Math.ceil(limit / 2);
     return (value: number) => {
       // account for 0-indexed pages
@@ -93,3 +91,5 @@ export class Pager {
     };
   }
 }
+
+export default Pager;

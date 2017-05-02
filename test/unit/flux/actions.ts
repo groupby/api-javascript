@@ -244,11 +244,11 @@ suite('Actions', ({ expect, spy, stub }) => {
         const id = 'Price Ascending';
         const conditional = stub(utils, 'conditional');
 
-        actions.updateSorts(id);
+        actions.selectSort(id);
 
         expect(conditional).to.be.calledWith(sinon.match((predicate) =>
           predicate({ data: { sorts: { selected: 'Price Descending' } } })),
-          Actions.UPDATE_SORTS, { id });
+          Actions.SELECT_SORT, { id });
       });
     });
 

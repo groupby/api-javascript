@@ -81,7 +81,6 @@ namespace Observer {
         page: Object.assign(emit(Events.PAGE_UPDATED), {
           current: emit(Events.CURRENT_PAGE_UPDATED),
           size: emit(Events.PAGE_SIZE_UPDATED),
-          total: emit(Events.PAGE_TOTAL_UPDATED),
         }),
 
         products: emit(Events.PRODUCTS_UPDATED),
@@ -93,6 +92,8 @@ namespace Observer {
           related: emit(Events.RELATED_QUERIES_UPDATED),
           rewrites: emit(Events.QUERY_REWRITES_UPDATED),
         }),
+
+        recordCount: emit(Events.RECORD_COUNT_UPDATED),
 
         reditect: emit(Events.REDIRECT),
 

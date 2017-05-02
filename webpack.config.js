@@ -28,8 +28,7 @@ module.exports = {
         test: /\.ts$/,
         exclude: [
           path.resolve(__dirname, 'node_modules'),
-          path.resolve(__dirname, 'test'),
-          path.resolve(__dirname, 'test/karma.entry.ts')
+          path.resolve(__dirname, 'test')
         ],
         loader: 'sourcemap-istanbul-instrumenter-loader'
       }] : [])

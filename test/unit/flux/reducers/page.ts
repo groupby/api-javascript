@@ -34,7 +34,7 @@ suite('page', ({ expect }) => {
       });
 
       it('UPDATE_SORTS', () => {
-        const reducer = page(state, { type: Actions.UPDATE_SORTS });
+        const reducer = page(state, { type: Actions.SELECT_SORT });
 
         expect(reducer).to.eql(newState);
       });

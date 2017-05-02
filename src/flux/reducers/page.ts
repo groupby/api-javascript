@@ -1,29 +1,32 @@
 import Actions from '../actions';
 import Store from '../store';
+import Action = Actions.Page;
 
-export default function updatePage(state: Store.Page, action) {
+export type State = Store.Page;
+
+export default function updatePage(state: State, action): State {
   switch (action.type) {
     case Actions.UPDATE_SEARCH:
-    case Actions.UPDATE_SORTS:
+    case Actions.SELECT_SORT:
     case Actions.SELECT_COLLECTION:
     case Actions.SELECT_REFINEMENT:
     case Actions.DESELECT_REFINEMENT:
-      return { ...state, current: 1 };
-    case Actions.UPDATE_CURRENT_PAGE:
-      return { ...state, current: action.page };
-    case Actions.UPDATE_PAGE_SIZE:
-      return { ...state, current: 1, size: action.size };
-    case Actions.RECEIVE_PAGE:
-      return {
-        ...state,
-        from: action.from,
-        last: action.last,
-        next: action.next,
-        previous: action.previous,
-        range: action.range,
-        to: action.to,
-      };
-    default:
-      return state;
+      return resetPage(state);
+    case Actions.UPDATE_CURRENT_PAGE: return updateCurrent(state, action);
+    case Actions.UPDATE_PAGE_SIZE: return updateSize(state, action);
+    case Actions.RECEIVE_PAGE: return receivePage(state, action);
+    default: return state;
   }
 }
+
+export const resetPage = (state: State) =>
+  ({ ...state, current: 1 });
+
+export const updateCurrent = (state: State, { page: current }: Action.UpdateCurrent) =>
+  ({ ...state, current });
+
+export const updateSize = (state: State, { size }: Action.UpdateSize) =>
+  ({ ...state, current: 1, size });
+
+export const receivePage = (state: State, { from, to, last, next, previous, range }: Action.ReceivePage) =>
+  ({ ...state, from, to, last, next, previous, range });

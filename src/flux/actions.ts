@@ -48,6 +48,12 @@ class Actions {
         dispatch(this.receiveAutocompleteProducts(products));
       })
 
+  fetchCollectionCount = (collection: string) => (dispatch: Dispatch<any>, getStore: () => Store.State) => {
+    const state = getStore();
+    this.flux.bridge.search({ ...Selectors.searchRequest(state), collection })
+      .then((res) => dispatch(this.receiveCollectionCount(collection, res.totalRecordCount)));
+  }
+
   // request action creators
   updateSearch = (search: Search) =>
     thunk(Actions.UPDATE_SEARCH, search)
@@ -64,9 +70,9 @@ class Actions {
     conditional((state) => state.data.collections.selected !== id,
       Actions.SELECT_COLLECTION, { id })
 
-  updateSorts = (id: string) =>
+  selectSort = (id: string) =>
     conditional((state) => state.data.sorts.selected !== id,
-      Actions.UPDATE_SORTS, { id })
+      Actions.SELECT_SORT, { id })
 
   updatePageSize = (size: number) =>
     conditional((state) => state.data.page.size !== size,
@@ -89,19 +95,20 @@ class Actions {
       const state = getStore();
       dispatch(this.receiveRedirect(results.redirect));
       dispatch(this.receiveQuery(ResponseAdapter.extractQuery(results, this.linkMapper)));
-      dispatch(this.receiveProducts(results.records.map(ResponseAdapter.extractProduct), results.totalRecordCount));
+      dispatch(this.receiveProducts(results.records.map(ResponseAdapter.extractProduct)));
       // tslint:disable-next-line max-line-length
       dispatch(this.receiveNavigations(ResponseAdapter.combineNavigations(results.availableNavigation, results.selectedNavigation)));
+      dispatch(this.receiveRecordCount(results.totalRecordCount));
+      dispatch(this.receiveCollectionCount(state.data.collections.selected, results.totalRecordCount));
       dispatch(this.receivePage(ResponseAdapter.extractPage(state)));
       dispatch(this.receiveTemplate(ResponseAdapter.extractTemplate(results.template)));
-      dispatch(this.receiveCollectionCount(state.data.collections.selected, results.totalRecordCount));
     }
 
   receiveQuery = (query: Query) =>
     thunk(Actions.RECEIVE_QUERY, query)
 
-  receiveProducts = (products: Store.Product[], recordCount: number) =>
-    thunk(Actions.RECEIVE_PRODUCTS, { products, recordCount })
+  receiveProducts = (products: Store.Product[]) =>
+    thunk(Actions.RECEIVE_PRODUCTS, { products })
 
   receiveCollectionCount = (collection: string, count: number) =>
     thunk(Actions.RECEIVE_COLLECTION_COUNT, { collection, count })
@@ -114,6 +121,9 @@ class Actions {
 
   receiveTemplate = (template: Store.Template) =>
     thunk(Actions.RECEIVE_TEMPLATE, { template })
+
+  receiveRecordCount = (recordCount: number) =>
+    thunk(Actions.RECEIVE_RECORD_COUNT, { recordCount })
 
   receiveRedirect = (redirect: string) =>
     thunk(Actions.RECEIVE_REDIRECT, { redirect })
@@ -139,7 +149,7 @@ namespace Actions {
   export const SELECT_REFINEMENT = 'SELECT_REFINEMENT';
   export const DESELECT_REFINEMENT = 'DESELECT_REFINEMENT';
   export const SELECT_COLLECTION = 'SELECT_COLLECTION';
-  export const UPDATE_SORTS = 'UPDATE_SORTS';
+  export const SELECT_SORT = 'UPDATE_SORTS';
   export const UPDATE_PAGE_SIZE = 'UPDATE_PAGE_SIZE';
   export const UPDATE_CURRENT_PAGE = 'UPDATE_CURRENT_PAGE';
 
@@ -154,8 +164,69 @@ namespace Actions {
   // TODO
   export const RECEIVE_NAVIGATIONS = 'RECEIVE_NAVIGATIONS';
   export const RECEIVE_PAGE = 'RECEIVE_PAGE';
+  export const RECEIVE_RECORD_COUNT = 'RECEIVE_RECORD_COUNT';
   export const RECEIVE_TEMPLATE = 'RECEIVE_TEMPLATE';
   export const RECEIVE_REDIRECT = 'RECEIVE_REDIRECT';
+
+  export interface Action { type: string; }
+  export namespace Autocomplete {
+    export interface UpdateQuery extends Action {
+      query: string;
+    }
+    export interface ReceiveSuggestions extends Action {
+      suggestions: string[];
+      categoryValues: string[];
+    }
+  }
+  export namespace Collections {
+    export interface SelectCollection extends Action {
+      id: string;
+    }
+    export interface ReceiveCount extends Action {
+      collection: string;
+      count: number;
+    }
+  }
+  export namespace Details {
+    export interface UpdateId extends Action {
+      id: string;
+    }
+    export interface ReceiveProduct extends Action {
+      product: Store.Product;
+    }
+  }
+  export namespace Page {
+    export interface UpdateCurrent extends Action {
+      page: number;
+    }
+    export interface UpdateSize extends Action {
+      size: number;
+    }
+    export interface ReceivePage extends Action {
+      from: number;
+      to: number;
+      last: number;
+      next: number;
+      previous: number;
+      range: number[];
+    }
+  }
+  export namespace Query {
+    export interface UpdateOriginal extends Action {
+      query: string;
+    }
+    export interface ReceiveQuery extends Action {
+      corrected?: string;
+      rewrites: string[];
+      didYouMean: Store.Linkable[];
+      related: Store.Linkable[];
+    }
+  }
+  export namespace Sort {
+    export interface UpdateSelected extends Action {
+      id: string;
+    }
+  }
 }
 
 export default Actions;

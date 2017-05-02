@@ -4,11 +4,11 @@ import { Sayt } from 'sayt';
 import filterObject = require('filter-object');
 import { BrowserBridge } from '../core/bridge';
 import { Query, QueryConfiguration } from '../core/query';
-import { SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
+import { Request, SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
 import { Navigation, RefinementResults, Results } from '../models/response';
 import ActionPack from './actions';
 import Observer from './observer';
-import { Pager } from './pager';
+import Pager from './pager';
 import Store from './store';
 
 export namespace Events {
@@ -48,9 +48,14 @@ export namespace Events {
 
   // page events
   export const PAGE_UPDATED = 'page_updated'; // post
-  export const PAGE_TOTAL_UPDATED = 'page_total_updated'; // post
   export const PAGE_SIZE_UPDATED = 'page_size_updated'; // pre
   export const CURRENT_PAGE_UPDATED = 'current_page_updated'; // pre
+
+  // record count event
+  export const RECORD_COUNT_UPDATED = 'record_count_updated'; // post
+
+  // recall event
+  export const RECALL_CHANGED = 'recall_changed';
 
   // redirect event
   export const REDIRECT = 'redirect';
@@ -62,8 +67,51 @@ export namespace Events {
 export { Pager };
 export type FluxRefinement = SelectedValueRefinement | SelectedRangeRefinement;
 
-export interface FluxConfiguration extends QueryConfiguration {
-  bridge?: FluxBridgeConfig;
+export interface FluxConfiguration {
+  customerId: string;
+  visitorId?: string;
+  sessionId?: string;
+
+  area?: string;
+  language?: string;
+  collection?: string | {
+    options: string[];
+    default: string;
+  };
+
+  autocomplete?: {
+    area?: string;
+    collection?: string;
+    language?: string;
+    category?: string;
+    suggestionCount?: number;
+    navigationCount?: number;
+    productCount?: number;
+    // map of field to label, also restricts displayed navigations
+    navigations?: { [field: string]: string };
+    defaults?: any;
+    overrides?: any;
+  };
+
+  search?: {
+    fields?: string[]; // should be auto-generated from structure
+    pageSize?: number | {
+      options: number[];
+      default: number;
+    };
+    sort?: { field: string, descending?: boolean } | {
+      options: Array<{
+        label: string; // the problem with label being the key is multilingual
+        field: string;
+        descending?: boolean;
+      }>;
+      default: string; // label
+    };
+    defaults?: Request; // unhandled options
+    overrides?: Request; // applied before request is sent
+  };
+
+  network?: FluxBridgeConfig;
 }
 
 export interface FluxBridgeConfig {
@@ -71,6 +119,8 @@ export interface FluxBridgeConfig {
   https?: boolean;
   timeout?: number;
   errorHandler?: (error: Error) => void;
+  skipCache?: boolean;
+  skipSemantish?: boolean;
 }
 
 export class FluxCapacitor extends EventEmitter {
@@ -84,13 +134,13 @@ export class FluxCapacitor extends EventEmitter {
   results: Results;
   originalQuery: string = '';
 
-  constructor(endpoint: string, config: FluxConfiguration = {}, mask?: string) {
+  constructor(config: FluxConfiguration) {
     super();
 
     this.store.subscribe(Observer.listen(this));
 
-    const bridgeConfig: FluxBridgeConfig = config.bridge || {};
-    this.bridge = new BrowserBridge(endpoint, bridgeConfig.https, bridgeConfig);
+    const bridgeConfig: FluxBridgeConfig = config.network || {};
+    this.bridge = new BrowserBridge(config.customerId, bridgeConfig.https, bridgeConfig);
     if (bridgeConfig.headers) {
       this.bridge.headers = bridgeConfig.headers;
     }
@@ -105,12 +155,12 @@ export class FluxCapacitor extends EventEmitter {
       autocomplete: { language: config.language },
       collection: config.collection,
       productSearch: { area: config.area },
-      subdomain: endpoint,
+      subdomain: config.customerId,
     });
 
     this.actions = new ActionPack(this, { search: '/search' });
-
-    this.query = new Query().withConfiguration(filterObject(config, ['*', '!{bridge}']), mask);
+    //
+    // this.query = new Query().withConfiguration(filterObject(config, ['*', '!{bridge}']), mask);
   }
 
   search(query: string = this.originalQuery) {
@@ -130,7 +180,7 @@ export class FluxCapacitor extends EventEmitter {
   }
 
   sort(label: string) {
-    this.store.dispatch(this.actions.updateSorts(label));
+    this.store.dispatch(this.actions.selectSort(label));
   }
 
   refine(navigationName: string, index: number) {
@@ -147,5 +197,9 @@ export class FluxCapacitor extends EventEmitter {
 
   switchCollection(collection: string) {
     this.store.dispatch(this.actions.selectCollection(collection));
+  }
+
+  countRecords(collection: string) {
+    this.store.dispatch(this.actions.fetchCollectionCount(collection));
   }
 }
