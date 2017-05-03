@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { BrowserBridge } from '../../../src/core/bridge';
-import Actions from '../../../src/flux/actions';
+import { Actions } from '../../../src/flux/actions';
 import ResponseAdapter from '../../../src/flux/adapters/response';
 import Selectors from '../../../src/flux/selectors';
 import * as utils from '../../../src/flux/utils';

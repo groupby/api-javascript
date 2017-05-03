@@ -8,6 +8,7 @@
     "no-angle-bracket-type-assertion": [false, "always"],
     "whitespace": [false, "typecast"],
     "no-namespace": false,
-    "member-access": [true, "no-public"]
+    "member-access": [true, "no-public"],
+    "no-unused-variable": [true, "check-parameters"]
   }
 }

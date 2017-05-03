@@ -1,3 +1,4 @@
+
 import { EventEmitter } from 'eventemitter3';
 import * as redux from 'redux';
 import { Sayt } from 'sayt';
@@ -6,7 +7,7 @@ import { BrowserBridge } from '../core/bridge';
 import { Query, QueryConfiguration } from '../core/query';
 import { Request, SelectedRangeRefinement, SelectedValueRefinement, Sort } from '../models/request';
 import { Navigation, RefinementResults, Results } from '../models/response';
-import ActionPack from './actions';
+import { Actions } from './actions';
 import Observer from './observer';
 import Pager from './pager';
 import Store from './store';
@@ -126,7 +127,7 @@ export interface FluxBridgeConfig {
 export class FluxCapacitor extends EventEmitter {
 
   store: redux.Store<Store.State> = Store.create();
-  actions: ActionPack;
+  actions: Actions;
 
   query: Query;
   bridge: BrowserBridge;
@@ -158,7 +159,7 @@ export class FluxCapacitor extends EventEmitter {
       subdomain: config.customerId,
     });
 
-    this.actions = new ActionPack(this, { search: '/search' });
+    this.actions = new Actions(this, { search: '/search' });
   }
 
   search(query: string = this.originalQuery) {

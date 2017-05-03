@@ -1,6 +1,4 @@
 import * as redux from 'redux';
-import Actions from '../actions';
-import Store from '../store';
 
 import autocomplete from './autocomplete';
 import collections from './collections';

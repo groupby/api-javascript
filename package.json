@@ -75,7 +75,6 @@
     "xhr-mock": "^1.9.0"
   },
   "dependencies": {
-    "@types/axios": "^0.14.0",
     "@types/clone": "^0.1.30",
     "@types/deep-equal": "^1.0.0",
     "@types/qs": "^6.2.31",

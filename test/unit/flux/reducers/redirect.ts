@@ -1,4 +1,4 @@
-import Actions from '../../../../src/flux/actions';
+import { Actions } from '../../../../src/flux/actions';
 import redirect from '../../../../src/flux/reducers/redirect';
 import Store from '../../../../src/flux/store';
 import suite from '../../_suite';

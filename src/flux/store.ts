@@ -233,7 +233,7 @@ namespace Store {
   export function create() {
     return redux.createStore<State>(
       reducer,
-      {},
+      <any>{ data: {} },
       redux.applyMiddleware(thunk),
     );
   }

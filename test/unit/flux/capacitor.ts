@@ -1,5 +1,5 @@
 import * as mock from 'xhr-mock';
-import Actions from '../../../src/flux/actions';
+import { Actions } from '../../../src/flux/actions';
 import Observer from '../../../src/flux/observer';
 import Store from '../../../src/flux/store';
 import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../../../src/index';

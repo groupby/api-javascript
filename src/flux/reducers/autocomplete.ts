@@ -1,4 +1,4 @@
-import Actions from '../actions';
+import { Actions } from '../others';
 import Store from '../store';
 import Action = Actions.Autocomplete;
 

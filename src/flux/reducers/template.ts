@@ -1,4 +1,4 @@
-import Actions from '../actions';
+import { Actions } from '../others';
 import Store from '../store';
 
 export type State = Store.Template;
