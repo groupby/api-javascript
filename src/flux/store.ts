@@ -19,7 +19,7 @@ namespace Store {
 
       page: Page; // mixed
 
-      template: Template; // post
+      template?: Template; // post
 
       details: Details; // mixed
 
@@ -38,7 +38,7 @@ namespace Store {
   }
 
   export interface Query {
-    original: string; // pre
+    original?: string; // pre
     corrected?: string; // post
     related: Query.Related[]; // post
     didYouMean: Query.DidYouMean[]; // post
@@ -96,24 +96,24 @@ namespace Store {
     /**
      * number of next page
      */
-    previous: number; // post
+    previous?: number; // post
     /**
      * number of previous page
      */
-    next: number; // post
+    next?: number; // post
     /**
      * number of last page
      */
-    last: number; // post
+    last?: number; // post
 
     /**
      * start of displayed products
      */
-    from: number; // post
+    from?: number; // post
     /**
      * end of displayed products
      */
-    to: number; // post
+    to?: number; // post
 
     /**
      * displayed number range (in <gb-pages>)
@@ -162,8 +162,8 @@ namespace Store {
   }
 
   export interface Details {
-    id: string; // pre
-    product: Product; // post
+    id?: string; // pre
+    product?: Product; // post
   }
 
   export interface Product {
@@ -201,7 +201,7 @@ namespace Store {
   }
 
   export interface Autocomplete {
-    query: string; // pre
+    query?: string; // pre
     suggestions: string[]; // post
     category: Autocomplete.Category; // static & post
     products: Product[]; // post
@@ -209,7 +209,7 @@ namespace Store {
 
   export namespace Autocomplete {
     export interface Category {
-      field: string; // static
+      field?: string; // static
       values: string[]; // post
     }
   }
@@ -221,7 +221,7 @@ namespace Store {
 
   export namespace Indexed {
     export interface Selectable<T> extends Indexed<T> {
-      selected: string;
+      selected?: string;
     }
   }
 

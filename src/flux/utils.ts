@@ -1,12 +1,14 @@
+import { Dispatch } from 'redux';
 import Store from './store';
 
-export const thunk = (type: string, data: any) => (dispatch) => dispatch({ type, ...data });
+// tslint:disable-next-line max-line-length
+export const thunk = <T>(type: string, data: Partial<T>) => (dispatch: Dispatch<T>) => dispatch({ type, ...<any>data });
 
-export const conditional = (predicate: (state: Store.State) => boolean, type: string, data: any) =>
-  (dispatch, getStore) => {
+export const conditional = <T>(predicate: (state: Store.State) => boolean, type: string, data: Partial<T>) =>
+  (dispatch: Dispatch<T>, getStore) => {
     if (predicate(getStore())) {
-      dispatch({ type, ...data });
-  }
-};
+      dispatch({ type, ...<any>data });
+    }
+  };
 
 export const LinkMapper = (baseUrl: string) => (value: string) => ({ value, url: `${baseUrl}/${value}` });

@@ -4,7 +4,13 @@ import Action = Actions.Autocomplete;
 
 export type State = Store.Autocomplete;
 
-export default function updateAutocomplete(state: State, action): State {
+export const DEFAULTS: State = {
+  category: { values: [] },
+  products: [],
+  suggestions: [],
+};
+
+export default function updateAutocomplete(state: State = DEFAULTS, action): State {
   switch (action.type) {
     case Actions.UPDATE_AUTOCOMPLETE_QUERY: return updateQuery(state, action);
     case Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS: return receiveSuggestions(state, action);

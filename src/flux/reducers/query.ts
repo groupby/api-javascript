@@ -4,7 +4,13 @@ import Action = Actions.Query;
 
 export type State = Store.Query;
 
-export default function updateQuery(state: State, action): State {
+export const DEFAULTS: State = {
+  didYouMean: [],
+  related: [],
+  rewrites: [],
+};
+
+export default function updateQuery(state: State = DEFAULTS, action): State {
   switch (action.type) {
     case Actions.UPDATE_SEARCH: return updateOriginal(state, action);
     case Actions.RECEIVE_QUERY: return receiveQuery(state, action);

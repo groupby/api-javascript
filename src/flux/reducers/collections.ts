@@ -4,7 +4,12 @@ import Action = Actions.Collections;
 
 export type State = Store.Indexed.Selectable<Store.Collection>;
 
-export default function updateCollections(state: State, action): State {
+export const DEFAULTS: State = {
+  allIds: [],
+  byId: {},
+};
+
+export default function updateCollections(state: State = DEFAULTS, action): State {
   switch (action.type) {
     case Actions.SELECT_COLLECTION: return updateSelected(state, action);
     case Actions.RECEIVE_COLLECTION_COUNT: return receiveCount(state, action);

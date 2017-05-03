@@ -10,7 +10,7 @@ import Selectors from './selectors';
 import Store from './store';
 import { conditional, LinkMapper, thunk } from './utils';
 
-class Actions {
+export class Actions {
   private linkMapper: (value: string) => Store.Linkable;
 
   constructor(private flux: FluxCapacitor, paths: Paths) {
@@ -59,34 +59,41 @@ class Actions {
     thunk(Actions.UPDATE_SEARCH, search)
 
   selectRefinement = (navigationId: string, index: number) =>
-    conditional((state) => Selectors.isRefinementDeselected(state, navigationId, index),
+    conditional<Actions.Navigation.SelectRefinement>((state) =>
+      Selectors.isRefinementDeselected(state, navigationId, index),
       Actions.SELECT_REFINEMENT, { navigationId, index })
 
   deselectRefinement = (navigationId: string, index: number) =>
-    conditional((state) => Selectors.isRefinementSelected(state, navigationId, index),
+    conditional<Actions.Navigation.DeselectRefinement>((state) =>
+      Selectors.isRefinementSelected(state, navigationId, index),
       Actions.DESELECT_REFINEMENT, { navigationId, index })
 
   selectCollection = (id: string) =>
-    conditional((state) => state.data.collections.selected !== id,
+    conditional<Actions.Collections.SelectCollection>((state) =>
+      state.data.collections.selected !== id,
       Actions.SELECT_COLLECTION, { id })
 
   selectSort = (id: string) =>
-    conditional((state) => state.data.sorts.selected !== id,
+    conditional<Actions.Sort.UpdateSelected>((state) =>
+      state.data.sorts.selected !== id,
       Actions.SELECT_SORT, { id })
 
   updatePageSize = (size: number) =>
-    conditional((state) => state.data.page.size !== size,
+    conditional<Actions.Page.UpdateSize>((state) =>
+      state.data.page.size !== size,
       Actions.UPDATE_PAGE_SIZE, { size })
 
   updateCurrentPage = (page: number) =>
-    conditional((state) => state.data.page.current !== page,
+    conditional<Actions.Page.UpdateCurrent>((state) =>
+      state.data.page.current !== page,
       Actions.UPDATE_CURRENT_PAGE, { page })
 
   updateDetailsId = (id: string) =>
-    thunk(Actions.UPDATE_DETAILS_ID, { id })
+    thunk<Actions.Details.UpdateId>(Actions.UPDATE_DETAILS_ID, { id })
 
   updateAutocompleteQuery = (query: string) =>
-    conditional((state) => state.data.autocomplete.query !== query,
+    conditional<Actions.Autocomplete.UpdateQuery>((state) =>
+      state.data.autocomplete.query !== query,
       Actions.UPDATE_AUTOCOMPLETE_QUERY, { query })
 
   // response action creators
@@ -105,19 +112,22 @@ class Actions {
     }
 
   receiveQuery = (query: Query) =>
-    thunk(Actions.RECEIVE_QUERY, query)
+    thunk<Actions.Query.ReceiveQuery>(Actions.RECEIVE_QUERY, query)
 
   receiveProducts = (products: Store.Product[]) =>
     thunk(Actions.RECEIVE_PRODUCTS, { products })
 
   receiveCollectionCount = (collection: string, count: number) =>
-    thunk(Actions.RECEIVE_COLLECTION_COUNT, { collection, count })
+    thunk<Actions.Collections.ReceiveCount>(
+      Actions.RECEIVE_COLLECTION_COUNT, { collection, count })
 
   receiveNavigations = (navigations: Store.Navigation[]) =>
-    thunk(Actions.RECEIVE_NAVIGATIONS, { navigations })
+    thunk<Actions.Navigation.ReceiveNavigations>(
+      Actions.RECEIVE_NAVIGATIONS, { navigations })
 
   receivePage = (page: Page) =>
-    thunk(Actions.RECEIVE_PAGE, page)
+    thunk<Actions.Page.ReceivePage>(
+      Actions.RECEIVE_PAGE, page)
 
   receiveTemplate = (template: Store.Template) =>
     thunk(Actions.RECEIVE_TEMPLATE, { template })
@@ -129,19 +139,21 @@ class Actions {
     thunk(Actions.RECEIVE_REDIRECT, { redirect })
 
   receiveMoreRefinements = (navigationId: string, refinements: any) =>
-    thunk(Actions.RECEIVE_MORE_REFINEMENTS, { navigationId, refinements })
+    thunk<Actions.Navigation.ReceiveMoreRefinements>(
+      Actions.RECEIVE_MORE_REFINEMENTS, { navigationId, refinements })
 
   receiveAutocompleteSuggestions = (suggestions: string[], categoryValues: string[]) =>
-    thunk(Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, categoryValues })
+    thunk<Actions.Autocomplete.ReceiveSuggestions>(
+      Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, categoryValues })
 
   receiveAutocompleteProducts = (products: Store.Product[]) =>
     thunk(Actions.RECEIVE_AUTOCOMPLETE_PRODUCTS, { products })
 
   receiveDetailsProduct = (product: Store.Product) =>
-    thunk(Actions.RECEIVE_DETAILS_PRODUCT, { product })
+    thunk<Actions.Details.ReceiveProduct>(Actions.RECEIVE_DETAILS_PRODUCT, { product })
 }
 
-namespace Actions {
+export namespace Actions {
   // request actions
   export const UPDATE_AUTOCOMPLETE_QUERY = 'UPDATE_AUTOCOMPLETE_QUERY';
   export const UPDATE_DETAILS_ID = 'UPDATE_DETAILS_ID';
@@ -195,6 +207,24 @@ namespace Actions {
       product: Store.Product;
     }
   }
+  export namespace Navigation {
+    export interface RefinementAction extends Action {
+      navigationId: string;
+      index: number;
+    }
+    export type SelectRefinement = RefinementAction;
+    export type DeselectRefinement = RefinementAction;
+    export interface UpdateSearch extends Partial<RefinementAction> {
+      clear?: boolean;
+    }
+    export interface ReceiveNavigations extends Action {
+      navigations: Store.Navigation[];
+    }
+    export interface ReceiveMoreRefinements extends Action {
+      navigationId: string;
+      refinements: Store.Refinement[];
+    }
+  }
   export namespace Page {
     export interface UpdateCurrent extends Action {
       page: number;
@@ -229,7 +259,8 @@ namespace Actions {
   }
 }
 
-export default Actions;
+import _Actions = Actions;
+export default _Actions;
 
 export interface Query {
   corrected?: string;

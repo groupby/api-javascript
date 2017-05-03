@@ -4,7 +4,15 @@ import Action = Actions.Page;
 
 export type State = Store.Page;
 
-export default function updatePage(state: State, action): State {
+export const DEFAULTS: State = {
+  current: 1,
+  first: 1,
+  limit: 5,
+  range: [],
+  size: 10,
+};
+
+export default function updatePage(state: State = DEFAULTS, action): State {
   switch (action.type) {
     case Actions.UPDATE_SEARCH:
     case Actions.SELECT_SORT:

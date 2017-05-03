@@ -4,7 +4,9 @@ import Action = Actions.Details;
 
 export type State = Store.Details;
 
-export default function updateDetails(state: State, action): State {
+export const DEFAULTS: State = {};
+
+export default function updateDetails(state: State = DEFAULTS, action): State {
   switch (action.type) {
     case Actions.UPDATE_DETAILS_ID: return updateId(state, action);
     case Actions.RECEIVE_DETAILS_PRODUCT: return receiveProduct(state, action);
