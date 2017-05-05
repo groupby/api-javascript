@@ -1,8 +1,16 @@
 import { rayify } from '../utils';
 import { Events, FluxCapacitor } from './capacitor';
+import Store from './store';
 
 export const DETAIL_QUERY_INDICATOR = 'gbiDetailQuery';
 export const INDEXED = Symbol();
+export const FETCH_EVENTS = {
+  autocompleteProducts: Events.FETCH_AUTOCOMPLETE_PRODUCTS_DONE,
+  autocompleteSuggestions: Events.FETCH_AUTOCOMPLETE_SUGGESTIONS_DONE,
+  details: Events.FETCH_DETAILS_DONE,
+  moreRefinements: Events.FETCH_MORE_REFINEMENTS_DONE,
+  search: Events.FETCH_SEARCH_DONE,
+};
 
 type Observer = (oldState: any, newState: any) => void;
 
@@ -100,6 +108,18 @@ namespace Observer {
         sorts: emit(Events.SORTS_UPDATED),
 
         template: emit(Events.TEMPLATE_UPDATED),
+      },
+      isFetching: (oldState, newState) => {
+        Object.keys(newState)
+          .forEach((key) => {
+            if (!oldState[key] && newState[key]) {
+              this.flux.emit(FETCH_EVENTS[key]);
+            }
+          });
+      },
+      session: {
+        recallId: emit(Events.RECALL_CHANGED),
+        searchId: emit(Events.SEARCH_CHANGED),
       },
     };
   }

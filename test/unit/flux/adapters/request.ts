@@ -5,7 +5,7 @@ suite('request adapters', ({ expect, stub }) => {
 
   describe('extractSearchRequest()', () => {
     it('should extract request parameters', () => {
-      const state = { a: 'b' };
+      const state: any = { a: 'b' };
       const query = { c: 'd' };
       const refinements = ['e', 'f'];
       const extractQuery = stub(Adapter, 'extractQuery').returns(query);

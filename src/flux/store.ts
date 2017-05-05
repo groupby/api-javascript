@@ -1,12 +1,32 @@
 import * as redux from 'redux';
 import thunk from 'redux-thunk';
+import * as uuid from 'uuid/v1';
 import { Request } from '../models/request';
 import { Results } from '../models/response';
+import { Actions } from './actions';
 import reducer from './reducers';
+
+export const RECALL_CHANGE_ACTIONS = [
+  Actions.UPDATE_SEARCH,
+  Actions.SELECT_REFINEMENT,
+  Actions.DESELECT_REFINEMENT,
+];
+
+export const SEARCH_CHANGE_ACTIONS = [
+  Actions.UPDATE_SEARCH,
+  Actions.SELECT_REFINEMENT,
+  Actions.DESELECT_REFINEMENT,
+  Actions.SELECT_COLLECTION,
+  Actions.SELECT_SORT,
+  Actions.UPDATE_PAGE_SIZE,
+  Actions.UPDATE_CURRENT_PAGE,
+];
 
 namespace Store {
 
   export interface State {
+    isFetching: IsFetching;
+    session: Session;
     data?: {
       query: Query; // mixed
 
@@ -129,6 +149,19 @@ namespace Store {
     };
   }
 
+  export interface Session {
+    recallId?: string;
+    searchId?: string;
+  }
+
+  export interface IsFetching {
+    moreRefinements?: boolean;
+    search?: boolean;
+    autocompleteSuggestions?: boolean;
+    autocompleteProducts?: boolean;
+    details?: boolean;
+  }
+
   export type Zone = ContentZone | RichContentZone | RecordZone;
 
   export namespace Zone {
@@ -233,10 +266,23 @@ namespace Store {
   export function create() {
     return redux.createStore<State>(
       reducer,
-      <any>{ data: {} },
-      redux.applyMiddleware(thunk),
+      <any>{ isFetching: {}, data: {} },
+      redux.applyMiddleware(
+        thunk,
+        idGenerator('recallId', RECALL_CHANGE_ACTIONS),
+        idGenerator('searchId', SEARCH_CHANGE_ACTIONS),
+      ),
     );
   }
 }
 
 export default Store;
+
+export const idGenerator = (key: string, actions: string[]) =>
+  (store) => (next) => (action) => {
+    if (actions.includes(action.type)) {
+      return next(Object.assign(action, { [key]: uuid() }));
+    } else {
+      return next(action);
+    }
+  };

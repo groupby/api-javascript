@@ -55,14 +55,22 @@ export namespace Events {
   // record count event
   export const RECORD_COUNT_UPDATED = 'record_count_updated'; // post
 
-  // recall event
+  // request state change events
   export const RECALL_CHANGED = 'recall_changed';
+  export const SEARCH_CHANGED = 'search_changed';
 
   // redirect event
   export const REDIRECT = 'redirect';
 
   // error events
   export const ERROR_BRIDGE = 'error:bridge';
+
+  // fetch complete events
+  export const FETCH_SEARCH_DONE = 'fetch:search:done';
+  export const FETCH_AUTOCOMPLETE_SUGGESTIONS_DONE = 'fetch:autocomplete_suggestions:done';
+  export const FETCH_AUTOCOMPLETE_PRODUCTS_DONE = 'fetch:autocomplete_products:done';
+  export const FETCH_MORE_REFINEMENTS_DONE = 'fetch:more_refinements:done';
+  export const FETCH_DETAILS_DONE = 'fetch:details:done';
 }
 
 export { Pager };

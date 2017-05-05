@@ -44,7 +44,7 @@ suite('Actions', ({ expect, spy, stub }) => {
 
       it('should fetch more refinements', (done) => {
         const name = 'brand';
-        const state = { a: 'b' };
+        const state: any = { a: 'b' };
         const search = { e: 'f' };
         const action = actions.fetchMoreRefinements(name);
         const refinements = stub().resolves({ navigation: { name, refinements: ['c', 'd'] } });
@@ -64,7 +64,7 @@ suite('Actions', ({ expect, spy, stub }) => {
 
       it('should store more refinements result', (done) => {
         const name = 'brand';
-        const state = { a: 'b' };
+        const state: any = { a: 'b' };
         const moreRefinementsAction = { e: 'f' };
         const action = actions.fetchMoreRefinements(name);
         const dispatch = spy();

@@ -216,7 +216,7 @@ suite('response adapters', ({ expect, stub }) => {
 
   describe('extractPage()', () => {
     it('should build page information', () => {
-      const store = { a: 'b' };
+      const store: any = { a: 'b' };
       const pageInfo = { c: 'd' };
       const build = stub().returns(pageInfo);
       const Pager = stub(paging, 'Pager').returns({ build });
@@ -288,7 +288,7 @@ suite('response adapters', ({ expect, stub }) => {
     it('should call extractProduct()', () => {
       const extractProduct = stub(Adapter, 'extractProduct').returns('x');
 
-      const products = Adapter.extractAutocompleteProducts({ result: { products: ['a', 'b'] }});
+      const products = Adapter.extractAutocompleteProducts({ result: { products: ['a', 'b'] } });
 
       expect(products).to.eql(['x', 'x']);
       expect(extractProduct).to.be.calledWith('a');

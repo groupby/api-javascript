@@ -20,6 +20,7 @@
     "coverage:report": "istanbul report",
     "coverage:codacy": "cat ./coverage/lcov.info | codacy-coverage",
     "build": "rimraf dist && tsc",
+    "watch": "rimraf dist && tsc --watch",
     "knit": "npm run build",
     "ci": "NODE_ENV=ci karma start --singleRun=false",
     "docs": "rimraf docs && typedoc --options ./typedoc.json ./src ./custom_typings ./typings",
@@ -78,6 +79,7 @@
     "@types/clone": "^0.1.30",
     "@types/deep-equal": "^1.0.0",
     "@types/qs": "^6.2.31",
+    "@types/uuid": "^2.0.29",
     "array-includes": "^3.0.3",
     "array.prototype.find": "^2.0.4",
     "array.prototype.findindex": "^2.0.2",
@@ -93,6 +95,7 @@
     "qs": "^6.4.0",
     "redux": "^3.6.0",
     "redux-thunk": "^2.2.0",
-    "sayt": "^0.1.7"
+    "sayt": "^0.1.7",
+    "uuid": "^3.0.1"
   }
 }

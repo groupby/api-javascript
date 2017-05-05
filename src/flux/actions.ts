@@ -38,17 +38,23 @@ export class Actions {
   static RECEIVE_TEMPLATE = 'RECEIVE_TEMPLATE';
   static RECEIVE_REDIRECT = 'RECEIVE_REDIRECT';
 
+  static SO_FETCHING = 'SO_FETCHING';
+
   private linkMapper: (value: string) => Store.Linkable;
 
   constructor(private flux: FluxCapacitor, paths: Paths) {
     this.linkMapper = LinkMapper(paths.search);
   }
 
+  soFetching = (requestType: keyof Store.IsFetching) =>
+    ({ type: Actions.SO_FETCHING, requestType })
+
   // fetch action creators
   fetchMoreRefinements = (navigationId: string) =>
     (dispatch: Dispatch<any>, getStore: () => Store.State) => {
       const state = getStore();
       if (Selectors.hasMoreRefinements(state, navigationId)) {
+        dispatch(this.soFetching('moreRefinements'));
         return this.flux.bridge.refinements(Selectors.searchRequest(state), navigationId)
           .then(({ navigation: { name, refinements } }) => {
             const remapped = refinements.map(ResponseAdapter.extractRefinement);
@@ -57,33 +63,40 @@ export class Actions {
       }
     }
 
-  fetchProducts = (request: Request) => (dispatch: Dispatch<any>) =>
-    this.flux.bridge.search(request)
-      .then((res) => dispatch(this.receiveSearchResponse(res)))
+  fetchProducts = () =>
+    (dispatch: Dispatch<any>, getStore: () => Store.State) => {
+      dispatch(this.soFetching('search'));
+      return this.flux.bridge.search(Selectors.searchRequest(getStore()))
+        .then((res) => dispatch(this.receiveSearchResponse(res)));
+    }
 
   fetchAutocompleteSuggestions = (query: string, config: QueryTimeAutocompleteConfig) =>
-    (dispatch: Dispatch<any>) => this.flux.sayt.autocomplete(query, config)
-      .then((res) => {
-        const { suggestions, categoryValues } = ResponseAdapter.extractAutocompleteSuggestions(res);
-        dispatch(this.receiveAutocompleteSuggestions(suggestions, categoryValues));
-      })
+    (dispatch: Dispatch<any>) => {
+      dispatch(this.soFetching('autocompleteSuggestions'));
+      return this.flux.sayt.autocomplete(query, config)
+        .then((res) => {
+          const { suggestions, categoryValues } = ResponseAdapter.extractAutocompleteSuggestions(res);
+          dispatch(this.receiveAutocompleteSuggestions(suggestions, categoryValues));
+        });
+    }
 
   fetchAutocompleteProducts = (query: string, config: QueryTimeProductSearchConfig) =>
-    (dispatch: Dispatch<any>) => this.flux.sayt.productSearch(query, config)
-      .then((res) => {
-        const products = ResponseAdapter.extractAutocompleteProducts(res);
-        dispatch(this.receiveAutocompleteProducts(products));
-      })
+    (dispatch: Dispatch<any>) => {
+      dispatch(this.soFetching('autocompleteProducts'));
+      return this.flux.sayt.productSearch(query, config)
+        .then((res) => {
+          const products = ResponseAdapter.extractAutocompleteProducts(res);
+          dispatch(this.receiveAutocompleteProducts(products));
+        });
+    }
 
-  fetchCollectionCount = (collection: string) => (dispatch: Dispatch<any>, getStore: () => Store.State) => {
-    const state = getStore();
-    this.flux.bridge.search({ ...Selectors.searchRequest(state), collection })
-      .then((res) => dispatch(this.receiveCollectionCount(collection, res.totalRecordCount)));
-  }
+  fetchCollectionCount = (collection: string) => (dispatch: Dispatch<any>, getStore: () => Store.State) =>
+    this.flux.bridge.search({ ...Selectors.searchRequest(getStore()), collection })
+      .then((res) => dispatch(this.receiveCollectionCount(collection, res.totalRecordCount)))
 
   // request action creators
   updateSearch = (search: Search) =>
-    thunk(Actions.UPDATE_SEARCH, search)
+    thunk(Actions.UPDATE_SEARCH, Object.assign(search))
 
   selectRefinement = (navigationId: string, index: number) =>
     conditional<Actions.Navigation.SelectRefinement>((state) =>
@@ -166,12 +179,10 @@ export class Actions {
     thunk(Actions.RECEIVE_REDIRECT, { redirect })
 
   receiveMoreRefinements = (navigationId: string, refinements: any) =>
-    thunk<Actions.Navigation.ReceiveMoreRefinements>(
-      Actions.RECEIVE_MORE_REFINEMENTS, { navigationId, refinements })
+    thunk(Actions.RECEIVE_MORE_REFINEMENTS, { navigationId, refinements })
 
   receiveAutocompleteSuggestions = (suggestions: string[], categoryValues: string[]) =>
-    thunk<Actions.Autocomplete.ReceiveSuggestions>(
-      Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, categoryValues })
+    thunk(Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS, { suggestions, categoryValues })
 
   receiveAutocompleteProducts = (products: Store.Product[]) =>
     thunk(Actions.RECEIVE_AUTOCOMPLETE_PRODUCTS, { products })
