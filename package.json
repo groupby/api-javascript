@@ -48,7 +48,7 @@
     "codacy-coverage": "^2.0.0",
     "gb-license-check": "^1.0.1",
     "istanbul": "^0.4.5",
-    "karma": "^0.13.22",
+    "karma": "^1.7.0",
     "karma-chai": "^0.1.0",
     "karma-coverage": "^1.1.1",
     "karma-mocha": "^1.0.1",
