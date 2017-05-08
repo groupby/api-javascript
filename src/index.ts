@@ -1,3 +1,4 @@
+import * as Events from './flux/events';
 import './polyfills';
 
 export * from './core/query';
@@ -6,3 +7,4 @@ export * from './flux/capacitor';
 export * from './utils/converter';
 export * from './models/request';
 export * from './models/response';
+export { Events };
