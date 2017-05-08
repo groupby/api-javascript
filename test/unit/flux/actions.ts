@@ -1,16 +1,15 @@
 import * as sinon from 'sinon';
 import { BrowserBridge } from '../../../src/core/bridge';
-import { Actions } from '../../../src/flux/actions';
 import ResponseAdapter from '../../../src/flux/adapters/response';
-import Selectors from '../../../src/flux/selectors';
+import { ActionCreator, Actions, Selectors } from '../../../src/flux/core';
 import * as utils from '../../../src/flux/utils';
 import suite from '../_suite';
 
 suite('Actions', ({ expect, spy, stub }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const flux: any = { a: 'b' };
 
-  beforeEach(() => actions = new Actions(flux, { search: '/search' }));
+  beforeEach(() => actions = new ActionCreator(flux, { search: '/search' }));
 
   describe('constructor()', () => {
     it('should set properties', () => {
@@ -88,7 +87,7 @@ suite('Actions', ({ expect, spy, stub }) => {
 
     describe('fetchProducts()', () => {
       it('should return a thunk', () => {
-        const thunk = actions.fetchProducts({});
+        const thunk = actions.fetchProducts();
 
         expect(thunk).to.be.a('function');
       });
@@ -96,15 +95,18 @@ suite('Actions', ({ expect, spy, stub }) => {
       it('should call flux.bridge.search()', (done) => {
         const request = { a: 'b' };
         const response = { c: 'd' };
+        const state: any = { e: 'f' };
         const receiveSearchResponseAction = () => null;
         const dispatch = spy();
         const search = stub().resolves(response);
+        const searchRequest = stub(Selectors, 'searchRequest').returns(request);
         const receiveSearchResponse = stub(actions, 'receiveSearchResponse').returns(receiveSearchResponseAction);
-        const action = actions.fetchProducts(request);
+        const action = actions.fetchProducts();
         actions['flux'] = <any>{ bridge: { search } };
 
-        action(dispatch)
+        action(dispatch, () => state)
           .then(() => {
+            expect(searchRequest).to.be.calledWith(state);
             expect(search).to.be.calledWith(request);
             expect(receiveSearchResponse).to.be.calledWith(response);
             expect(dispatch).to.be.calledWith(receiveSearchResponseAction);

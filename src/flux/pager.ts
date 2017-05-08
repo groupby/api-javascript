@@ -1,7 +1,7 @@
 import { Results } from '../models/response';
-import { Page } from './actions';
-import { Events, FluxCapacitor } from './capacitor';
-import Store from './store';
+import { FluxCapacitor } from './capacitor';
+import { Actions, Store } from './core';
+import * as Events from './events';
 import range = require('lodash.range');
 
 const MAX_RECORDS = 10000;
@@ -34,7 +34,7 @@ namespace Pager {
     }
   }
 
-  export function build(state: Store.State): Page {
+  export function build(state: Store.State): Actions.Page {
     // TODO move this default into the reducer setup
     const pageSize = state.data.page.size || 10;
     const currentPage = state.data.page.current;

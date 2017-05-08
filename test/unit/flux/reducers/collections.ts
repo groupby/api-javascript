@@ -1,10 +1,9 @@
-import { Actions } from '../../../../src/flux/actions';
-import collections from '../../../../src/flux/reducers/collections';
-import Store from '../../../../src/flux/store';
+import { ActionCreator, Actions, Store } from '../../../../src/flux/core';
+import collections from '../../../../src/flux/core/reducers/collections';
 import suite from '../../_suite';
 
 suite('collections', ({ expect }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const allIds = ['Department', 'Main'];
   const Department = {
     label: 'All content',
@@ -25,7 +24,7 @@ suite('collections', ({ expect }) => {
     },
     selected,
   };
-  beforeEach(() => actions = new Actions(<any>{}, <any>{}));
+  beforeEach(() => actions = new ActionCreator(<any>{}, <any>{}));
 
   describe('updateCollections()', () => {
     it('should update state on SELECT_COLLECTION', () => {

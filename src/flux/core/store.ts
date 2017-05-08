@@ -1,10 +1,9 @@
 import * as redux from 'redux';
 import thunk from 'redux-thunk';
 import * as uuid from 'uuid/v1';
-import { Request } from '../models/request';
-import { Results } from '../models/response';
-import { Actions } from './actions';
-import reducer from './reducers';
+import { Actions, reducer } from '.';
+import { Request } from '../../models/request';
+import { Results } from '../../models/response';
 
 export const RECALL_CHANGE_ACTIONS = [
   Actions.UPDATE_SEARCH,

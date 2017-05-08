@@ -8,13 +8,12 @@ import {
   ValueRefinement,
   Zone,
 } from '../../models/response';
-import { Page, Query } from '../actions';
+import { Actions, Store } from '../core';
 import Pager from '../pager';
-import Store from '../store';
 
 namespace Response {
 
-  export const extractQuery = (results: Results, linkMapper: (value: string) => Store.Linkable): Query => ({
+  export const extractQuery = (results: Results, linkMapper: (value: string) => Store.Linkable): Actions.Query => ({
     corrected: results.correctedQuery,
     didYouMean: results.didYouMean.map(linkMapper),
     related: results.relatedQueries.map(linkMapper),
@@ -112,7 +111,7 @@ namespace Response {
       Object.assign(zones, { [key]: Response.extractZone(template.zones[key]) }), {}),
   });
 
-  export const extractPage = (store: Store.State): Page => Pager.build(store);
+  export const extractPage = (store: Store.State): Actions.Page => Pager.build(store);
 
   // tslint:disable-next-line max-line-length
   export const extractAutocompleteSuggestions = ({ result }: any, category?: string): { suggestions: string[], categoryValues: string[] } => ({

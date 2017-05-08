@@ -1,4 +1,4 @@
-import Selectors from '../../../src/flux/selectors';
+import { Selectors } from '../../../src/flux/core';
 import suite from '../_suite';
 
 suite('selectors', ({ expect, stub }) => {

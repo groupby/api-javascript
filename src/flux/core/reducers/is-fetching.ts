@@ -1,6 +1,5 @@
-import Store from '../store';
+import { Actions, Store } from '..';
 import State = Store.IsFetching;
-import { Actions } from '../actions';
 
 export default function updateIsFetching(state: State, action): State {
   switch (action.type) {

@@ -1,5 +1,4 @@
-import { Actions } from '../others';
-import Store from '../store';
+import { Actions, Store } from '..';
 import Action = Actions.Navigation;
 
 export type State = Store.Indexed<Store.Navigation>;

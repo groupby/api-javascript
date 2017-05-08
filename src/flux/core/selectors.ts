@@ -1,5 +1,5 @@
-import { Request } from '../models/request';
-import Store from './store';
+import { Store } from '.';
+import { Request } from '../../models/request';
 
 namespace Selectors {
 

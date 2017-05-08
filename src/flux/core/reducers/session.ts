@@ -1,5 +1,4 @@
-import { Actions } from '../actions';
-import Store from '../store';
+import { Actions, Store } from '..';
 import State = Store.State;
 
 export default function updateSession(state: State, action) {

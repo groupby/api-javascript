@@ -1,10 +1,9 @@
-import { Actions } from '../../../../src/flux/actions';
-import autocomplete from '../../../../src/flux/reducers/autocomplete';
-import Store from '../../../../src/flux/store';
+import { ActionCreator, Actions, Store } from '../../../../src/flux/core';
+import autocomplete from '../../../../src/flux/core/reducers/autocomplete';
 import suite from '../../_suite';
 
 suite('autocomplete', ({ expect }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const query = 'brown shoes';
   const category = { field: 'a', values: ['b'] };
   const suggestions = ['e', 'f', 'g'];
@@ -15,7 +14,7 @@ suite('autocomplete', ({ expect }) => {
     query,
     suggestions,
   };
-  beforeEach(() => actions = new Actions(<any>{}, <any>{}));
+  beforeEach(() => actions = new ActionCreator(<any>{}, <any>{}));
 
   describe('autocompleteUpdate()', () => {
     it('should update query state on UPDATE_AUTOCOMPLETE_QUERY', () => {

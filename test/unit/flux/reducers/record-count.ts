@@ -1,12 +1,11 @@
-import { Actions } from '../../../../src/flux/actions';
-import recordCount from '../../../../src/flux/reducers/record-count';
-import Store from '../../../../src/flux/store';
+import { ActionCreator, Actions, Store } from '../../../../src/flux/core';
+import recordCount from '../../../../src/flux/core/reducers/record-count';
 import suite from '../../_suite';
 
 suite('record-count', ({ expect }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const state = 2934;
-  beforeEach(() => actions = new Actions(<any>{}, <any>{}));
+  beforeEach(() => actions = new ActionCreator(<any>{}, <any>{}));
 
   describe('updateRecordCount()', () => {
     it('should update record count on RECEIVE_PRODUCTS', () => {

@@ -1,10 +1,9 @@
-import { Actions } from '../../../../src/flux/actions';
-import page from '../../../../src/flux/reducers/page';
-import Store from '../../../../src/flux/store';
+import { ActionCreator, Actions, Store } from '../../../../src/flux/core';
+import page from '../../../../src/flux/core/reducers/page';
 import suite from '../../_suite';
 
 suite('page', ({ expect }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const first = 1;
   const size = 10;
   const current = 3;
@@ -18,7 +17,7 @@ suite('page', ({ expect }) => {
   const state: Store.Page = {
     first, size, current, limit, previous, next, last, from, to, range,
   };
-  beforeEach(() => actions = new Actions(<any>{}, <any>{}));
+  beforeEach(() => actions = new ActionCreator(<any>{}, <any>{}));
 
   describe('updatePage()', () => {
     describe('should reset current state on', () => {

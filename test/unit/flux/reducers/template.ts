@@ -1,10 +1,9 @@
-import { Actions } from '../../../../src/flux/actions';
-import template from '../../../../src/flux/reducers/template';
-import Store from '../../../../src/flux/store';
+import { ActionCreator, Actions, Store } from '../../../../src/flux/core';
+import template from '../../../../src/flux/core/reducers/template';
 import suite from '../../_suite';
 
 suite('template', ({ expect }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const state: Store.Template = {
     name: 'idk',
     rule: 'semantish',
@@ -16,7 +15,7 @@ suite('template', ({ expect }) => {
       },
     },
   };
-  beforeEach(() => actions = new Actions(<any>{}, <any>{}));
+  beforeEach(() => actions = new ActionCreator(<any>{}, <any>{}));
 
   describe('updateTemplate()', () => {
     it('should update state on RECEIVE_TEMPLATE', () => {

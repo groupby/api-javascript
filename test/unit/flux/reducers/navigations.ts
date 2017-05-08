@@ -1,10 +1,9 @@
-import { Actions } from '../../../../src/flux/actions';
-import navigations from '../../../../src/flux/reducers/navigations';
-import Store from '../../../../src/flux/store';
+import { ActionCreator, Actions, Store } from '../../../../src/flux/core';
+import navigations from '../../../../src/flux/core/reducers/navigations';
 import suite from '../../_suite';
 
 suite('navigations', ({ expect }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const allIds = ['Format', 'Section'];
   const Format = {
     field: 'format',
@@ -38,7 +37,7 @@ suite('navigations', ({ expect }) => {
       Section,
     },
   };
-  beforeEach(() => actions = new Actions(<any>{}, <any>{}));
+  beforeEach(() => actions = new ActionCreator(<any>{}, <any>{}));
 
   describe('updateNavigations()', () => {
     it('should clear selected refinements state on UPDATE_SEARCH', () => {

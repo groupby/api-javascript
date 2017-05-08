@@ -1,48 +1,17 @@
 import { Dispatch } from 'redux';
-import { QueryTimeAutocompleteConfig, QueryTimeProductSearchConfig, Sayt } from 'sayt';
-import { BridgeQuery, BrowserBridge } from '../core/bridge';
-import { FluxCapacitor } from '../flux/capacitor';
-import { Request } from '../models/request';
-import { RefinementResults, Results } from '../models/response';
-import { rayify } from '../utils';
-import ResponseAdapter from './adapters/response';
-import Selectors from './selectors';
-import Store from './store';
-import { conditional, LinkMapper, thunk } from './utils';
+import { QueryTimeAutocompleteConfig, QueryTimeProductSearchConfig } from 'sayt';
+import Actions from '.';
+import { Selectors, Store } from '..';
+import { Results } from '../../../models/response';
+import ResponseAdapter from '../../adapters/response';
+import { FluxCapacitor } from '../../capacitor';
+import { conditional, LinkMapper, thunk } from '../../utils';
 
-export class Actions {
-
-  // request actions
-  static UPDATE_AUTOCOMPLETE_QUERY = 'UPDATE_AUTOCOMPLETE_QUERY';
-  static UPDATE_DETAILS_ID = 'UPDATE_DETAILS_ID';
-  static UPDATE_SEARCH = 'UPDATE_SEARCH';
-  static SELECT_REFINEMENT = 'SELECT_REFINEMENT';
-  static DESELECT_REFINEMENT = 'DESELECT_REFINEMENT';
-  static SELECT_COLLECTION = 'SELECT_COLLECTION';
-  static SELECT_SORT = 'UPDATE_SORTS';
-  static UPDATE_PAGE_SIZE = 'UPDATE_PAGE_SIZE';
-  static UPDATE_CURRENT_PAGE = 'UPDATE_CURRENT_PAGE';
-
-  // response actions
-  static RECEIVE_MORE_REFINEMENTS = 'RECEIVE_MORE_REFINEMENTS';
-  static RECEIVE_AUTOCOMPLETE_SUGGESTIONS = 'RECEIVE_AUTOCOMPLETE_SUGGESTIONS';
-  static RECEIVE_AUTOCOMPLETE_PRODUCTS = 'RECEIVE_AUTOCOMPLETE_PRODUCTS';
-  static RECEIVE_DETAILS_PRODUCT = 'RECEIVE_DETAILS_PRODUCT';
-  static RECEIVE_QUERY = 'RECEIVE_QUERY';
-  static RECEIVE_PRODUCTS = 'RECEIVE_PRODUCTS';
-  static RECEIVE_COLLECTION_COUNT = 'RECEIVE_COLLECTION_COUNT';
-  // TODO
-  static RECEIVE_NAVIGATIONS = 'RECEIVE_NAVIGATIONS';
-  static RECEIVE_PAGE = 'RECEIVE_PAGE';
-  static RECEIVE_RECORD_COUNT = 'RECEIVE_RECORD_COUNT';
-  static RECEIVE_TEMPLATE = 'RECEIVE_TEMPLATE';
-  static RECEIVE_REDIRECT = 'RECEIVE_REDIRECT';
-
-  static SO_FETCHING = 'SO_FETCHING';
+export default class Creator {
 
   private linkMapper: (value: string) => Store.Linkable;
 
-  constructor(private flux: FluxCapacitor, paths: Paths) {
+  constructor(private flux: FluxCapacitor, paths: Actions.Paths) {
     this.linkMapper = LinkMapper(paths.search);
   }
 
@@ -95,7 +64,7 @@ export class Actions {
       .then((res) => dispatch(this.receiveCollectionCount(collection, res.totalRecordCount)))
 
   // request action creators
-  updateSearch = (search: Search) =>
+  updateSearch = (search: Actions.Search) =>
     thunk(Actions.UPDATE_SEARCH, Object.assign(search))
 
   selectRefinement = (navigationId: string, index: number) =>
@@ -151,7 +120,7 @@ export class Actions {
       dispatch(this.receiveTemplate(ResponseAdapter.extractTemplate(results.template)));
     }
 
-  receiveQuery = (query: Query) =>
+  receiveQuery = (query: Actions.Query) =>
     thunk<Actions.Query.ReceiveQuery>(Actions.RECEIVE_QUERY, query)
 
   receiveProducts = (products: Store.Product[]) =>
@@ -165,7 +134,7 @@ export class Actions {
     thunk<Actions.Navigation.ReceiveNavigations>(
       Actions.RECEIVE_NAVIGATIONS, { navigations })
 
-  receivePage = (page: Page) =>
+  receivePage = (page: Actions.Page) =>
     thunk<Actions.Page.ReceivePage>(
       Actions.RECEIVE_PAGE, page)
 
@@ -189,136 +158,4 @@ export class Actions {
 
   receiveDetailsProduct = (product: Store.Product) =>
     thunk<Actions.Details.ReceiveProduct>(Actions.RECEIVE_DETAILS_PRODUCT, { product })
-}
-
-export namespace Actions {
-
-  export interface Action { type: string; }
-  export namespace Autocomplete {
-    export interface UpdateQuery extends Action {
-      query: string;
-    }
-    export interface ReceiveSuggestions extends Action {
-      suggestions: string[];
-      categoryValues: string[];
-    }
-  }
-  export namespace Collections {
-    export interface SelectCollection extends Action {
-      id: string;
-    }
-    export interface ReceiveCount extends Action {
-      collection: string;
-      count: number;
-    }
-  }
-  export namespace Details {
-    export interface UpdateId extends Action {
-      id: string;
-    }
-    export interface ReceiveProduct extends Action {
-      product: Store.Product;
-    }
-  }
-  export namespace Navigation {
-    export interface RefinementAction extends Action {
-      navigationId: string;
-      index: number;
-    }
-    export type SelectRefinement = RefinementAction;
-    export type DeselectRefinement = RefinementAction;
-    export interface UpdateSearch extends Partial<RefinementAction> {
-      clear?: boolean;
-    }
-    export interface ReceiveNavigations extends Action {
-      navigations: Store.Navigation[];
-    }
-    export interface ReceiveMoreRefinements extends Action {
-      navigationId: string;
-      refinements: Store.Refinement[];
-    }
-  }
-  export namespace Page {
-    export interface UpdateCurrent extends Action {
-      page: number;
-    }
-    export interface UpdateSize extends Action {
-      size: number;
-    }
-    export interface ReceivePage extends Action {
-      from: number;
-      to: number;
-      last: number;
-      next: number;
-      previous: number;
-      range: number[];
-    }
-  }
-  export namespace Query {
-    export interface UpdateOriginal extends Action {
-      query: string;
-    }
-    export interface ReceiveQuery extends Action {
-      corrected?: string;
-      rewrites: string[];
-      didYouMean: Store.Linkable[];
-      related: Store.Linkable[];
-    }
-  }
-  export namespace Sort {
-    export interface UpdateSelected extends Action {
-      id: string;
-    }
-  }
-}
-
-export interface Query {
-  corrected?: string;
-  related: Store.Query.Related[];
-  didYouMean: Store.Query.DidYouMean[];
-  rewrites: string[];
-}
-
-export interface Search {
-  query?: string;
-  navigationId?: string;
-  index?: number;
-
-  /**
-   * only for refinements
-   * if true, replace refinements with the provided ones
-   * if false, add the provided refinements
-   */
-  clear?: boolean;
-}
-
-export namespace Search {
-  export type Refinement = ValueRefinement | RangeRefinement;
-
-  export interface BaseRefinement {
-    field: string;
-  }
-
-  export interface ValueRefinement extends BaseRefinement {
-    value: string;
-  }
-
-  export interface RangeRefinement extends BaseRefinement {
-    low?: number;
-    high?: number;
-  }
-}
-
-export interface Page {
-  previous: number;
-  next: number;
-  last: number;
-  from: number;
-  to: number;
-  range: number[];
-}
-
-export interface Paths {
-  search: string;
-  // details: string;
 }

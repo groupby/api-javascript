@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux';
-import Store from './store';
+import { Store } from './core';
 
 // tslint:disable-next-line max-line-length
 export const thunk = <T>(type: string, data: Partial<T>) => (dispatch: Dispatch<T>) => dispatch({ type, ...<any>data });

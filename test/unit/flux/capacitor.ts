@@ -1,8 +1,11 @@
 import * as mock from 'xhr-mock';
-import { Actions } from '../../../src/flux/actions';
+import { FluxCapacitor } from '../../../src/flux/capacitor';
+import { Store } from '../../../src/flux/core';
+import Actions from '../../../src/flux/core/actions';
+import * as Events from '../../../src/flux/events';
 import Observer from '../../../src/flux/observer';
-import Store from '../../../src/flux/store';
-import { Events, FluxCapacitor, Results, SelectedValueRefinement, Sort } from '../../../src/index';
+import { SelectedValueRefinement, Sort } from '../../../src/models/request';
+import { Results } from '../../../src/models/response';
 import suite from '../_suite';
 
 const CUSTOMER_ID = 'services';

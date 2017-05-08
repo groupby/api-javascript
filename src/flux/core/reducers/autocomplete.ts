@@ -1,5 +1,4 @@
-import { Actions } from '../others';
-import Store from '../store';
+import { Actions, Store } from '..';
 import Action = Actions.Autocomplete;
 
 export type State = Store.Autocomplete;

@@ -1,5 +1,5 @@
 import * as redux from 'redux';
-import Store from '../store';
+import { Store } from '..';
 
 import autocomplete from './autocomplete';
 import collections from './collections';

@@ -1,5 +1,4 @@
-import { Actions } from '../others';
-import Store from '../store';
+import { Actions, Store } from '..';
 import Action = Actions.Collections;
 
 export type State = Store.Indexed.Selectable<Store.Collection>;

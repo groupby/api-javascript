@@ -1,10 +1,9 @@
-import { Actions } from '../../../../src/flux/actions';
-import details from '../../../../src/flux/reducers/details';
-import Store from '../../../../src/flux/store';
+import { ActionCreator, Actions, Store } from '../../../../src/flux/core';
+import details from '../../../../src/flux/core/reducers/details';
 import suite from '../../_suite';
 
 suite('details', ({ expect }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const id = '19283';
   const product = {
     id: '19293',
@@ -21,7 +20,7 @@ suite('details', ({ expect }) => {
     product,
   };
 
-  beforeEach(() => actions = new Actions(<any>{}, <any>{}));
+  beforeEach(() => actions = new ActionCreator(<any>{}, <any>{}));
 
   describe('updateDetails()', () => {
     it('should update state on UPDATE_DETAILS_ID', () => {

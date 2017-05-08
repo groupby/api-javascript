@@ -1,5 +1,5 @@
-import Store from '../../../src/flux/store';
-import { Request as SearchRequest, Sort } from '../../../src/models/request';
+import { Request as SearchRequest, Sort } from '../../models/request';
+import { Store } from '../core';
 import State = Store.State;
 
 namespace Request {

@@ -1,4 +1,4 @@
-import { Events } from '../../../src/flux/capacitor';
+import * as Events from '../../../src/flux/events';
 import Observer, { DETAIL_QUERY_INDICATOR, INDEXED } from '../../../src/flux/observer';
 import suite from '../_suite';
 

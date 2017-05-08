@@ -1,19 +1,18 @@
-import { Actions } from '../../../../src/flux/actions';
-import query from '../../../../src/flux/reducers/query';
-import Store from '../../../../src/flux/store';
+import { ActionCreator, Actions, Store } from '../../../../src/flux/core';
+import query from '../../../../src/flux/core/reducers/query';
 import suite from '../../_suite';
 
 suite('query', ({ expect }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const original = 'yelloww';
   const corrected = 'yellow';
-  const related = [{value: 'red', url: '/shoes'}];
-  const didYouMean = [{value: 'yell', url: '/shouting'}];
+  const related = [{ value: 'red', url: '/shoes' }];
+  const didYouMean = [{ value: 'yell', url: '/shouting' }];
   const rewrites = ['spelling'];
   const state: Store.Query = {
     original, corrected, related, didYouMean, rewrites,
   };
-  beforeEach(() => actions = new Actions(<any>{}, <any>{}));
+  beforeEach(() => actions = new ActionCreator(<any>{}, <any>{}));
 
   describe('updateQuery()', () => {
     it('should update original state on UPDATE_SEARCH', () => {
@@ -32,7 +31,7 @@ suite('query', ({ expect }) => {
       const newQuery = {
         corrected: 'potato chips',
         related: [],
-        didYouMean: [{ value: 'lays potato chips', url:'/chips' }],
+        didYouMean: [{ value: 'lays potato chips', url: '/chips' }],
         rewrites: [],
       };
       const newState = {

@@ -1,12 +1,11 @@
-import { Actions } from '../../../../src/flux/actions';
-import redirect from '../../../../src/flux/reducers/redirect';
-import Store from '../../../../src/flux/store';
+import { ActionCreator, Actions, Store } from '../../../../src/flux/core';
+import redirect from '../../../../src/flux/core/reducers/redirect';
 import suite from '../../_suite';
 
 suite('redirect', ({ expect }) => {
-  let actions: Actions;
+  let actions: ActionCreator;
   const state = '/go-here';
-  beforeEach(() => actions = new Actions(<any>{}, <any>{}));
+  beforeEach(() => actions = new ActionCreator(<any>{}, <any>{}));
 
   describe('updateRedirect()', () => {
     it('should update redirect on RECEIVE_REDIRECT', () => {
