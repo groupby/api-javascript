@@ -7,8 +7,8 @@ export const DEFAULTS: State = {};
 
 export default function updateDetails(state: State = DEFAULTS, action): State {
   switch (action.type) {
-    case Actions.UPDATE_DETAILS_ID: return updateId(state, action);
-    case Actions.RECEIVE_DETAILS_PRODUCT: return receiveProduct(state, action);
+    case Actions.UPDATE_DETAILS_ID: return updateId(state, action.payload);
+    case Actions.RECEIVE_DETAILS_PRODUCT: return receiveProduct(state, action.payload);
     default: return state;
   }
 }

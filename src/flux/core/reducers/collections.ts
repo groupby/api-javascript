@@ -10,8 +10,8 @@ export const DEFAULTS: State = {
 
 export default function updateCollections(state: State = DEFAULTS, action): State {
   switch (action.type) {
-    case Actions.SELECT_COLLECTION: return updateSelected(state, action);
-    case Actions.RECEIVE_COLLECTION_COUNT: return receiveCount(state, action);
+    case Actions.SELECT_COLLECTION: return updateSelected(state, action.payload);
+    case Actions.RECEIVE_COLLECTION_COUNT: return receiveCount(state, action.payload);
     default: return state;
   }
 }

@@ -9,10 +9,10 @@ export const DEFAULTS: State = {
   suggestions: [],
 };
 
-export default function updateAutocomplete(state: State = DEFAULTS, action): State {
-  switch (action.type) {
-    case Actions.UPDATE_AUTOCOMPLETE_QUERY: return updateQuery(state, action);
-    case Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS: return receiveSuggestions(state, action);
+export default function updateAutocomplete(state: State = DEFAULTS, { type, payload }: Actions.Action<any>): State {
+  switch (type) {
+    case Actions.UPDATE_AUTOCOMPLETE_QUERY: return updateQuery(state, payload);
+    case Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS: return receiveSuggestions(state, payload);
     default: return state;
   }
 }

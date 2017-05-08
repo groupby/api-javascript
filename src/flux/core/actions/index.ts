@@ -32,18 +32,24 @@ namespace Actions {
 
   export const SO_FETCHING = 'SO_FETCHING';
 
-  export interface Action { type: string; }
-
-  export namespace Autocomplete {
-    export interface UpdateQuery extends Action {
-      query: string;
-    }
-    export interface ReceiveSuggestions extends Action {
-      suggestions: string[];
-      categoryValues: string[];
-    }
+  export interface Action<T> {
+    type: string;
+    payload: T;
+    meta: {
+      component: string;
+    };
   }
 
+  export namespace Autocomplete {
+    // TODO: Update other Action payload & meta stuff
+    export type UpdateQuery = Action<string>;
+    export type ReceiveSuggestions = Action<{
+      suggestions: string[];
+      categoryValues: string[];
+    }>;
+  }
+
+  // TODO: Move out of Actions (not an Action)
   export interface Search {
     query?: string;
     navigationId?: string;

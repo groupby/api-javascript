@@ -3,7 +3,7 @@ import State = Store.IsFetching;
 
 export default function updateIsFetching(state: State, action): State {
   switch (action.type) {
-    case Actions.SO_FETCHING: return soFetching(state, action);
+    case Actions.SO_FETCHING: return soFetching(state, action.payload);
     case Actions.RECEIVE_MORE_REFINEMENTS: return notFetching(state, 'moreRefinements');
     case Actions.RECEIVE_AUTOCOMPLETE_SUGGESTIONS: return notFetching(state, 'autocompleteSuggestions');
     case Actions.RECEIVE_AUTOCOMPLETE_PRODUCTS: return notFetching(state, 'autocompleteProducts');
