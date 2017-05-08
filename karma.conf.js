@@ -21,7 +21,6 @@ module.exports = function(config) {
     frameworks: ['mocha', 'sinon-chai', 'source-map-support'],
     files: ['./test/karma.entry.ts'],
     preprocessors: {
-      // './test/karma.entry.ts': ['webpack']
       './test/karma.entry.ts': ['webpack']
     },
     webpack: webpackConfig,

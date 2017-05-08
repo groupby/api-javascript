@@ -363,7 +363,7 @@ suite('Actions', ({ expect, spy, stub }) => {
         expect(receiveQuery).to.be.calledWith(query);
         expect(extractQuery).to.be.calledWith(results, linkMapper);
         expect(dispatch).to.be.calledWith(receiveQueryAction);
-        expect(receiveProducts).to.be.calledWith(['x', 'x'], results.totalRecordCount);
+        expect(receiveProducts).to.be.calledWith(['x', 'x']);
         expect(extractProduct).to.be.calledWith({ allMeta: { u: 'v' } });
         expect(extractProduct).to.be.calledWith({ allMeta: { w: 'x' } });
         expect(dispatch).to.be.calledWith(receiveProductsAction);

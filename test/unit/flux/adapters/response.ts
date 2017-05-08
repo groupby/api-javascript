@@ -1,5 +1,5 @@
 import Adapter from '../../../../src/flux/adapters/response';
-import * as paging from '../../../../src/flux/pager';
+import Pager from '../../../../src/flux/pager';
 import suite from '../../_suite';
 
 suite('response adapters', ({ expect, stub }) => {
@@ -218,11 +218,9 @@ suite('response adapters', ({ expect, stub }) => {
     it('should build page information', () => {
       const store: any = { a: 'b' };
       const pageInfo = { c: 'd' };
-      const build = stub().returns(pageInfo);
-      const Pager = stub(paging, 'Pager').returns({ build });
+      const build = stub(Pager, 'build').returns(pageInfo);
 
       expect(Adapter.extractPage(store)).to.eql(pageInfo);
-      expect(Pager).to.be.calledWith(store);
       expect(build).to.be.called;
     });
   });

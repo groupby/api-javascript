@@ -6,17 +6,30 @@ suite('request adapters', ({ expect, stub }) => {
   describe('extractSearchRequest()', () => {
     it('should extract request parameters', () => {
       const state: any = { a: 'b' };
-      const query = { c: 'd' };
+      const query = 'c';
+      const collection = 'd';
       const refinements = ['e', 'f'];
+      const sort = ['g', 'h'];
+      const pageSize = 12;
+      const skip = 43;
+      const extractCollection = stub(Adapter, 'extractCollection').returns(collection);
       const extractQuery = stub(Adapter, 'extractQuery').returns(query);
+      const extractPageSize = stub(Adapter, 'extractPageSize').returns(pageSize);
+      const extractSkip = stub(Adapter, 'extractSkip').returns(skip);
       const extractRefinements = stub(Adapter, 'extractRefinements').returns(refinements);
+      const extractSorts = stub(Adapter, 'extractSorts').returns(sort);
 
       const request = Adapter.extractSearchRequest(state);
 
       expect(request).to.eql({
+        collection,
         query,
         refinements,
+        pageSize,
+        skip,
+        sort,
       });
+      expect(extractCollection).to.be.calledWith()
     });
   });
 

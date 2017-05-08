@@ -9,7 +9,7 @@ namespace Request {
     pageSize: Request.extractPageSize(state),
     query: Request.extractQuery(state),
     refinements: Request.extractRefinements(state),
-    skip: extractSkip(state),
+    skip: Request.extractSkip(state),
     sort: Request.extractSorts(state),
   });
 

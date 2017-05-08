@@ -32,20 +32,15 @@ module.exports = {
         options: {
           // typeCheck: true
         }
-      // }, {
-      //   test: /\.ts$/,
-      //   exclude: [
-      //     path.resolve(__dirname, 'node_modules'),
-      //     path.resolve(__dirname, 'test')
-      //   ],
-      //   loader: 'sourcemap-istanbul-instrumenter-loader'
+      }, {
+        test: /\.ts$/,
+        exclude: [
+          path.resolve(__dirname, 'node_modules'),
+          path.resolve(__dirname, 'test')
+        ],
+        loader: 'sourcemap-istanbul-instrumenter-loader'
       }] : [])
       .concat({
-        test: /\.ts$/,
-        exclude: path.resolve(__dirname, 'node_modules'),
-        enforce: 'pre',
-        loader: 'source-map-loader'
-      }, {
         test: /\.ts$/,
         exclude: path.resolve(__dirname, 'node_modules'),
         loader: 'awesome-typescript-loader',
