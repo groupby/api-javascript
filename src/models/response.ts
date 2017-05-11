@@ -60,6 +60,7 @@ export interface Navigation {
     type: RefinementType;
     range?: boolean;
     or?: boolean;
+    moreRefinements?: boolean;
     ignored?: boolean;
     sort?: SortType;
     refinements: Array<ValueRefinement | RangeRefinement>;
@@ -68,6 +69,7 @@ export interface Navigation {
 
 export interface Refinement {
     exclude?: boolean;
+    count: number;
     type: RefinementType;
 }
 

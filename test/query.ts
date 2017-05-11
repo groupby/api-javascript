@@ -107,16 +107,16 @@ describe('Query', function() {
         value: 'Nike',
         exclude: true
       })
-      .withRefinements('material', {
+      .withRefinements('material', <any>{
         type: 'Value',
         value: 'wool'
       })
-      .withRefinements('year', {
+      .withRefinements('year', <any>{
         type: 'Range',
         low: 2000,
         high: 2009,
         exclude: false
-      }, {
+      }, <any>{
         type: 'Range',
         low: 2010,
         high: 2011
