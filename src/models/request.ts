@@ -2,7 +2,7 @@ import { RefinementType } from './response';
 
 export type SortOrder = 'Ascending' | 'Descending';
 
-export class Request {
+export interface Request {
     // query parameters
     query: string;
     refinements: SelectedRefinement[];

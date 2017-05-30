@@ -99,7 +99,7 @@ export interface ContentZone extends BaseZone {
 
 export interface RichContentZone extends BaseZone {
     type: 'Rich_Content';
-    content: string;
+    richContent: string;
 }
 
 export interface RecordZone extends BaseZone {
