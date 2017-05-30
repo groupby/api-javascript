@@ -103,6 +103,7 @@ export interface RichContentZone extends BaseZone {
 }
 
 export interface RecordZone extends BaseZone {
-    type: 'Records';
+    type: 'Record';
+    query: string;
     records: Record[];
 }
