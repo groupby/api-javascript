@@ -44,7 +44,7 @@
   "devDependencies": {
     "@types/node": "^7.0.4",
     "awesome-typescript-loader": "^2.2.4",
-    "chai": "^3.2.0",
+    "chai": "^4.0.1",
     "codacy-coverage": "^2.0.0",
     "gb-license-check": "^1.0.1",
     "istanbul": "^0.4.5",
