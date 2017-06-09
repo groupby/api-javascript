@@ -5,14 +5,14 @@ import {
   Request,
   RestrictNavigation,
   SelectedRangeRefinement,
-  SelectedRefinement,
+  BaseSelectedRefinement,
   SelectedValueRefinement,
   Sort
 } from '../models/request';
 import {
   Navigation,
   RangeRefinement,
-  Refinement,
+  BaseRefinement,
   ValueRefinement
 } from '../models/response';
 import { NavigationConverter } from '../utils/converter';
@@ -81,7 +81,7 @@ export class Query {
   }
 
   withRefinements(navigationName: string, ...refinements: Array<ValueRefinement | RangeRefinement>): Query {
-    const convert = (refinement: Refinement) => Object.assign(refinement, { navigationName });
+    const convert = (refinement: BaseRefinement) => Object.assign(refinement, { navigationName });
     refinements.map(convert).forEach((ref) => this.addRefinement(ref, this.request.refinements));
     return this;
   }
@@ -219,13 +219,13 @@ export class Query {
     return Object.create(this.unprocessedNavigations);
   }
 
-  private addRefinement(refinement: SelectedRefinement, refinements: SelectedRefinement[]): void {
+  private addRefinement(refinement: BaseSelectedRefinement, refinements: BaseSelectedRefinement[]): void {
     if (!refinements.find((ref) => this.refinementMatches(ref, refinement))) {
       refinements.push(refinement);
     }
   }
 
-  private refinementMatches(target: SelectedRefinement, original: SelectedRefinement) {
+  private refinementMatches(target: BaseSelectedRefinement, original: BaseSelectedRefinement) {
     return deepEqual(filterObject(target, REFINEMENT_MASK), filterObject(original, REFINEMENT_MASK));
   }
 

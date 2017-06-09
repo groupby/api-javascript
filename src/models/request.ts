@@ -1,5 +1,3 @@
-import { RefinementType } from './response';
-
 export type SortOrder = 'Ascending' | 'Descending';
 
 export interface Request {
@@ -46,20 +44,24 @@ export interface CustomUrlParam {
     value: string;
 }
 
-export interface SelectedRefinement {
-    type: RefinementType;
+export interface BaseSelectedRefinement {
     navigationName: string;
     exclude?: boolean;
 }
 
-export interface SelectedRangeRefinement extends SelectedRefinement {
+export interface SelectedRangeRefinement extends BaseSelectedRefinement {
+    type: 'Range';
     low?: number;
     high?: number;
 }
 
-export interface SelectedValueRefinement extends SelectedRefinement {
+export interface SelectedValueRefinement extends BaseSelectedRefinement {
+    type: 'Value';
     value: string;
 }
+
+export type SelectedRefinement = SelectedValueRefinement | SelectedRangeRefinement;
+
 export interface RestrictNavigation {
     name: string;
     count: number;

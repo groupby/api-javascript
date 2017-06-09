@@ -1,4 +1,3 @@
-export type RefinementType = 'Value' | 'Range';
 export type SortType = 'Count_Ascending' | 'Count_Descending' | 'Value_Ascending' | 'Value_Descending';
 
 export interface Results {
@@ -57,30 +56,33 @@ export interface Record {
 export interface Navigation {
     name: string;
     displayName: string;
-    type: RefinementType;
+    type: 'Value' | 'Range';
     range?: boolean;
     or?: boolean;
     moreRefinements?: boolean;
     ignored?: boolean;
     sort?: SortType;
-    refinements: Array<ValueRefinement | RangeRefinement>;
+    refinements: Refinement[];
     metadata: any[];
 }
 
-export interface Refinement {
+export interface BaseRefinement {
     exclude?: boolean;
     count: number;
-    type: RefinementType;
 }
 
-export interface ValueRefinement extends Refinement {
+export interface ValueRefinement extends BaseRefinement {
+    type: 'Value';
     value: string;
 }
 
-export interface RangeRefinement extends Refinement {
+export interface RangeRefinement extends BaseRefinement {
+    type: 'Range';
     low: number;
     high: number;
 }
+
+export type Refinement = ValueRefinement | RangeRefinement;
 
 export interface RefinementResults {
     navigation: Navigation;
