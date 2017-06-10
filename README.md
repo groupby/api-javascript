@@ -2,8 +2,7 @@ GroupBy Search API
 ========
 
 [![CircleCI](https://circleci.com/gh/groupby/api-javascript.svg?style=svg)](https://circleci.com/gh/groupby/api-javascript)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a94cf247a19f45cd9bdf344002f91da7)](https://www.codacy.com/app/GroupByInc/api-javascript?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=groupby/api-javascript&amp;utm_campaign=Badge_Grade)
-[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/a94cf247a19f45cd9bdf344002f91da7)](https://www.codacy.com/app/GroupByInc/api-javascript?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=groupby/api-javascript&amp;utm_campaign=Badge_Coverage)
+[![Codecov](https://img.shields.io/codecov/c/github/groupby/api-javascript.svg)](https://codecov.io/gh/groupby/api-javascript)
 
 ![license](https://img.shields.io/github/license/groupby/api-javascript.svg)
 [![npm](https://img.shields.io/npm/dm/groupby-api.svg)](https://www.npmjs.com/package/groupby-api)
