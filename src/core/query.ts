@@ -1,25 +1,21 @@
+import * as clone from 'clone';
+import * as deepEqual from 'deep-equal';
+import * as filterObject from 'filter-object';
+import * as qs from 'qs';
 import {
   Biasing,
   CustomUrlParam,
   MatchStrategy,
   Request,
   RestrictNavigation,
-  SelectedRangeRefinement,
   SelectedRefinement,
-  SelectedValueRefinement,
-  Sort
+  Sort,
 } from '../models/request';
 import {
   Navigation,
-  RangeRefinement,
   Refinement,
-  ValueRefinement
 } from '../models/response';
 import { NavigationConverter } from '../utils/converter';
-import * as clone from 'clone';
-import * as deepEqual from 'deep-equal';
-import filterObject = require('filter-object');
-import * as qs from 'qs';
 
 const REFINEMENT_MASK = '{navigationName,value,low,high}';
 
@@ -67,12 +63,12 @@ export class Query {
     return this;
   }
 
-  withSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
+  withSelectedRefinements(...refinements: SelectedRefinement[]): Query {
     refinements.forEach((ref) => this.addRefinement(ref, this.request.refinements));
     return this;
   }
 
-  withoutSelectedRefinements(...refinements: Array<SelectedValueRefinement | SelectedRangeRefinement>): Query {
+  withoutSelectedRefinements(...refinements: SelectedRefinement[]): Query {
     refinements.forEach((refinement) => {
       const index = this.request.refinements.findIndex((ref) => deepEqual(ref, refinement));
       if (index > -1) this.request.refinements.splice(index, 1);
@@ -80,8 +76,8 @@ export class Query {
     return this;
   }
 
-  withRefinements(navigationName: string, ...refinements: Array<ValueRefinement | RangeRefinement>): Query {
-    const convert = (refinement: Refinement) => Object.assign(refinement, { navigationName });
+  withRefinements(navigationName: string, ...refinements: Refinement[]): Query {
+    const convert = (refinement: Refinement): any => Object.assign(refinement, { navigationName });
     refinements.map(convert).forEach((ref) => this.addRefinement(ref, this.request.refinements));
     return this;
   }
@@ -140,7 +136,7 @@ export class Query {
   }
 
   refineByValue(navigationName: string, value: string, exclude: boolean = false): Query {
-    return this.withSelectedRefinements(<SelectedValueRefinement>{
+    return this.withSelectedRefinements({
       navigationName,
       value,
       exclude,
@@ -149,7 +145,7 @@ export class Query {
   }
 
   refineByRange(navigationName: string, low: number, high: number, exclude: boolean = false): Query {
-    return this.withSelectedRefinements(<SelectedRangeRefinement>{
+    return this.withSelectedRefinements({
       navigationName,
       low,
       high,

@@ -1,7 +1,7 @@
+import * as axios from 'axios';
 import { Request } from '../models/request';
 import { Record, RefinementResults, Results } from '../models/response';
 import { Query } from './query';
-import * as axios from 'axios';
 
 const SEARCH = '/search';
 const REFINEMENTS = '/refinements';

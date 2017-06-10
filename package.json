@@ -1,94 +1,83 @@
 {
   "name": "groupby-api",
-  "version": "1.0.83",
+  "version": "0.0.3-development",
   "description": "Client for the GroupBy Searchandiser API.",
-  "typings": "dist/src/index.d.ts",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "postinstall": "[ ! -d src ] || typings install",
-    "clean": "rimraf docs coverage dist node_modules typings",
-    "pretest": "rimraf coverage",
-    "test": "NODE_ENV=test karma start",
-    "test+coverage": "NODE_ENV=test karma start && npm run coverage && npm run coverage:codacy",
-    "posttest": "npm run coverage",
-    "coverage": "npm run coverage:remap && npm run coverage:report",
-    "coverage:remap": "remap-istanbul -i coverage/coverage.json -o coverage/coverage.json -t json -e node_modules,test,karma.entry.ts",
-    "coverage:report": "istanbul report",
-    "coverage:codacy": "cat ./coverage/lcov.info | codacy-coverage",
-    "build": "rimraf dist && tsc",
-    "ci": "NODE_ENV=ci karma start --singleRun=false",
-    "docs": "rimraf docs && typedoc --options ./typedoc.json ./src ./custom_typings ./typings",
-    "license": "node licenseChecker.js"
-  },
-  "pre-commit": [
-    "test",
-    "license"
-  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/groupby/api-javascript.git"
+    "url": "https://github.com/groupby/api-javascript.git"
   },
-  "keywords": [
-    "typescript",
-    "library"
-  ],
-  "author": "Ben Teichman",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/groupby/api-javascript/issues"
   },
   "homepage": "https://github.com/groupby/api-javascript#readme",
+  "author": "Ben Teichman <ben.teichman@groupbyinc.com>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module:esnext": "esnext/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "esnext/",
+    "src/"
+  ],
+  "scripts": {
+    "start": "start-runner -p re-start/presets/typescript",
+    "esnext": "npm start build -- -- --compileOpts.configFile tsconfig.esnext.json --outDir esnext",
+    "dev": "npm start dev",
+    "test": "npm start test",
+    "tdd": "npm start tdd",
+    "prepush": "npm start prepush",
+    "prepublish": "npm start build && npm run esnext"
+  },
+  "release": {
+    "branch": "develop",
+    "verifyConditions": "condition-circle"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    },
+    "restart": {
+      "testFiles": [
+        "test/bootstrap.ts",
+        "test/unit/**/*.ts"
+      ],
+      "releaseOpts": {
+        "public": true
+      }
+    }
+  },
   "devDependencies": {
-    "@types/node": "^7.0.4",
-    "awesome-typescript-loader": "^2.2.4",
-    "chai": "^3.2.0",
-    "codacy-coverage": "^2.0.0",
-    "gb-license-check": "^1.0.1",
-    "istanbul": "^0.4.5",
-    "karma": "^0.13.22",
-    "karma-chai": "^0.1.0",
-    "karma-coverage": "^1.1.1",
-    "karma-mocha": "^1.0.1",
-    "karma-mocha-reporter": "^2.0.4",
-    "karma-phantomjs-launcher": "^1.0.0",
-    "karma-sinon": "^1.0.5",
-    "karma-source-map-support": "^1.2.0",
-    "karma-webpack": "^1.7.0",
-    "mocha": "^2.2.5",
-    "object-assign": "^4.1.0",
-    "phantomjs-prebuilt": "^2.1.7",
-    "pre-commit": "^1.1.3",
-    "remap-istanbul": "^0.6.4",
-    "rimraf": "^2.5.4",
-    "sinon": "^1.17.6",
-    "sourcemap-istanbul-instrumenter-loader": "^0.2.0",
-    "tslint-eslint-rules": "^1.3.0",
-    "tslint-loader": "^2.1.5",
-    "typedoc": "^0.4.5",
-    "typescript": "2.0.2",
-    "typings": "^1.3.3",
-    "webpack": "^1.13.2",
-    "xhr-mock": "^1.6.0"
+    "@types/chai": "^4.0.0",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.29",
+    "@types/sinon": "^2.3.1",
+    "@types/sinon-chai": "^2.7.28",
+    "chai": "^4.0.2",
+    "condition-circle": "^1.5.0",
+    "cz-conventional-changelog": "^2.0.0",
+    "husky": "^0.13.4",
+    "mocha": "^3.4.2",
+    "mocha-suite": "^1.0.9",
+    "re-start": "^1.14.8",
+    "sinon": "^2.3.2",
+    "sinon-chai": "^2.10.0",
+    "start-simple-cli": "^4.1.1",
+    "tslint": "^5.4.3",
+    "tslint-config-groupby": "^1.0.0",
+    "typescript": "^2.3.4",
+    "typings": "^2.1.1",
+    "xhr-mock": "^1.9.0"
   },
   "dependencies": {
     "@types/axios": "^0.9.35",
     "@types/clone": "^0.1.30",
     "@types/deep-equal": "^0.0.30",
-    "@types/eventemitter3": "^1.2.0",
     "@types/qs": "^6.2.30",
-    "array.prototype.find": "^2.0.0",
-    "array.prototype.findindex": "^2.0.0",
     "axios": "^0.12.0",
     "clone": "^1.0.2",
     "deep-equal": "^1.0.1",
-    "es6-object-assign": "^1.0.3",
-    "es6-promise": "^3.3.1",
-    "eventemitter3": "^1.2.0",
     "filter-object": "^2.1.0",
-    "lodash.range": "^3.2.0",
     "qs": "^6.1.0"
   }
 }
