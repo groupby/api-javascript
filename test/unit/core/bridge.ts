@@ -1,12 +1,12 @@
-import { BrowserBridge, CloudBridge } from '../src/core/bridge';
-import { Query } from '../src/core/query';
-import { expect } from 'chai';
 import * as mock from 'xhr-mock';
+import { BrowserBridge, CloudBridge } from '../../../src/core/bridge';
+import { Query } from '../../../src/core/query';
+import suite from '../_suite';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
 
-describe('Bridge', () => {
+suite('Bridge', ({ expect, spy }) => {
   let bridge;
   let query;
 
@@ -16,11 +16,7 @@ describe('Bridge', () => {
     query = new Query('test');
   });
 
-  afterEach(() => {
-    mock.teardown();
-    bridge = null;
-    query = null;
-  });
+  afterEach(() => mock.teardown());
 
   it('should be defined', () => {
     expect(bridge).to.be.ok;
@@ -40,17 +36,16 @@ describe('Bridge', () => {
     });
   });
 
-  it('should handle invalid query types', (done) => {
-    bridge.search(12331)
+  it('should handle invalid query types', () => {
+    return bridge.search(12331)
       .catch((err) => expect(err.message).to.eq('query was not of a recognised type'))
       .then(() => bridge.search(true, (err, res) => {
         expect(err.message).to.eq('query was not of a recognised type');
         expect(res).to.not.be.ok;
-        done();
       }));
   });
 
-  it('should be accept a direct query string', (done) => {
+  it('should be accept a direct query string', () => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       const body = JSON.parse(req.body());
       expect(body.query).to.eq('skirts');
@@ -59,11 +54,10 @@ describe('Bridge', () => {
         .body('success');
     });
 
-    bridge.search('skirts')
-      .then(() => done());
+    return bridge.search('skirts');
   });
 
-  it('should be accept a raw request', (done) => {
+  it('should be accept a raw request', () => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       const body = JSON.parse(req.body());
       expect(body.fields).to.eql(['title', 'description']);
@@ -71,30 +65,24 @@ describe('Bridge', () => {
         .body('success');
     });
 
-    bridge.search(new Query('skirts').withFields('title', 'description').build())
+    return bridge.search(new Query('skirts').withFields('title', 'description').build())
       .then((results) => expect(results).to.eq('success'))
       .then(() => bridge.search({ query: 'skirts', fields: ['title', 'description'] }))
-      .then((results) => {
-        expect(results).to.eq('success');
-        done();
-      });
+      .then((results) => expect(results).to.eq('success'));
   });
 
-  it('should be reuseable', (done) => {
+  it('should be reuseable', () => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       return res.status(200).body('success');
     });
 
-    bridge.search(query = new Query('skirts'))
+    return bridge.search(query = new Query('skirts'))
       .then((results) => expect(results).to.eq('success'))
       .then(() => bridge.search(query))
-      .then((results) => {
-        expect(results).to.eq('success');
-        done();
-      });
+      .then((results) => expect(results).to.eq('success'));
   });
 
-  it('should send a search query and return a promise', (done) => {
+  it('should send a search query and return a promise', () => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&syle=branded&other=`, (req, res) => {
       return res.status(200).body('success');
     });
@@ -106,11 +94,8 @@ describe('Bridge', () => {
         other: ''
       });
 
-    bridge.search(query)
-      .then((results) => {
-        expect(results).to.eq('success');
-        done();
-      });
+    return bridge.search(query)
+      .then((results) => expect(results).to.eq('success'));
   });
 
   it('should send a search query and take a callback', (done) => {
@@ -127,18 +112,17 @@ describe('Bridge', () => {
     });
   });
 
-  it('should be able to handle errors in promise chain', (done) => {
+  it('should be able to handle errors in promise chain', () => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       return res.status(400).body('error');
     });
 
     query = new Query('shoes');
 
-    bridge.search(query)
+    return bridge.search(query)
       .catch((err) => {
         expect(err.data).to.eq('error');
         expect(err.status).to.eq(400);
-        done();
       });
   });
 
@@ -171,7 +155,7 @@ describe('Bridge', () => {
   });
 
   it('should invoke any configured errorHandler on error and allow downstream promise catching', (done) => {
-    const errorHandler = bridge.errorHandler = sinon.spy();
+    const errorHandler = bridge.errorHandler = spy();
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       return res.status(400).body('error');
     });
@@ -181,7 +165,7 @@ describe('Bridge', () => {
       .catch((err) => {
         expect(err.data).to.eq('error');
         expect(err.status).to.eq(400);
-        expect(errorHandler.calledWith(err)).to.be.true;
+        expect(errorHandler).to.be.calledWith(err);
         done();
       });
   });
