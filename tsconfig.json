@@ -2,25 +2,20 @@
   "compileOnSave": false,
   "compilerOptions": {
     "lib": [
-      "ES5",
-      "ES6"
+      "ES2015",
+      "DOM"
     ],
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "ES5",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "declaration": true,
-    "outDir": "dist"
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
   },
   "exclude": [
     "node_modules",
     "dist"
   ],
-  "atom": {
-    "rewriteTsconfig": true,
-    "formatOnSave": true
-  },
   "formatCodeOptions": {
     "indentSize": 2,
     "tabSize": 2

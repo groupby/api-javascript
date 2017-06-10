@@ -1,18 +1,12 @@
-import { Query } from '../src/core/query';
-import { SelectedValueRefinement } from '../src/models/request';
-import { COMBINED_REFINEMENTS, COMPLEX_REQUEST, CUSTOM_PARAMS_FROM_STRING } from './fixtures';
-import { expect } from 'chai';
+import { Query } from '../../../src/core/query';
+import { SelectedValueRefinement } from '../../../src/models/request';
+import suite from '../_suite';
+import { COMBINED_REFINEMENTS, COMPLEX_REQUEST, CUSTOM_PARAMS_FROM_STRING } from '../fixtures';
 
-describe('Query', function() {
+suite('Query', ({ expect }) => {
   let query: Query;
 
-  beforeEach(() => {
-    query = new Query('test');
-  });
-
-  afterEach(() => {
-    query = null;
-  });
+  beforeEach(() => query = new Query('test'));
 
   it('should be defined', () => {
     expect(query).to.be.ok;

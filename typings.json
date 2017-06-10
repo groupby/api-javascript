@@ -1,14 +1,8 @@
 {
   "name": "groupby-api",
   "version": false,
-  "globalDependencies": {},
   "dependencies": {
     "filter-object": "registry:npm/filter-object#2.1.0+20160816021609"
-  },
-  "globalDevDependencies": {
-    "chai": "registry:dt/chai#3.4.0+20160601211834",
-    "mocha": "github:DefinitelyTyped/DefinitelyTyped/mocha/mocha.d.ts#855569dbc86b619aa3bbfab98f3ff2e6b55b5fcd",
-    "sinon": "registry:dt/sinon#1.16.1+20161208163514"
   },
   "devDependencies": {
     "xhr-mock": "registry:npm/xhr-mock#1.6.0+20160610174323"
