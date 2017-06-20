@@ -82,9 +82,10 @@
 	  removeFromCart: __webpack_require__(22),
 	  order: __webpack_require__(23),
 	  autoSearch: __webpack_require__(24),
-	  search: __webpack_require__(25),
-	  sessionChange: __webpack_require__(26),
-	  viewProduct: __webpack_require__(27)
+	  autoMoreRefinements: __webpack_require__(25),
+	  search: __webpack_require__(26),
+	  sessionChange: __webpack_require__(27),
+	  viewProduct: __webpack_require__(28)
 	};
 
 	// Info on path length limitations: http://stackoverflow.com/a/812962
@@ -310,6 +311,14 @@
 	   */
 	  self.sendAutoSearchEvent = function (event) {
 	    return self.__private.prepareAndSendEvent(event, 'autoSearch');
+	  };
+
+	  /**
+	   * Validate and send moreRefinements event
+	   * @param event
+	   */
+	  self.sendMoreRefinementsEvent = function (event) {
+	    return self.__private.prepareAndSendEvent(event, 'autoMoreRefinements');
 	  };
 
 	  /**
@@ -543,9 +552,6 @@
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	// Unique ID creation requires a high quality random # generator.  We feature
-	// detect to determine the best RNG source, normalizing to a function that
-	// returns 128-bits of randomness, since that's what's usually required
 	var rng = __webpack_require__(5);
 	var bytesToUuid = __webpack_require__(6);
 
@@ -661,7 +667,7 @@
 	var crypto = global.crypto || global.msCrypto; // for IE 11
 	if (crypto && crypto.getRandomValues) {
 	  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-	  var rnds8 = new Uint8Array(16);
+	  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
 	  rng = function whatwgRNG() {
 	    crypto.getRandomValues(rnds8);
 	    return rnds8;
@@ -673,7 +679,7 @@
 	  //
 	  // If all else fails, use Math.random().  It's fast, but is of unspecified
 	  // quality.
-	  var  rnds = new Array(16);
+	  var rnds = new Array(16);
 	  rng = function() {
 	    for (var i = 0, r; i < 16; i++) {
 	      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
@@ -694,7 +700,7 @@
 
 	/**
 	 * Convert array of 16 byte values to UUID string format of the form:
-	 * XXXXXXXX-XXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+	 * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 	 */
 	var byteToHex = [];
 	for (var i = 0; i < 256; ++i) {
@@ -704,7 +710,7 @@
 	function bytesToUuid(buf, offset) {
 	  var i = offset || 0;
 	  var bth = byteToHex;
-	  return  bth[buf[i++]] + bth[buf[i++]] +
+	  return bth[buf[i++]] + bth[buf[i++]] +
 	          bth[buf[i++]] + bth[buf[i++]] + '-' +
 	          bth[buf[i++]] + bth[buf[i++]] + '-' +
 	          bth[buf[i++]] + bth[buf[i++]] + '-' +
@@ -756,428 +762,421 @@
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/*!
-	 * deep-diff.
-	 * Licensed under the MIT License.
-	 */
-	;(function(root, factory) {
-	  'use strict';
-	  if (true) {
-	    // AMD. Register as an anonymous module.
-	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
-	      return factory();
-	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	  } else if (typeof exports === 'object') {
-	    // Node. Does not work with strict CommonJS, but
-	    // only CommonJS-like environments that support module.exports,
-	    // like Node.
-	    module.exports = factory();
-	  } else {
-	    // Browser globals (root is window)
-	    root.DeepDiff = factory();
-	  }
-	}(this, function(undefined) {
-	  'use strict';
+	/* WEBPACK VAR INJECTION */(function(global) {(function (global, factory) {
+		 true ? module.exports = factory() :
+		typeof define === 'function' && define.amd ? define(factory) :
+		(global.DeepDiff = factory());
+	}(this, (function () { 'use strict';
 
-	  var $scope, conflict, conflictResolution = [];
-	  if (typeof global === 'object' && global) {
-	    $scope = global;
-	  } else if (typeof window !== 'undefined') {
-	    $scope = window;
-	  } else {
-	    $scope = {};
-	  }
-	  conflict = $scope.DeepDiff;
-	  if (conflict) {
-	    conflictResolution.push(
-	      function() {
-	        if ('undefined' !== typeof conflict && $scope.DeepDiff === accumulateDiff) {
-	          $scope.DeepDiff = conflict;
-	          conflict = undefined;
-	        }
-	      });
-	  }
-
-	  // nodejs compatible on server side and in the browser.
-	  function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    ctor.prototype = Object.create(superCtor.prototype, {
-	      constructor: {
-	        value: ctor,
-	        enumerable: false,
-	        writable: true,
-	        configurable: true
+	var $scope;
+	var conflict;
+	var conflictResolution = [];
+	if (typeof global === 'object' && global) {
+	  $scope = global;
+	} else if (typeof window !== 'undefined') {
+	  $scope = window;
+	} else {
+	  $scope = {};
+	}
+	conflict = $scope.DeepDiff;
+	if (conflict) {
+	  conflictResolution.push(
+	    function() {
+	      if ('undefined' !== typeof conflict && $scope.DeepDiff === accumulateDiff) {
+	        $scope.DeepDiff = conflict;
+	        conflict = undefined;
 	      }
 	    });
-	  }
+	}
 
-	  function Diff(kind, path) {
-	    Object.defineProperty(this, 'kind', {
-	      value: kind,
-	      enumerable: true
-	    });
-	    if (path && path.length) {
-	      Object.defineProperty(this, 'path', {
-	        value: path,
-	        enumerable: true
-	      });
-	    }
-	  }
-
-	  function DiffEdit(path, origin, value) {
-	    DiffEdit.super_.call(this, 'E', path);
-	    Object.defineProperty(this, 'lhs', {
-	      value: origin,
-	      enumerable: true
-	    });
-	    Object.defineProperty(this, 'rhs', {
-	      value: value,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffEdit, Diff);
-
-	  function DiffNew(path, value) {
-	    DiffNew.super_.call(this, 'N', path);
-	    Object.defineProperty(this, 'rhs', {
-	      value: value,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffNew, Diff);
-
-	  function DiffDeleted(path, value) {
-	    DiffDeleted.super_.call(this, 'D', path);
-	    Object.defineProperty(this, 'lhs', {
-	      value: value,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffDeleted, Diff);
-
-	  function DiffArray(path, index, item) {
-	    DiffArray.super_.call(this, 'A', path);
-	    Object.defineProperty(this, 'index', {
-	      value: index,
-	      enumerable: true
-	    });
-	    Object.defineProperty(this, 'item', {
-	      value: item,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffArray, Diff);
-
-	  function arrayRemove(arr, from, to) {
-	    var rest = arr.slice((to || from) + 1 || arr.length);
-	    arr.length = from < 0 ? arr.length + from : from;
-	    arr.push.apply(arr, rest);
-	    return arr;
-	  }
-
-	  function realTypeOf(subject) {
-	    var type = typeof subject;
-	    if (type !== 'object') {
-	      return type;
-	    }
-
-	    if (subject === Math) {
-	      return 'math';
-	    } else if (subject === null) {
-	      return 'null';
-	    } else if (Array.isArray(subject)) {
-	      return 'array';
-	    } else if (Object.prototype.toString.call(subject) === '[object Date]') {
-	      return 'date';
-	    } else if (typeof subject.toString !== 'undefined' && /^\/.*\//.test(subject.toString())) {
-	      return 'regexp';
-	    }
-	    return 'object';
-	  }
-
-	  function deepDiff(lhs, rhs, changes, prefilter, path, key, stack) {
-	    path = path || [];
-	    var currentPath = path.slice(0);
-	    if (typeof key !== 'undefined') {
-	      if (prefilter) {
-	        if (typeof(prefilter) === 'function' && prefilter(currentPath, key)) { return; }
-	        else if (typeof(prefilter) === 'object') {
-	          if (prefilter.prefilter && prefilter.prefilter(currentPath, key)) { return; }
-	          if (prefilter.normalize) {
-	            var alt = prefilter.normalize(currentPath, key, lhs, rhs);
-	            if (alt) {
-	              lhs = alt[0];
-	              rhs = alt[1];
-	            }
-	          }
-	        }
-	      }
-	      currentPath.push(key);
-	    }
-
-	    // Use string comparison for regexes
-	    if (realTypeOf(lhs) === 'regexp' && realTypeOf(rhs) === 'regexp') {
-	      lhs = lhs.toString();
-	      rhs = rhs.toString();
-	    }
-
-	    var ltype = typeof lhs;
-	    var rtype = typeof rhs;
-	    if (ltype === 'undefined') {
-	      if (rtype !== 'undefined') {
-	        changes(new DiffNew(currentPath, rhs));
-	      }
-	    } else if (rtype === 'undefined') {
-	      changes(new DiffDeleted(currentPath, lhs));
-	    } else if (realTypeOf(lhs) !== realTypeOf(rhs)) {
-	      changes(new DiffEdit(currentPath, lhs, rhs));
-	    } else if (Object.prototype.toString.call(lhs) === '[object Date]' && Object.prototype.toString.call(rhs) === '[object Date]' && ((lhs - rhs) !== 0)) {
-	      changes(new DiffEdit(currentPath, lhs, rhs));
-	    } else if (ltype === 'object' && lhs !== null && rhs !== null) {
-	      stack = stack || [];
-	      if (stack.indexOf(lhs) < 0) {
-	        stack.push(lhs);
-	        if (Array.isArray(lhs)) {
-	          var i, len = lhs.length;
-	          for (i = 0; i < lhs.length; i++) {
-	            if (i >= rhs.length) {
-	              changes(new DiffArray(currentPath, i, new DiffDeleted(undefined, lhs[i])));
-	            } else {
-	              deepDiff(lhs[i], rhs[i], changes, prefilter, currentPath, i, stack);
-	            }
-	          }
-	          while (i < rhs.length) {
-	            changes(new DiffArray(currentPath, i, new DiffNew(undefined, rhs[i++])));
-	          }
-	        } else {
-	          var akeys = Object.keys(lhs);
-	          var pkeys = Object.keys(rhs);
-	          akeys.forEach(function(k, i) {
-	            var other = pkeys.indexOf(k);
-	            if (other >= 0) {
-	              deepDiff(lhs[k], rhs[k], changes, prefilter, currentPath, k, stack);
-	              pkeys = arrayRemove(pkeys, other);
-	            } else {
-	              deepDiff(lhs[k], undefined, changes, prefilter, currentPath, k, stack);
-	            }
-	          });
-	          pkeys.forEach(function(k) {
-	            deepDiff(undefined, rhs[k], changes, prefilter, currentPath, k, stack);
-	          });
-	        }
-	        stack.length = stack.length - 1;
-	      }
-	    } else if (lhs !== rhs) {
-	      if (!(ltype === 'number' && isNaN(lhs) && isNaN(rhs))) {
-	        changes(new DiffEdit(currentPath, lhs, rhs));
-	      }
-	    }
-	  }
-
-	  function accumulateDiff(lhs, rhs, prefilter, accum) {
-	    accum = accum || [];
-	    deepDiff(lhs, rhs,
-	      function(diff) {
-	        if (diff) {
-	          accum.push(diff);
-	        }
-	      },
-	      prefilter);
-	    return (accum.length) ? accum : undefined;
-	  }
-
-	  function applyArrayChange(arr, index, change) {
-	    if (change.path && change.path.length) {
-	      var it = arr[index],
-	          i, u = change.path.length - 1;
-	      for (i = 0; i < u; i++) {
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          applyArrayChange(it[change.path[i]], change.index, change.item);
-	          break;
-	        case 'D':
-	          delete it[change.path[i]];
-	          break;
-	        case 'E':
-	        case 'N':
-	          it[change.path[i]] = change.rhs;
-	          break;
-	      }
-	    } else {
-	      switch (change.kind) {
-	        case 'A':
-	          applyArrayChange(arr[index], change.index, change.item);
-	          break;
-	        case 'D':
-	          arr = arrayRemove(arr, index);
-	          break;
-	        case 'E':
-	        case 'N':
-	          arr[index] = change.rhs;
-	          break;
-	      }
-	    }
-	    return arr;
-	  }
-
-	  function applyChange(target, source, change) {
-	    if (target && source && change && change.kind) {
-	      var it = target,
-	          i = -1,
-	          last = change.path ? change.path.length - 1 : 0;
-	      while (++i < last) {
-	        if (typeof it[change.path[i]] === 'undefined') {
-	          it[change.path[i]] = (typeof change.path[i] === 'number') ? [] : {};
-	        }
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          applyArrayChange(change.path ? it[change.path[i]] : it, change.index, change.item);
-	          break;
-	        case 'D':
-	          delete it[change.path[i]];
-	          break;
-	        case 'E':
-	        case 'N':
-	          it[change.path[i]] = change.rhs;
-	          break;
-	      }
-	    }
-	  }
-
-	  function revertArrayChange(arr, index, change) {
-	    if (change.path && change.path.length) {
-	      // the structure of the object at the index has changed...
-	      var it = arr[index],
-	          i, u = change.path.length - 1;
-	      for (i = 0; i < u; i++) {
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          revertArrayChange(it[change.path[i]], change.index, change.item);
-	          break;
-	        case 'D':
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'E':
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'N':
-	          delete it[change.path[i]];
-	          break;
-	      }
-	    } else {
-	      // the array item is different...
-	      switch (change.kind) {
-	        case 'A':
-	          revertArrayChange(arr[index], change.index, change.item);
-	          break;
-	        case 'D':
-	          arr[index] = change.lhs;
-	          break;
-	        case 'E':
-	          arr[index] = change.lhs;
-	          break;
-	        case 'N':
-	          arr = arrayRemove(arr, index);
-	          break;
-	      }
-	    }
-	    return arr;
-	  }
-
-	  function revertChange(target, source, change) {
-	    if (target && source && change && change.kind) {
-	      var it = target,
-	          i, u;
-	      u = change.path.length - 1;
-	      for (i = 0; i < u; i++) {
-	        if (typeof it[change.path[i]] === 'undefined') {
-	          it[change.path[i]] = {};
-	        }
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          // Array was modified...
-	          // it will be an array...
-	          revertArrayChange(it[change.path[i]], change.index, change.item);
-	          break;
-	        case 'D':
-	          // Item was deleted...
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'E':
-	          // Item was edited...
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'N':
-	          // Item is new...
-	          delete it[change.path[i]];
-	          break;
-	      }
-	    }
-	  }
-
-	  function applyDiff(target, source, filter) {
-	    if (target && source) {
-	      var onChange = function(change) {
-	        if (!filter || filter(target, source, change)) {
-	          applyChange(target, source, change);
-	        }
-	      };
-	      deepDiff(target, source, onChange);
-	    }
-	  }
-
-	  Object.defineProperties(accumulateDiff, {
-
-	    diff: {
-	      value: accumulateDiff,
-	      enumerable: true
-	    },
-	    observableDiff: {
-	      value: deepDiff,
-	      enumerable: true
-	    },
-	    applyDiff: {
-	      value: applyDiff,
-	      enumerable: true
-	    },
-	    applyChange: {
-	      value: applyChange,
-	      enumerable: true
-	    },
-	    revertChange: {
-	      value: revertChange,
-	      enumerable: true
-	    },
-	    isConflict: {
-	      value: function() {
-	        return 'undefined' !== typeof conflict;
-	      },
-	      enumerable: true
-	    },
-	    noConflict: {
-	      value: function() {
-	        if (conflictResolution) {
-	          conflictResolution.forEach(function(it) {
-	            it();
-	          });
-	          conflictResolution = null;
-	        }
-	        return accumulateDiff;
-	      },
-	      enumerable: true
+	// nodejs compatible on server side and in the browser.
+	function inherits(ctor, superCtor) {
+	  ctor.super_ = superCtor;
+	  ctor.prototype = Object.create(superCtor.prototype, {
+	    constructor: {
+	      value: ctor,
+	      enumerable: false,
+	      writable: true,
+	      configurable: true
 	    }
 	  });
+	}
 
-	  return accumulateDiff;
-	}));
+	function Diff(kind, path) {
+	  Object.defineProperty(this, 'kind', {
+	    value: kind,
+	    enumerable: true
+	  });
+	  if (path && path.length) {
+	    Object.defineProperty(this, 'path', {
+	      value: path,
+	      enumerable: true
+	    });
+	  }
+	}
+
+	function DiffEdit(path, origin, value) {
+	  DiffEdit.super_.call(this, 'E', path);
+	  Object.defineProperty(this, 'lhs', {
+	    value: origin,
+	    enumerable: true
+	  });
+	  Object.defineProperty(this, 'rhs', {
+	    value: value,
+	    enumerable: true
+	  });
+	}
+	inherits(DiffEdit, Diff);
+
+	function DiffNew(path, value) {
+	  DiffNew.super_.call(this, 'N', path);
+	  Object.defineProperty(this, 'rhs', {
+	    value: value,
+	    enumerable: true
+	  });
+	}
+	inherits(DiffNew, Diff);
+
+	function DiffDeleted(path, value) {
+	  DiffDeleted.super_.call(this, 'D', path);
+	  Object.defineProperty(this, 'lhs', {
+	    value: value,
+	    enumerable: true
+	  });
+	}
+	inherits(DiffDeleted, Diff);
+
+	function DiffArray(path, index, item) {
+	  DiffArray.super_.call(this, 'A', path);
+	  Object.defineProperty(this, 'index', {
+	    value: index,
+	    enumerable: true
+	  });
+	  Object.defineProperty(this, 'item', {
+	    value: item,
+	    enumerable: true
+	  });
+	}
+	inherits(DiffArray, Diff);
+
+	function arrayRemove(arr, from, to) {
+	  var rest = arr.slice((to || from) + 1 || arr.length);
+	  arr.length = from < 0 ? arr.length + from : from;
+	  arr.push.apply(arr, rest);
+	  return arr;
+	}
+
+	function realTypeOf(subject) {
+	  var type = typeof subject;
+	  if (type !== 'object') {
+	    return type;
+	  }
+
+	  if (subject === Math) {
+	    return 'math';
+	  } else if (subject === null) {
+	    return 'null';
+	  } else if (Array.isArray(subject)) {
+	    return 'array';
+	  } else if (Object.prototype.toString.call(subject) === '[object Date]') {
+	    return 'date';
+	  } else if (typeof subject.toString === 'function' && /^\/.*\//.test(subject.toString())) {
+	    return 'regexp';
+	  }
+	  return 'object';
+	}
+
+	function deepDiff(lhs, rhs, changes, prefilter, path, key, stack) {
+	  path = path || [];
+	  stack = stack || [];
+	  var currentPath = path.slice(0);
+	  if (typeof key !== 'undefined') {
+	    if (prefilter) {
+	      if (typeof(prefilter) === 'function' && prefilter(currentPath, key)) {
+	        return; } else if (typeof(prefilter) === 'object') {
+	        if (prefilter.prefilter && prefilter.prefilter(currentPath, key)) {
+	          return; }
+	        if (prefilter.normalize) {
+	          var alt = prefilter.normalize(currentPath, key, lhs, rhs);
+	          if (alt) {
+	            lhs = alt[0];
+	            rhs = alt[1];
+	          }
+	        }
+	      }
+	    }
+	    currentPath.push(key);
+	  }
+
+	  // Use string comparison for regexes
+	  if (realTypeOf(lhs) === 'regexp' && realTypeOf(rhs) === 'regexp') {
+	    lhs = lhs.toString();
+	    rhs = rhs.toString();
+	  }
+
+	  var ltype = typeof lhs;
+	  var rtype = typeof rhs;
+
+	  var ldefined = ltype !== 'undefined' || (stack && stack[stack.length - 1].lhs && stack[stack.length - 1].lhs.hasOwnProperty(key));
+	  var rdefined = rtype !== 'undefined' || (stack && stack[stack.length - 1].rhs && stack[stack.length - 1].rhs.hasOwnProperty(key));
+
+	  if (!ldefined && rdefined) {
+	    changes(new DiffNew(currentPath, rhs));
+	  } else if (!rdefined && ldefined) {
+	    changes(new DiffDeleted(currentPath, lhs));
+	  } else if (realTypeOf(lhs) !== realTypeOf(rhs)) {
+	    changes(new DiffEdit(currentPath, lhs, rhs));
+	  } else if (realTypeOf(lhs) === 'date' && (lhs - rhs) !== 0) {
+	    changes(new DiffEdit(currentPath, lhs, rhs));
+	  } else if (ltype === 'object' && lhs !== null && rhs !== null) {
+	    if (!stack.filter(function(x) {
+	        return x.lhs === lhs; }).length) {
+	      stack.push({ lhs: lhs, rhs: rhs });
+	      if (Array.isArray(lhs)) {
+	        var i, len = lhs.length;
+	        for (i = 0; i < lhs.length; i++) {
+	          if (i >= rhs.length) {
+	            changes(new DiffArray(currentPath, i, new DiffDeleted(undefined, lhs[i])));
+	          } else {
+	            deepDiff(lhs[i], rhs[i], changes, prefilter, currentPath, i, stack);
+	          }
+	        }
+	        while (i < rhs.length) {
+	          changes(new DiffArray(currentPath, i, new DiffNew(undefined, rhs[i++])));
+	        }
+	      } else {
+	        var akeys = Object.keys(lhs);
+	        var pkeys = Object.keys(rhs);
+	        akeys.forEach(function(k, i) {
+	          var other = pkeys.indexOf(k);
+	          if (other >= 0) {
+	            deepDiff(lhs[k], rhs[k], changes, prefilter, currentPath, k, stack);
+	            pkeys = arrayRemove(pkeys, other);
+	          } else {
+	            deepDiff(lhs[k], undefined, changes, prefilter, currentPath, k, stack);
+	          }
+	        });
+	        pkeys.forEach(function(k) {
+	          deepDiff(undefined, rhs[k], changes, prefilter, currentPath, k, stack);
+	        });
+	      }
+	      stack.length = stack.length - 1;
+	    } else if (lhs !== rhs) {
+	      // lhs is contains a cycle at this element and it differs from rhs
+	      changes(new DiffEdit(currentPath, lhs, rhs));
+	    }
+	  } else if (lhs !== rhs) {
+	    if (!(ltype === 'number' && isNaN(lhs) && isNaN(rhs))) {
+	      changes(new DiffEdit(currentPath, lhs, rhs));
+	    }
+	  }
+	}
+
+	function accumulateDiff(lhs, rhs, prefilter, accum) {
+	  accum = accum || [];
+	  deepDiff(lhs, rhs,
+	    function(diff) {
+	      if (diff) {
+	        accum.push(diff);
+	      }
+	    },
+	    prefilter);
+	  return (accum.length) ? accum : undefined;
+	}
+
+	function applyArrayChange(arr, index, change) {
+	  if (change.path && change.path.length) {
+	    var it = arr[index],
+	      i, u = change.path.length - 1;
+	    for (i = 0; i < u; i++) {
+	      it = it[change.path[i]];
+	    }
+	    switch (change.kind) {
+	      case 'A':
+	        applyArrayChange(it[change.path[i]], change.index, change.item);
+	        break;
+	      case 'D':
+	        delete it[change.path[i]];
+	        break;
+	      case 'E':
+	      case 'N':
+	        it[change.path[i]] = change.rhs;
+	        break;
+	    }
+	  } else {
+	    switch (change.kind) {
+	      case 'A':
+	        applyArrayChange(arr[index], change.index, change.item);
+	        break;
+	      case 'D':
+	        arr = arrayRemove(arr, index);
+	        break;
+	      case 'E':
+	      case 'N':
+	        arr[index] = change.rhs;
+	        break;
+	    }
+	  }
+	  return arr;
+	}
+
+	function applyChange(target, source, change) {
+	  if (target && source && change && change.kind) {
+	    var it = target,
+	      i = -1,
+	      last = change.path ? change.path.length - 1 : 0;
+	    while (++i < last) {
+	      if (typeof it[change.path[i]] === 'undefined') {
+	        it[change.path[i]] = (typeof change.path[i] === 'number') ? [] : {};
+	      }
+	      it = it[change.path[i]];
+	    }
+	    switch (change.kind) {
+	      case 'A':
+	        applyArrayChange(change.path ? it[change.path[i]] : it, change.index, change.item);
+	        break;
+	      case 'D':
+	        delete it[change.path[i]];
+	        break;
+	      case 'E':
+	      case 'N':
+	        it[change.path[i]] = change.rhs;
+	        break;
+	    }
+	  }
+	}
+
+	function revertArrayChange(arr, index, change) {
+	  if (change.path && change.path.length) {
+	    // the structure of the object at the index has changed...
+	    var it = arr[index],
+	      i, u = change.path.length - 1;
+	    for (i = 0; i < u; i++) {
+	      it = it[change.path[i]];
+	    }
+	    switch (change.kind) {
+	      case 'A':
+	        revertArrayChange(it[change.path[i]], change.index, change.item);
+	        break;
+	      case 'D':
+	        it[change.path[i]] = change.lhs;
+	        break;
+	      case 'E':
+	        it[change.path[i]] = change.lhs;
+	        break;
+	      case 'N':
+	        delete it[change.path[i]];
+	        break;
+	    }
+	  } else {
+	    // the array item is different...
+	    switch (change.kind) {
+	      case 'A':
+	        revertArrayChange(arr[index], change.index, change.item);
+	        break;
+	      case 'D':
+	        arr[index] = change.lhs;
+	        break;
+	      case 'E':
+	        arr[index] = change.lhs;
+	        break;
+	      case 'N':
+	        arr = arrayRemove(arr, index);
+	        break;
+	    }
+	  }
+	  return arr;
+	}
+
+	function revertChange(target, source, change) {
+	  if (target && source && change && change.kind) {
+	    var it = target,
+	      i, u;
+	    u = change.path.length - 1;
+	    for (i = 0; i < u; i++) {
+	      if (typeof it[change.path[i]] === 'undefined') {
+	        it[change.path[i]] = {};
+	      }
+	      it = it[change.path[i]];
+	    }
+	    switch (change.kind) {
+	      case 'A':
+	        // Array was modified...
+	        // it will be an array...
+	        revertArrayChange(it[change.path[i]], change.index, change.item);
+	        break;
+	      case 'D':
+	        // Item was deleted...
+	        it[change.path[i]] = change.lhs;
+	        break;
+	      case 'E':
+	        // Item was edited...
+	        it[change.path[i]] = change.lhs;
+	        break;
+	      case 'N':
+	        // Item is new...
+	        delete it[change.path[i]];
+	        break;
+	    }
+	  }
+	}
+
+	function applyDiff(target, source, filter) {
+	  if (target && source) {
+	    var onChange = function(change) {
+	      if (!filter || filter(target, source, change)) {
+	        applyChange(target, source, change);
+	      }
+	    };
+	    deepDiff(target, source, onChange);
+	  }
+	}
+
+	Object.defineProperties(accumulateDiff, {
+
+	  diff: {
+	    value: accumulateDiff,
+	    enumerable: true
+	  },
+	  observableDiff: {
+	    value: deepDiff,
+	    enumerable: true
+	  },
+	  applyDiff: {
+	    value: applyDiff,
+	    enumerable: true
+	  },
+	  applyChange: {
+	    value: applyChange,
+	    enumerable: true
+	  },
+	  revertChange: {
+	    value: revertChange,
+	    enumerable: true
+	  },
+	  isConflict: {
+	    value: function() {
+	      return 'undefined' !== typeof conflict;
+	    },
+	    enumerable: true
+	  },
+	  noConflict: {
+	    value: function() {
+	      if (conflictResolution) {
+	        conflictResolution.forEach(function(it) {
+	          it();
+	        });
+	        conflictResolution = null;
+	      }
+	      return accumulateDiff;
+	    },
+	    enumerable: true
+	  }
+	});
+
+	return accumulateDiff;
+
+	})));
 
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
@@ -4604,7 +4603,7 @@
 	  var rv = -1; // Return value assumes failure.
 	  if (navigatorAppName == 'Microsoft Internet Explorer') {
 	    var ua = userAgent;
-	    var re = new RegExp('MSIE ([0-9]{1,}[\.0-9]{0,})');
+	    var re = new RegExp('MSIE ([0-9]{1,}[.0-9]{0,})');
 	    if (re.exec(ua) != null) rv = parseFloat(RegExp.$1);
 	  }
 	  return rv;
@@ -4678,14 +4677,14 @@
 		"devDependencies": {
 			"babel-cli": "^6.24.1",
 			"babel-core": "^6.21.0",
-			"babel-loader": "^6.2.10",
+			"babel-loader": "^7.1.0",
 			"babel-preset-latest": "^6.16.0",
-			"chai": "^3.5.0",
+			"chai": "^4.0.2",
 			"codacy-coverage": "^2.0.0",
-			"eslint-plugin-no-only-tests": "^1.1.0",
+			"eslint-plugin-no-only-tests": "^2.0.0",
 			"glob": "^7.1.1",
 			"gulp": "^3.9.1",
-			"gulp-eslint": "^3.0.1",
+			"gulp-eslint": "^4.0.0",
 			"gulp-exec": "^2.1.3",
 			"gulp-if": "^2.0.2",
 			"gulp-istanbul": "^1.1.1",
@@ -4699,9 +4698,9 @@
 			"moment": "^2.17.1",
 			"stream-combiner2": "^1.1.1",
 			"stringify-object": "3.0.0",
-			"supertest": "^2.0.1",
+			"supertest": "^3.0.0",
 			"supertest-as-promised": "^4.0.2",
-			"webpack": "^2.4.1",
+			"webpack": "^3.0.0",
 			"webpack-stream": "^3.2.0"
 		},
 		"dependencies": {
@@ -4997,9 +4996,6 @@
 	                price: {
 	                  type: 'number'
 	                },
-	                quantity: {
-	                  type: 'integer'
-	                },
 	                metadata: {
 	                  type: 'array',
 	                  items: {
@@ -5015,6 +5011,9 @@
 	                    strict: true
 	                  },
 	                  optional: true
+	                },
+	                quantity: {
+	                  type: 'integer'
 	                }
 	              },
 	              strict: true
@@ -5190,9 +5189,6 @@
 	                price: {
 	                  type: 'number'
 	                },
-	                quantity: {
-	                  type: 'integer'
-	                },
 	                metadata: {
 	                  type: 'array',
 	                  items: {
@@ -5209,6 +5205,9 @@
 	                    strict: true
 	                  },
 	                  optional: true
+	                },
+	                quantity: {
+	                  type: 'integer'
 	                }
 	              },
 	              strict: true
@@ -5286,7 +5285,7 @@
 
 	module.exports = {
 	  regex: {
-	    ISO_8601: /(\d{4})-(0[1-9]|1[0-2]|[1-9])-(\3([12]\d|0[1-9]|3[01])|[1-9])[tT\s]([01]\d|2[0-3])\:(([0-5]\d)|\d)\:(([0-5]\d)|\d)([\.,]\d+)?([zZ]|([\+-])([01]\d|2[0-3]|\d):(([0-5]\d)|\d))$/,
+	    ISO_8601: /(\d{4})-(0[1-9]|1[0-2]|[1-9])-(\3([12]\d|0[1-9]|3[01])|[1-9])[tT\s]([01]\d|2[0-3]):(([0-5]\d)|\d):(([0-5]\d)|\d)([.,]\d+)?([zZ]|([+-])([01]\d|2[0-3]|\d):(([0-5]\d)|\d))$/,
 	    UUID_V4: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
 	    ALPHA_NUM_LOWERCASE: /^[0-9a-z]+$/,
 	    ALPHA_NUM: /^[0-9a-z]+$/i,
@@ -5403,9 +5402,6 @@
 	                price: {
 	                  type: 'number'
 	                },
-	                quantity: {
-	                  type: 'integer'
-	                },
 	                metadata: {
 	                  type: 'array',
 	                  items: {
@@ -5421,6 +5417,9 @@
 	                    strict: true
 	                  },
 	                  optional: true
+	                },
+	                quantity: {
+	                  type: 'integer'
 	                }
 	              },
 	              strict: true
@@ -5596,9 +5595,6 @@
 	                price: {
 	                  type: 'number'
 	                },
-	                quantity: {
-	                  type: 'integer'
-	                },
 	                metadata: {
 	                  type: 'array',
 	                  items: {
@@ -5615,6 +5611,9 @@
 	                    strict: true
 	                  },
 	                  optional: true
+	                },
+	                quantity: {
+	                  type: 'integer'
 	                }
 	              },
 	              strict: true
@@ -5791,9 +5790,6 @@
 	                price: {
 	                  type: 'number'
 	                },
-	                quantity: {
-	                  type: 'integer'
-	                },
 	                metadata: {
 	                  type: 'array',
 	                  items: {
@@ -5809,6 +5805,9 @@
 	                    strict: true
 	                  },
 	                  optional: true
+	                },
+	                quantity: {
+	                  type: 'integer'
 	                }
 	              },
 	              strict: true
@@ -5984,9 +5983,6 @@
 	                price: {
 	                  type: 'number'
 	                },
-	                quantity: {
-	                  type: 'integer'
-	                },
 	                metadata: {
 	                  type: 'array',
 	                  items: {
@@ -6003,6 +5999,9 @@
 	                    strict: true
 	                  },
 	                  optional: true
+	                },
+	                quantity: {
+	                  type: 'integer'
 	                }
 	              },
 	              strict: true
@@ -6141,10 +6140,6 @@
 	      cart: {
 	        type: 'object',
 	        properties: {
-	          id: {
-	            type: 'string',
-	            optional: true
-	          },
 	          totalItems: {
 	            type: 'integer',
 	            optional: true
@@ -6159,6 +6154,10 @@
 	          },
 	          generatedTotalPrice: {
 	            type: 'number',
+	            optional: true
+	          },
+	          id: {
+	            type: 'string',
 	            optional: true
 	          },
 	          items: {
@@ -6195,9 +6194,6 @@
 	                price: {
 	                  type: 'number'
 	                },
-	                quantity: {
-	                  type: 'integer'
-	                },
 	                metadata: {
 	                  type: 'array',
 	                  items: {
@@ -6213,6 +6209,9 @@
 	                    strict: true
 	                  },
 	                  optional: true
+	                },
+	                quantity: {
+	                  type: 'integer'
 	                }
 	              },
 	              strict: true
@@ -6343,11 +6342,6 @@
 	      },
 	      cart: {
 	        properties: {
-	          id: {
-	            maxLength: 10000,
-	            rules: ['trim', 'lower'],
-	            optional: true
-	          },
 	          totalItems: {
 	            type: 'integer',
 	            optional: true
@@ -6362,6 +6356,11 @@
 	          },
 	          generatedTotalPrice: {
 	            type: 'number',
+	            optional: true
+	          },
+	          id: {
+	            maxLength: 10000,
+	            rules: ['trim', 'lower'],
 	            optional: true
 	          },
 	          items: {
@@ -6404,9 +6403,6 @@
 	                price: {
 	                  type: 'number'
 	                },
-	                quantity: {
-	                  type: 'integer'
-	                },
 	                metadata: {
 	                  type: 'array',
 	                  items: {
@@ -6423,6 +6419,9 @@
 	                    strict: true
 	                  },
 	                  optional: true
+	                },
+	                quantity: {
+	                  type: 'integer'
 	                }
 	              },
 	              strict: true
@@ -6563,6 +6562,7 @@
 	        strict: true
 	      },
 	      search: {
+	        type: 'object',
 	        properties: {
 	          origin: {
 	            type: 'object',
@@ -6596,7 +6596,8 @@
 	                optional: false
 	              }
 	            },
-	            strict: true
+	            strict: true,
+	            optional: false
 	          },
 	          id: {
 	            type: 'string',
@@ -6604,7 +6605,6 @@
 	            minLength: 1
 	          }
 	        },
-	        type: 'object',
 	        optional: false
 	      },
 	      visit: {
@@ -6852,6 +6852,240 @@
 	        },
 	        strict: true
 	      },
+	      eventType: {
+	        type: 'string'
+	      },
+	      customer: {
+	        type: 'object',
+	        properties: {
+	          id: {
+	            type: 'string'
+	          },
+	          area: {
+	            type: 'string',
+	            optional: false
+	          }
+	        },
+	        strict: true
+	      },
+	      moreRefinements: {
+	        type: 'object',
+	        properties: {
+	          id: {
+	            type: 'string',
+	            minLength: 1,
+	            optional: false
+	          }
+	        },
+	        strict: true
+	      },
+	      visit: {
+	        type: 'object',
+	        properties: {
+	          customerData: {
+	            type: 'object',
+	            properties: {
+	              visitorId: {
+	                type: 'string'
+	              },
+	              sessionId: {
+	                type: 'string'
+	              },
+	              loginId: {
+	                type: 'string',
+	                optional: true
+	              }
+	            },
+	            strict: true
+	          }
+	        },
+	        strict: true
+	      },
+	      metadata: {
+	        type: 'array',
+	        items: {
+	          type: 'object',
+	          properties: {
+	            key: {
+	              type: 'string'
+	            },
+	            value: {
+	              type: 'string'
+	            }
+	          },
+	          strict: true
+	        },
+	        optional: true
+	      }
+	    },
+	    strict: true
+	  },
+	  sanitization: {
+	    properties: {
+	      clientVersion: {
+	        properties: {
+	          raw: {
+	            maxLength: 10000,
+	            rules: ['trim', 'lower']
+	          },
+	          major: {
+	            type: 'integer',
+	            optional: true
+	          },
+	          minor: {
+	            type: 'integer',
+	            optional: true
+	          },
+	          patch: {
+	            type: 'integer',
+	            optional: true
+	          },
+	          prerelease: {
+	            type: 'array',
+	            items: {
+	              maxLength: 10000,
+	              rules: ['trim', 'lower']
+	            },
+	            optional: true
+	          },
+	          build: {
+	            type: 'array',
+	            items: {
+	              maxLength: 10000,
+	              rules: ['trim', 'lower']
+	            },
+	            optional: true
+	          },
+	          version: {
+	            maxLength: 10000,
+	            rules: ['trim', 'lower'],
+	            optional: true
+	          }
+	        },
+	        strict: true
+	      },
+	      eventType: {
+	        maxLength: 10000,
+	        rules: ['trim']
+	      },
+	      customer: {
+	        properties: {
+	          id: {
+	            maxLength: 10000,
+	            rules: ['trim', 'lower']
+	          },
+	          area: {
+	            maxLength: 10000,
+	            rules: ['trim'],
+	            optional: false,
+	            def: 'Production'
+	          }
+	        },
+	        strict: true
+	      },
+	      moreRefinements: {
+	        properties: {
+	          id: {
+	            maxLength: 10000,
+	            rules: ['trim', 'lower']
+	          }
+	        },
+	        strict: true
+	      },
+	      visit: {
+	        properties: {
+	          customerData: {
+	            properties: {
+	              visitorId: {
+	                maxLength: 10000,
+	                rules: ['trim', 'lower']
+	              },
+	              sessionId: {
+	                maxLength: 10000,
+	                rules: ['trim', 'lower']
+	              },
+	              loginId: {
+	                maxLength: 10000,
+	                rules: ['trim', 'lower']
+	              }
+	            },
+	            strict: true
+	          }
+	        },
+	        strict: true
+	      },
+	      metadata: {
+	        type: 'array',
+	        items: {
+	          properties: {
+	            key: {
+	              maxLength: 10000,
+	              rules: ['trim', 'lower']
+	            },
+	            value: {
+	              maxLength: 10000,
+	              rules: ['trim', 'lower']
+	            }
+	          },
+	          strict: true
+	        },
+	        optional: true
+	      }
+	    },
+	    strict: true
+	  }
+	};
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var utils = __webpack_require__(20);
+	module.exports = {
+	  validation: {
+	    type: 'object',
+	    properties: {
+	      clientVersion: {
+	        type: 'object',
+	        properties: {
+	          raw: {
+	            type: 'string'
+	          },
+	          major: {
+	            type: 'integer',
+	            optional: true
+	          },
+	          minor: {
+	            type: 'integer',
+	            optional: true
+	          },
+	          patch: {
+	            type: 'integer',
+	            optional: true
+	          },
+	          prerelease: {
+	            type: 'array',
+	            items: {
+	              type: 'string'
+	            },
+	            optional: true
+	          },
+	          build: {
+	            type: 'array',
+	            items: {
+	              type: 'string'
+	            },
+	            optional: true
+	          },
+	          version: {
+	            type: 'string',
+	            optional: true
+	          }
+	        },
+	        strict: true
+	      },
 	      responseId: {
 	        type: 'string',
 	        optional: true
@@ -6873,6 +7107,7 @@
 	        strict: true
 	      },
 	      search: {
+	        type: 'object',
 	        properties: {
 	          origin: {
 	            type: 'object',
@@ -6906,7 +7141,8 @@
 	                optional: false
 	              }
 	            },
-	            strict: true
+	            strict: true,
+	            optional: false
 	          },
 	          id: {
 	            type: 'string',
@@ -7087,25 +7323,6 @@
 	                  type: 'string',
 	                  optional: true
 	                },
-	                metadata: {
-	                  type: 'array',
-	                  items: {
-	                    type: 'object',
-	                    properties: {
-	                      key: {
-	                        type: 'string',
-	                        optional: false
-	                      },
-	                      value: {
-	                        type: 'string',
-	                        optional: false
-	                      }
-	                    },
-	                    strict: true
-	                  },
-	                  optional: true,
-	                  strict: true
-	                },
 	                refinements: {
 	                  type: 'array',
 	                  items: {
@@ -7142,6 +7359,25 @@
 	                    }
 	                  },
 	                  optional: false
+	                },
+	                metadata: {
+	                  type: 'array',
+	                  items: {
+	                    type: 'object',
+	                    properties: {
+	                      key: {
+	                        type: 'string',
+	                        optional: false
+	                      },
+	                      value: {
+	                        type: 'string',
+	                        optional: false
+	                      }
+	                    },
+	                    strict: true
+	                  },
+	                  optional: true,
+	                  strict: true
 	                }
 	              }
 	            },
@@ -7184,25 +7420,6 @@
 	                  type: 'string',
 	                  optional: true
 	                },
-	                metadata: {
-	                  type: 'array',
-	                  items: {
-	                    type: 'object',
-	                    properties: {
-	                      key: {
-	                        type: 'string',
-	                        optional: false
-	                      },
-	                      value: {
-	                        type: 'string',
-	                        optional: false
-	                      }
-	                    },
-	                    strict: true
-	                  },
-	                  optional: true,
-	                  strict: true
-	                },
 	                refinements: {
 	                  type: 'array',
 	                  items: {
@@ -7239,6 +7456,25 @@
 	                    }
 	                  },
 	                  optional: false
+	                },
+	                metadata: {
+	                  type: 'array',
+	                  items: {
+	                    type: 'object',
+	                    properties: {
+	                      key: {
+	                        type: 'string',
+	                        optional: false
+	                      },
+	                      value: {
+	                        type: 'string',
+	                        optional: false
+	                      }
+	                    },
+	                    strict: true
+	                  },
+	                  optional: true,
+	                  strict: true
 	                }
 	              }
 	            },
@@ -7577,7 +7813,6 @@
 	            optional: true
 	          }
 	        },
-	        type: 'object',
 	        optional: false
 	      },
 	      visit: {
@@ -7920,22 +8155,6 @@
 	                  maxLength: 10000,
 	                  rules: ['trim', 'lower']
 	                },
-	                metadata: {
-	                  type: 'array',
-	                  items: {
-	                    properties: {
-	                      key: {
-	                        maxLength: 10000,
-	                        rules: ['trim', 'lower']
-	                      },
-	                      value: {
-	                        maxLength: 10000,
-	                        rules: ['trim', 'lower']
-	                      }
-	                    },
-	                    strict: true
-	                  }
-	                },
 	                refinements: {
 	                  type: 'array',
 	                  items: {
@@ -7961,6 +8180,22 @@
 	                        rules: ['trim', 'lower']
 	                      },
 	                      low: {
+	                        maxLength: 10000,
+	                        rules: ['trim', 'lower']
+	                      }
+	                    },
+	                    strict: true
+	                  }
+	                },
+	                metadata: {
+	                  type: 'array',
+	                  items: {
+	                    properties: {
+	                      key: {
+	                        maxLength: 10000,
+	                        rules: ['trim', 'lower']
+	                      },
+	                      value: {
 	                        maxLength: 10000,
 	                        rules: ['trim', 'lower']
 	                      }
@@ -7996,22 +8231,6 @@
 	                  maxLength: 10000,
 	                  rules: ['trim', 'lower']
 	                },
-	                metadata: {
-	                  type: 'array',
-	                  items: {
-	                    properties: {
-	                      key: {
-	                        maxLength: 10000,
-	                        rules: ['trim', 'lower']
-	                      },
-	                      value: {
-	                        maxLength: 10000,
-	                        rules: ['trim', 'lower']
-	                      }
-	                    },
-	                    strict: true
-	                  }
-	                },
 	                refinements: {
 	                  type: 'array',
 	                  items: {
@@ -8037,6 +8256,22 @@
 	                        rules: ['trim', 'lower']
 	                      },
 	                      low: {
+	                        maxLength: 10000,
+	                        rules: ['trim', 'lower']
+	                      }
+	                    },
+	                    strict: true
+	                  }
+	                },
+	                metadata: {
+	                  type: 'array',
+	                  items: {
+	                    properties: {
+	                      key: {
+	                        maxLength: 10000,
+	                        rules: ['trim', 'lower']
+	                      },
+	                      value: {
 	                        maxLength: 10000,
 	                        rules: ['trim', 'lower']
 	                      }
@@ -8403,7 +8638,7 @@
 	};
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8660,7 +8895,7 @@
 	};
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
