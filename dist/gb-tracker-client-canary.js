@@ -98,7 +98,7 @@
 
 	var SET_FROM_COOKIES = 'setFromCookies';
 	var NOT_SET_FROM_COOKIES = 'notSetFromCookies';
-	var SESSION_TIMEOUT_SEC = 15 * 60;
+	var SESSION_TIMEOUT_SEC = 30 * 60;
 	var SESSION_COOKIE_KEY = 'gbi_sessionId';
 	var VISITOR_COOKIE_KEY = 'gbi_visitorId';
 	var DEBUG_COOKIE_KEY = 'gbi_debug';
@@ -208,8 +208,8 @@
 
 	    if (!visit.customerData.sessionId || visit.customerData.sessionId.length < 1) {
 	      visit.customerData.sessionId = uuid.v4();
-	      Cookies.set(SESSION_COOKIE_KEY, visit.customerData.sessionId, { expires: SESSION_TIMEOUT_SEC });
 	    }
+	    Cookies.set(SESSION_COOKIE_KEY, visit.customerData.sessionId, { expires: SESSION_TIMEOUT_SEC });
 
 	    if (!visit.customerData.visitorId || visit.customerData.visitorId.length < 1) {
 	      visit.customerData.visitorId = uuid.v4();
@@ -4652,7 +4652,7 @@
 
 	module.exports = {
 		"name": "gb-tracker-client",
-		"version": "3.5.1",
+		"version": "3.5.2",
 		"description": "GroupBy client-side event tracker",
 		"keywords": [
 			"groupby",
