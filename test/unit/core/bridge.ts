@@ -1,12 +1,12 @@
 import * as mock from 'xhr-mock';
-import { BrowserBridge, CloudBridge } from '../../../src/core/bridge';
+import { AbstractBridge, BrowserBridge, CloudBridge } from '../../../src/core/bridge';
 import { Query } from '../../../src/core/query';
 import suite from '../_suite';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
 
-suite('Bridge', ({ expect, spy }) => {
+suite('Bridge', ({ expect, spy, stub }) => {
   let bridge;
   let query;
 
@@ -185,6 +185,33 @@ suite('Bridge', ({ expect, spy }) => {
             done();
           });
       });
+
+      it('should send HTTPS request', (done) => {
+        mock.post(`https://${CUSTOMER_ID}-cors.groupbycloud.com:443/api/v1/search`, (req, res) => {
+          return res.status(200).body('success');
+        });
+
+        query = new Query('shoes');
+
+        new BrowserBridge(CUSTOMER_ID)
+          .search(query, (err, results) => done());
+      });
+
+      it('should include headers', (done) => {
+        const headers = { a: 'b' };
+        mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
+          expect(req['_headers']).to.include.keys('a');
+          return res.status(200).body('success');
+        });
+
+        query = new Query('shoes');
+
+        Object.assign(new BrowserBridge(CUSTOMER_ID), { headers })
+          .search(query, (err, results) => {
+            expect(results).to.eq('success');
+            done();
+          });
+      });
     });
 
     describe('refinements()', () => {
@@ -203,32 +230,108 @@ suite('Bridge', ({ expect, spy }) => {
           });
       });
     });
+  });
 
-    it('should send HTTPS request', (done) => {
-      mock.post(`https://${CUSTOMER_ID}-cors.groupbycloud.com:443/api/v1/search`, (req, res) => {
-        return res.status(200).body('success');
+  describe('AbstractBridge', () => {
+    describe('transform()', () => {
+      it('should execute callback on properties of key', () => {
+        const key = [{ c: 'd' }, { e: 'f' }, { g: 'h' }];
+        const response = <any>{ key, a: 'b' };
+        const callback = spy((obj) => ({ ...obj, value: 'test' }));
+        const result = { ...response, key: [callback(key[0]), callback(key[1]), callback(key[2])] };
+
+        expect(AbstractBridge.transform(response, 'key', callback)).to.eql(result);
       });
-
-      query = new Query('shoes');
-
-      new BrowserBridge(CUSTOMER_ID)
-        .search(query, (err, results) => done());
     });
 
-    it('should include headers', (done) => {
-      const headers = { a: 'b' };
-      mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
-        expect(req['_headers']).to.include.keys('a');
-        return res.status(200).body('success');
+    describe('transformRecords()', () => {
+      it('should return transform() with response, records, and convertRecordFields', () => {
+        const response = { a: 'b' };
+        const returnValue = { c: 'd' };
+        const transform = stub(AbstractBridge, 'transform')
+          .withArgs(response, 'records', AbstractBridge.convertRecordFields).returns(returnValue);
+
+        expect(AbstractBridge.transformRecords(response)).to.eq(returnValue);
+      });
+    });
+
+    describe('transformRefinements()', () => {
+      it('should return transform() with response, records, and convertRecordFields', () => {
+        const response = { a: 'b' };
+        const returnValue = { c: 'd' };
+        const transform = stub(AbstractBridge, 'transform')
+          .withArgs(response, 'navigation', AbstractBridge.convertRefinement).returns(returnValue);
+
+        AbstractBridge.transformRefinements(response);
+        expect(AbstractBridge.transformRefinements(response)).to.eq(returnValue);
+      });
+    });
+
+    describe('convertRecordFields()', () => {
+      it('should update properties', () => {
+        const id = '1239';
+        const url = 'www.whateva.ca';
+        const title = 'my stuff';
+        const snippet = 'my snippet';
+        const record = <any>{
+          a: 'b',
+          _id: id,
+          _u: url,
+          _t: title,
+          _snippet: snippet
+        };
+        const transformedRecord = { a: 'b', id, url, title, snippet };
+
+        expect(BrowserBridge.convertRecordFields(record)).to.eql(transformedRecord);
+      });
+    });
+
+    describe('convertRefinement()', () => {
+      it('should update value types', () => {
+        let refinements = [
+          { type: 'Range', count: 49, high: '28.0', low: '0.0' },
+          { type: 'Range', count: 479, high: '56.0', low: '28.0' },
+          { type: 'Range', count: 1348, high: '84.0', low: '56.0' },
+        ];
+        const navigation = <any>{
+          name: 'Department',
+          displayName: 'All',
+          type: 'Range',
+          range: true,
+          or: false,
+          refinements,
+          metadata: []
+        };
+        const convertedRefinements = [
+          { type: 'Range', count: 49, high: 28.0, low: 0.0 },
+          { type: 'Range', count: 479, high: 56.0, low: 28.0 },
+          { type: 'Range', count: 1348, high: 84.0, low: 56.0 },
+        ];
+
+        expect(BrowserBridge.convertRefinement(navigation)).to.eql({
+          ...navigation,
+          refinements: convertedRefinements
+        });
       });
 
-      query = new Query('shoes');
+      it('should not update value types', () => {
+        let refinements = [
+          {type: 'Value', count: 975, value: 'Black'},
+          {type: 'Value', count: 1064, value: 'Blue'},
+          {type: 'Value', count: 81, value: 'Brown'}
+        ];
+        const navigation = <any>{
+          name: 'Department',
+          displayName: 'All',
+          type: 'Value',
+          range: false,
+          or: false,
+          refinements,
+          metadata: []
+        };
 
-      Object.assign(new BrowserBridge(CUSTOMER_ID), { headers })
-        .search(query, (err, results) => {
-          expect(results).to.eq('success');
-          done();
-        });
+        expect(BrowserBridge.convertRefinement(navigation)).to.eq(navigation);
+      });
     });
   });
 });
