@@ -140,33 +140,18 @@ suite('Bridge', ({ expect, spy, stub }) => {
     });
   });
 
-  it('should invoke any configured errorHandler on error', (done) => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
-      return res.status(400).body('error');
-    });
-    query = new Query('shoes');
-    bridge.errorHandler = (err) => {
-      expect(err.data).to.eq('error');
-      expect(err.status).to.eq(400);
-      done();
-    };
-
-    bridge.search(query);
-  });
-
-  it('should invoke any configured errorHandler on error and allow downstream promise catching', (done) => {
+  it('should invoke any configured errorHandler on error and allow downstream promise catching', () => {
     const errorHandler = bridge.errorHandler = spy();
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       return res.status(400).body('error');
     });
     query = new Query('shoes');
 
-    bridge.search(query)
+    return bridge.search(query)
       .catch((err) => {
         expect(err.data).to.eq('error');
         expect(err.status).to.eq(400);
         expect(errorHandler).to.be.calledWith(err);
-        done();
       });
   });
 
