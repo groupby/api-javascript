@@ -1,6 +1,6 @@
 import * as axios from 'axios';
 import { Request } from '../models/request';
-import { Record, RefinementResults, Results } from '../models/response';
+import { Navigation, RangeRefinement, Record, RefinementResults, Results } from '../models/response';
 import { Query } from './query';
 
 const SEARCH = '/search';
@@ -43,7 +43,8 @@ export abstract class AbstractBridge {
     if (request === null) return this.generateError(INVALID_QUERY_ERROR, callback);
 
     const response = this.fireRequest(this.bridgeUrl, request, queryParams)
-      .then((res) => res.records ? Object.assign(res, { records: res.records.map(this.convertRecordFields) }) : res);
+      .then(AbstractBridge.transformRecords)
+      .then(AbstractBridge.transformRefinements);
     return this.handleResponse(response, callback);
   }
 
@@ -106,7 +107,24 @@ export abstract class AbstractBridge {
       });
   }
 
-  private convertRecordFields(record: RawRecord): Record | RawRecord {
+  static transform(response: any, key: string, callback: Function) {
+    if (response[key]) {
+      return Object.assign(response, { [key]: response[key].map(callback) });
+    } else {
+      return response;
+    }
+  }
+
+  static transformRecords(response: any) {
+    return AbstractBridge.transform(response, 'records', AbstractBridge.convertRecordFields);
+  }
+
+  static transformRefinements(response: any) {
+    const transformed = AbstractBridge.transform(response, 'availableNavigation', AbstractBridge.convertRefinement);
+    return AbstractBridge.transform(transformed, 'selectedNavigation', AbstractBridge.convertRefinement);
+  }
+
+  static convertRecordFields(record: RawRecord): Record | RawRecord {
     const converted = Object.assign(record, { id: record._id, url: record._u, title: record._t });
     delete converted._id;
     delete converted._u;
@@ -118,6 +136,19 @@ export abstract class AbstractBridge {
     }
 
     return converted;
+  }
+
+  static convertRefinement(navigation: Navigation): Navigation {
+    if (navigation.range) {
+      navigation.refinements = navigation.refinements
+        .map((ref: RangeRefinement) => ({
+          ...ref,
+          high: parseFloat(<any>ref.high),
+          low: parseFloat(<any>ref.low)
+        }));
+    }
+
+    return navigation;
   }
 }
 
