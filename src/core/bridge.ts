@@ -139,10 +139,12 @@ export abstract class AbstractBridge {
 
   static convertRefinement(navigation: Navigation): Navigation {
     if (navigation.range) {
-      // TODO: fix type
-      navigation.refinements = <any>navigation.refinements.map((ref: RangeRefinement) => {
-        return { ...ref, high: parseFloat(ref.high), low: parseFloat(ref.low) };
-      });
+      navigation.refinements = navigation.refinements
+        .map((ref: RangeRefinement) => ({
+          ...ref,
+          high: parseFloat(<any>ref.high),
+          low: parseFloat(<any>ref.low)
+        }));
     }
 
     return navigation;

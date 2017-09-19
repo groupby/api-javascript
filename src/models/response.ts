@@ -78,8 +78,8 @@ export interface ValueRefinement extends BaseRefinement {
 
 export interface RangeRefinement extends BaseRefinement {
     type: 'Range';
-    low: string;
-    high: string;
+    low: number;
+    high: number;
 }
 
 export type Refinement = ValueRefinement | RangeRefinement;
