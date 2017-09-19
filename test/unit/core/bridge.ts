@@ -45,7 +45,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
       }));
   });
 
-  it('should be accept a direct query string', () => {
+  it('should accept a direct query string', () => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       const body = JSON.parse(req.body());
       expect(body.query).to.eq('skirts');
@@ -57,7 +57,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
     return bridge.search('skirts');
   });
 
-  it('should be accept a raw request', () => {
+  it('should accept a raw request', () => {
     mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
       const body = JSON.parse(req.body());
       expect(body.fields).to.eql(['title', 'description']);
@@ -258,9 +258,12 @@ suite('Bridge', ({ expect, spy, stub }) => {
     describe('transformRefinements()', () => {
       it('should return transform() with response, records, and convertRecordFields', () => {
         const response = { a: 'b' };
-        const returnValue = { c: 'd' };
-        const transform = stub(AbstractBridge, 'transform')
-          .withArgs(response, 'navigation', AbstractBridge.convertRefinement).returns(returnValue);
+        const transformedValue = { c: 'd' };
+        const returnValue = { e: 'f' };
+        const transform = stub(AbstractBridge, 'transform');
+        transform.withArgs(response, 'availableNavigation', AbstractBridge.convertRefinement).returns(transformedValue);
+        // tslint:disable-next-line max-line-length
+        transform.withArgs(transformedValue, 'selectedNavigation', AbstractBridge.convertRefinement).returns(returnValue);
 
         AbstractBridge.transformRefinements(response);
         expect(AbstractBridge.transformRefinements(response)).to.eq(returnValue);

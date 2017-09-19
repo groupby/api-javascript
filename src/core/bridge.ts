@@ -108,8 +108,8 @@ export abstract class AbstractBridge {
   }
 
   static transform(response: any, key: string, callback: Function) {
-    if (response.key) {
-      return Object.assign(response, { [key]: response.key.map(callback) });
+    if (response[key]) {
+      return Object.assign(response, { [key]: response[key].map(callback) });
     } else {
       return response;
     }
@@ -120,7 +120,8 @@ export abstract class AbstractBridge {
   }
 
   static transformRefinements(response: any) {
-    return AbstractBridge.transform(response, 'navigation', AbstractBridge.convertRefinement);
+    const transformed = AbstractBridge.transform(response, 'availableNavigation', AbstractBridge.convertRefinement);
+    return AbstractBridge.transform(transformed, 'selectedNavigation', AbstractBridge.convertRefinement);
   }
 
   static convertRecordFields(record: RawRecord): Record | RawRecord {
