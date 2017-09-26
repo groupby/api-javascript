@@ -153,7 +153,6 @@ export abstract class AbstractBridge {
           });
         });
     }
-
     return navigation;
   }
 }
