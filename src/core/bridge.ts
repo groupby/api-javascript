@@ -140,8 +140,8 @@ export abstract class AbstractBridge {
 
   static convertRefinement(navigation: Navigation): Navigation {
     if (navigation.range) {
-      navigation.rangeLowest = Number.MAX_VALUE;
-      navigation.rangeHighest = Number.MIN_VALUE;
+      navigation.rangeLowest = Number.MAX_SAFE_INTEGER;
+      navigation.rangeHighest = Number.MIN_SAFE_INTEGER;
       navigation.refinements = navigation.refinements
         .map((ref: RangeRefinement) => {
           navigation.rangeLowest = Math.min(navigation.rangeLowest, ref.low);
