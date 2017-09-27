@@ -275,42 +275,42 @@ suite('Bridge', ({ expect, spy, stub }) => {
     });
 
     describe('convertRefinement()', () => {
-      it ('should update rangeHighest and rangeLowest',() => {
-        const rangeHighest = 900;
-        const rangeLowest = 1;
+      it ('should update max and min',() => {
+        const max = 900;
+        const min = 1;
 
-        let refinements = [
-          { type: 'Range', count: 49, high: '28.0', low: String(rangeLowest) },
+        const refinements = [
+          { type: 'Range', count: 49, high: '28.0', low: String(min) },
           { type: 'Range', count: 479, high: '56.0', low: '28.0' },
-          { type: 'Range', count: 1348, high: String(rangeHighest), low: '56.0' },
+          { type: 'Range', count: 1348, high: String(max), low: '56.0' },
         ];
         const navigation = <any>{
           name: 'Department',
           displayName: 'All',
           type: 'Range',
           range: true,
-          rangeHighest: undefined,
-          rangeLowest: undefined,
+          max: undefined,
+          min: undefined,
           or: false,
           refinements,
           metadata: []
         };
         const convertedRefinements = [
-          { type: 'Range', count: 49, high: 28.0, low: rangeLowest },
+          { type: 'Range', count: 49, high: 28.0, low: min },
           { type: 'Range', count: 479, high: 56.0, low: 28.0 },
-          { type: 'Range', count: 1348, high: rangeHighest, low: 56.0 },
+          { type: 'Range', count: 1348, high: max, low: 56.0 },
         ];
 
         expect(BrowserBridge.convertRefinement(navigation)).to.eql({
           ...navigation,
           refinements: convertedRefinements,
-          rangeHighest,
-          rangeLowest
+          max,
+          min
         });
       });
 
       it('should update value types', () => {
-        let refinements = [
+        const refinements = [
           { type: 'Range', count: 49, high: '28.0', low: '0.0' },
           { type: 'Range', count: 479, high: '56.0', low: '28.0' },
           { type: 'Range', count: 1348, high: '84.0', low: '56.0' },
@@ -337,7 +337,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
       });
 
       it('should not update value types', () => {
-        let refinements = [
+        const refinements = [
           {type: 'Value', count: 975, value: 'Black'},
           {type: 'Value', count: 1064, value: 'Blue'},
           {type: 'Value', count: 81, value: 'Brown'}
