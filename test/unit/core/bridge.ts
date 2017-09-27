@@ -275,6 +275,40 @@ suite('Bridge', ({ expect, spy, stub }) => {
     });
 
     describe('convertRefinement()', () => {
+      it ('should update rangeHighest and rangeLowest',() => {
+        const rangeHighest = 900;
+        const rangeLowest = 1;
+
+        let refinements = [
+          { type: 'Range', count: 49, high: '28.0', low: String(rangeLowest) },
+          { type: 'Range', count: 479, high: '56.0', low: '28.0' },
+          { type: 'Range', count: 1348, high: String(rangeHighest), low: '56.0' },
+        ];
+        const navigation = <any>{
+          name: 'Department',
+          displayName: 'All',
+          type: 'Range',
+          range: true,
+          rangeHighest: undefined,
+          rangeLowest: undefined,
+          or: false,
+          refinements,
+          metadata: []
+        };
+        const convertedRefinements = [
+          { type: 'Range', count: 49, high: 28.0, low: rangeLowest },
+          { type: 'Range', count: 479, high: 56.0, low: 28.0 },
+          { type: 'Range', count: 1348, high: rangeHighest, low: 56.0 },
+        ];
+
+        expect(BrowserBridge.convertRefinement(navigation)).to.eql({
+          ...navigation,
+          refinements: convertedRefinements,
+          rangeHighest,
+          rangeLowest
+        });
+      });
+
       it('should update value types', () => {
         let refinements = [
           { type: 'Range', count: 49, high: '28.0', low: '0.0' },
