@@ -2,6 +2,8 @@ export type SortType = 'Count_Ascending' | 'Count_Descending' | 'Value_Ascending
 
 export interface Results {
 
+    id: string;
+
     query: string;
     originalQuery: string;
     correctedQuery: string;
