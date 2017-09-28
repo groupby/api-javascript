@@ -58,6 +58,8 @@ export interface Navigation {
     displayName: string;
     type: 'Value' | 'Range';
     range?: boolean;
+    max?: number;
+    min?: number;
     or?: boolean;
     moreRefinements?: boolean;
     ignored?: boolean;
