@@ -51,8 +51,9 @@ export interface Record {
     id: string;
     url: string;
     title: string;
-    snippet?: string;
     allMeta: any;
+    collection: string;
+    snippet?: string;
 }
 
 export interface Navigation {
