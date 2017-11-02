@@ -51,14 +51,17 @@ export interface Record {
     id: string;
     url: string;
     title: string;
-    snippet?: string;
     allMeta: any;
+    collection: string;
+    snippet?: string;
 }
 
 export interface Navigation {
     name: string;
     displayName: string;
     type: 'Value' | 'Range';
+    refinements: Refinement[];
+    metadata: any[];
     range?: boolean;
     max?: number;
     min?: number;
@@ -66,13 +69,11 @@ export interface Navigation {
     moreRefinements?: boolean;
     ignored?: boolean;
     sort?: SortType;
-    refinements: Refinement[];
-    metadata: any[];
 }
 
 export interface BaseRefinement {
-    exclude?: boolean;
     count: number;
+    exclude?: boolean;
 }
 
 export interface ValueRefinement extends BaseRefinement {
