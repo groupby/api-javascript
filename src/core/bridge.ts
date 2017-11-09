@@ -1,4 +1,5 @@
 import * as axios from 'axios';
+import * as fetchPonyfill from 'fetch-ponyfill';
 import { Request } from '../models/request';
 import { Navigation, RangeRefinement, Record, RefinementResults, Results } from '../models/response';
 import { Query } from './query';
@@ -87,24 +88,43 @@ export abstract class AbstractBridge {
     }
   }
 
-  private fireRequest(url: string, body: Request | any, queryParams: any = {}): Axios.IPromise<any> {
-    const options = {
-      url,
-      method: 'post',
-      params: queryParams,
-      data: this.augmentRequest(body),
-      headers: this.headers,
-      responseType: 'json',
-      timeout: this.config.timeout
-    };
-    return axios(options)
-      .then((res) => res.data)
-      .catch((err) => {
-        if (this.errorHandler) {
-          this.errorHandler(err);
-        }
-        throw err;
-      });
+  private fireRequest(url: string, body: Request | any, queryParams: any = {}): fetchPonyfill.Promise<any> {
+    // const options = {
+    //   url,
+    //   method: 'post',
+    //   params: queryParams,
+    //   data: this.augmentRequest(body),
+    //   headers: this.headers,
+    //   responseType: 'json',
+    //   timeout: this.config.timeout
+    // };
+    const {fetch, Request, Response, Headers} = fetchPonyfill();
+    console.log ('I am Back!',url, body, queryParams);
+    const response = fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body),
+    }).then((result) => {
+      console.log (result); return result;
+    }, (error) => {
+      console.log (error); return error;
+    }) ;
+
+
+    console.log(response);
+
+    return response;
+
+    // return axios(options)
+    //   .then((res) => res.data)
+    //   .catch((err) => {
+    //     if (this.errorHandler) {
+    //       this.errorHandler(err);
+    //     }
+    //     throw err;
+    //   });
   }
 
   static transform(response: any, key: string, callback: Function) {
