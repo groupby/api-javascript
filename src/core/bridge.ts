@@ -89,42 +89,29 @@ export abstract class AbstractBridge {
   }
 
   private fireRequest(url: string, body: Request | any, queryParams: any = {}): fetchPonyfill.Promise<any> {
-    // const options = {
-    //   url,
-    //   method: 'post',
-    //   params: queryParams,
-    //   data: this.augmentRequest(body),
-    //   headers: this.headers,
-    //   responseType: 'json',
-    //   timeout: this.config.timeout
-    // };
-    const {fetch, Request, Response, Headers} = fetchPonyfill();
-    console.log ('I am Back!',url, body, queryParams);
-    const response = fetch(url,  {
+    const options = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(body),
-    }).then((res) => res.data)
+      body: JSON.stringify(this.augmentRequest(body)),
+    };
+    const { fetch } = fetchPonyfill();
+    const response = fetch(url, options)
+      .then((res) => {
+        if (res.status >= 200 && res.status < 300) {
+          return res.json();
+        } else {
+          const error =  Error(res.statusText);
+          throw error;
+        }
+      })
       .catch((err) => {
         if (this.errorHandler) {
           this.errorHandler(err);
         }
         throw err;
       });
-
-
-    // const response = axios(options)
-    //   .then((res) => res.data)
-    //   .catch((err) => {
-    //     if (this.errorHandler) {
-    //       this.errorHandler(err);
-    //     }
-    //     throw err;
-    //   });
-    //
-    console.log(response);
 
     return response;
   }
