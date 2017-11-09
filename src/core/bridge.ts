@@ -100,24 +100,22 @@ export abstract class AbstractBridge {
     // };
     const {fetch, Request, Response, Headers} = fetchPonyfill();
     console.log ('I am Back!',url, body, queryParams);
-    const response = fetch(url, {
+    const response = fetch(url,  {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(body),
-    }).then((result) => {
-      console.log (result); return result;
-    }, (error) => {
-      console.log (error); return error;
-    }) ;
+    }).then((res) => res.data)
+      .catch((err) => {
+        if (this.errorHandler) {
+          this.errorHandler(err);
+        }
+        throw err;
+      });
 
 
-    console.log(response);
-
-    return response;
-
-    // return axios(options)
+    // const response = axios(options)
     //   .then((res) => res.data)
     //   .catch((err) => {
     //     if (this.errorHandler) {
@@ -125,6 +123,10 @@ export abstract class AbstractBridge {
     //     }
     //     throw err;
     //   });
+    //
+    console.log(response);
+
+    return response;
   }
 
   static transform(response: any, key: string, callback: Function) {
