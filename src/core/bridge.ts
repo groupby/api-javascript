@@ -102,8 +102,7 @@ export abstract class AbstractBridge {
         if (res.status >= 200 && res.status < 300) {
           return res.json();
         } else {
-          const error =  Error(res.statusText);
-          throw error;
+          throw new Error(res.statusText);
         }
       })
       .catch((err) => {
