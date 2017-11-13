@@ -97,7 +97,14 @@ export abstract class AbstractBridge {
       body: JSON.stringify(this.augmentRequest(body)),
     };
     const { fetch } = fetchPonyfill();
-    const response = fetch(url, options)
+    let timeoutPromise = () =>
+      new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error('timeout'));
+        }, this.config.timeout);
+      });
+
+    const response = Promise.race([fetch(url, options), timeoutPromise()])
       .then((res) => {
         if (res.status >= 200 && res.status < 300) {
           return res.json();
