@@ -97,7 +97,7 @@ export abstract class AbstractBridge {
       body: JSON.stringify(this.augmentRequest(body)),
     };
     const { fetch } = fetchPonyfill();
-    let timeoutPromise = () =>
+    const timeoutPromise = () =>
       new Promise((resolve, reject) => {
         setTimeout(() => {
           reject(new Error('timeout'));
