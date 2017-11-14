@@ -1,4 +1,5 @@
 import * as mock from 'xhr-mock';
+import fetchMock from 'fetch-mock';
 import { AbstractBridge, BrowserBridge, CloudBridge } from '../../../src/core/bridge';
 import { Query } from '../../../src/core/query';
 import suite from '../_suite';
@@ -9,14 +10,15 @@ const CUSTOMER_ID = 'services';
 suite('Bridge', ({ expect, spy, stub }) => {
   let bridge;
   let query;
+  let fetch;
 
   beforeEach(() => {
-    mock.setup();
+    fetch = fetchMock.sandbox();
     bridge = new CloudBridge(CLIENT_KEY, CUSTOMER_ID);
     query = new Query('test');
   });
 
-  afterEach(() => mock.teardown());
+  afterEach(fetchMock.reset);
 
   it('should be defined', () => {
     expect(bridge).to.be.ok;

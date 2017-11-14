@@ -29,6 +29,7 @@ export const DEFAULT_CONFIG: BridgeConfig = {
 export abstract class AbstractBridge {
 
   config: BridgeConfig;
+  fetch: fetchPonyfill;
   headers: any = {};
   baseUrl: string;
   errorHandler: (error: Error) => void;
@@ -37,6 +38,7 @@ export abstract class AbstractBridge {
 
   constructor(config: BridgeConfig) {
     this.config = Object.assign({}, DEFAULT_CONFIG, config);
+    this.fetch = fetchPonyfill().fetch;
   }
 
   search(query: BridgeQuery, callback?: BridgeCallback): Promise<Results> {
@@ -88,6 +90,7 @@ export abstract class AbstractBridge {
     }
   }
 
+  // tslint:disable-next-line max-line-length
   private fireRequest(url: string, body: Request | any, queryParams: any = {}): fetchPonyfill.Promise<any> {
     const options = {
       method: 'POST',
@@ -96,7 +99,6 @@ export abstract class AbstractBridge {
       },
       body: JSON.stringify(this.augmentRequest(body)),
     };
-    const { fetch } = fetchPonyfill();
     const timeoutPromise = () =>
       new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -104,7 +106,7 @@ export abstract class AbstractBridge {
         }, this.config.timeout);
       });
 
-    const response = Promise.race([fetch(url, options), timeoutPromise()])
+    const response = Promise.race([this.fetch(url, options), timeoutPromise()])
       .then((res) => {
         if (res.status >= 200 && res.status < 300) {
           return res.json();
