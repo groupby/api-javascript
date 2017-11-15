@@ -1,5 +1,6 @@
 import * as fetchMock from 'fetch-mock';
-import { AbstractBridge, BrowserBridge, CloudBridge } from '../../../src/core/bridge';
+import * as sinon from 'sinon';
+import { AbstractBridge, BrowserBridge, CloudBridge, BridgeTimeout } from '../../../src/core/bridge';
 import { Query } from '../../../src/core/query';
 import suite from '../_suite';
 
@@ -39,6 +40,23 @@ suite('Bridge', ({ expect, spy, stub }) => {
     expect(bridge.config).to.eql({
       timeout: 4000
     });
+  });
+
+  it('should handle timed out request', () => {
+    this.clock = sinon.useFakeTimers();
+
+    bridge.fetch = () => new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(3);
+      }, 3000);
+    });
+    bridge.search(new Query('skirts')).catch((err) => {
+      expect(err).to.be.an.instanceof(BridgeTimeout);
+      expect(err.message).to.eql('Timed out in 1500 ms');
+    });
+    this.clock.tick(2000);
+
+    this.clock.restore();
   });
 
   it('should handle invalid query types', () => {
@@ -168,6 +186,14 @@ suite('Bridge', ({ expect, spy, stub }) => {
   });
 
   describe('BrowserBridge', () => {
+    it('should accept configuration', () => {
+      bridge = new BrowserBridge(CUSTOMER_ID, true, { timeout: 4000 });
+
+      expect(bridge.config).to.eql({
+        timeout: 4000
+      });
+    });
+
     describe('search()', () => {
       it('should send requests to the CORS supported search endpoint', (done) => {
         browserFetch.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (url, req) => {
@@ -213,6 +239,15 @@ suite('Bridge', ({ expect, spy, stub }) => {
     });
 
     describe('refinements()', () => {
+      it('should generate error on invalid query', () => {
+        const callback = 'call';
+        const err = browserBridge.generateError = spy();
+
+        browserBridge.refinements(undefined, 'brand', callback);
+
+        expect(err).to.be.calledOnce.and.calledWithExactly('query was not of a recognised type', callback);
+      });
+
       it('should send requests to the CORS supported refinements endpoint', (done) => {
         browserFetch.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search/refinements`, (url, req) => {
           expect(JSON.parse(req.body)).to.contain.all.keys('originalQuery', 'navigationName');
@@ -281,6 +316,21 @@ suite('Bridge', ({ expect, spy, stub }) => {
           _snippet: snippet
         };
         const transformedRecord = { a: 'b', id, url, title, snippet };
+
+        expect(BrowserBridge.convertRecordFields(record)).to.eql(transformedRecord);
+      });
+
+      it('should not delete snipped if not present', () => {
+        const id = '1239';
+        const url = 'www.whateva.ca';
+        const title = 'my stuff';
+        const record = <any>{
+          a: 'b',
+          _id: id,
+          _u: url,
+          _t: title,
+        };
+        const transformedRecord = { a: 'b', id, url, title };
 
         expect(BrowserBridge.convertRecordFields(record)).to.eql(transformedRecord);
       });

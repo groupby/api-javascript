@@ -20,6 +20,13 @@ export interface BridgeCallback {
   (err?: Error, res?: Results): void;
 }
 
+export class BridgeTimeout extends Error {
+  constructor (err: string) {
+    super(err);
+    Object.setPrototypeOf(this, BridgeTimeout.prototype);
+  }
+}
+
 export type BridgeQuery = string | Query | Request;
 
 export const DEFAULT_CONFIG: BridgeConfig = {
@@ -103,7 +110,7 @@ export abstract class AbstractBridge {
     const timeoutPromise = () =>
       new Promise((resolve, reject) => {
         setTimeout(() => {
-          reject(new Error('timeout'));
+          reject(new BridgeTimeout(`Timed out in ${this.config.timeout} ms`));
         }, this.config.timeout);
       });
 
