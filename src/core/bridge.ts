@@ -1,4 +1,5 @@
-import * as axios from 'axios';
+import * as fetchPonyfill from 'fetch-ponyfill';
+import * as qs from 'qs';
 import { Request } from '../models/request';
 import { Navigation, RangeRefinement, Record, RefinementResults, Results } from '../models/response';
 import { Query } from './query';
@@ -7,6 +8,13 @@ const SEARCH = '/search';
 const REFINEMENTS = '/refinements';
 
 const INVALID_QUERY_ERROR = 'query was not of a recognised type';
+
+const createTimeoutPromise = (timeout: number) =>
+      new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new BridgeTimeout(`Timed out in ${timeout} ms`));
+        }, timeout);
+      });
 
 export interface RawRecord extends Record {
   _id: string;
@@ -19,6 +27,24 @@ export interface BridgeCallback {
   (err?: Error, res?: Results): void;
 }
 
+export class BridgeTimeout extends Error {
+  /* istanbul ignore next */
+  constructor (err: string) {
+    super(err);
+  }
+}
+
+export class BridgeError extends Error {
+  /* istanbul ignore next */
+  constructor (statusText: string, public status: number, public data: any) {
+    super(statusText);
+    Object.setPrototypeOf(this, BridgeError.prototype);
+  }
+  get statusText() {
+    return this.message;
+  }
+}
+
 export type BridgeQuery = string | Query | Request;
 
 export const DEFAULT_CONFIG: BridgeConfig = {
@@ -28,6 +54,7 @@ export const DEFAULT_CONFIG: BridgeConfig = {
 export abstract class AbstractBridge {
 
   config: BridgeConfig;
+  fetch: fetchPonyfill = fetchPonyfill().fetch;
   headers: any = {};
   baseUrl: string;
   errorHandler: (error: Error) => void;
@@ -87,18 +114,33 @@ export abstract class AbstractBridge {
     }
   }
 
-  private fireRequest(url: string, body: Request | any, queryParams: any = {}): Axios.IPromise<any> {
+  // tslint:disable-next-line max-line-length
+  private fireRequest(url: string, body: Request | any, queryParams: any = {}): fetchPonyfill.Promise<any> {
     const options = {
-      url,
-      method: 'post',
-      params: queryParams,
-      data: this.augmentRequest(body),
-      headers: this.headers,
-      responseType: 'json',
-      timeout: this.config.timeout
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...this.headers
+      },
+      body: JSON.stringify(this.augmentRequest(body)),
     };
-    return axios(options)
-      .then((res) => res.data)
+
+    const params = qs.stringify(queryParams);
+    url = params ? `${url}?${params}` : url;
+    return Promise.race([this.fetch(url, options), createTimeoutPromise(this.config.timeout)])
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          return res.json().then((err) => {
+            throw new BridgeError(
+              res.statusText,
+              res.status,
+              err
+            );
+          });
+        }
+      })
       .catch((err) => {
         if (this.errorHandler) {
           this.errorHandler(err);

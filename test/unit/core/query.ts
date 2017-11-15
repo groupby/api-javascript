@@ -39,6 +39,7 @@ suite('Query', ({ expect }) => {
         attrs: 'size,brand',
         id: ''
       })
+      .withQueryParams('?what=unused')
       .withSorts({ field: 'price', order: 'Ascending' }, { field: 'boost', order: 'Descending' })
       .withPageSize(300)
       .skip(40)
@@ -132,6 +133,16 @@ suite('Query', ({ expect }) => {
     expect(request.refinements).to.eql(COMBINED_REFINEMENTS);
   });
 
+  it('should expose getter for withNavigations', () => {
+    const navigations = [1,2,3,4];
+    query.withNavigations(...<any>navigations);
+
+    const nav = query.rawNavigations;
+    for (const key of navigations) {
+      expect(nav[key]).to.eql(navigations[key]);
+    }
+  });
+
   it('should not allow setting the same refinement multiple times', () => {
     const refinement: SelectedValueRefinement = { type: 'Value', navigationName: 'brand', value: 'DeWalt' };
     query.withQuery('refinements')
@@ -152,6 +163,18 @@ suite('Query', ({ expect }) => {
     expect(request.refinements[0].type).to.eq('Range');
   });
 
+  it('should allow unsetting refinement, without removing non-existent refinements', () => {
+    const refinements = [{ type: 'Value', navigationName: 'brand', value: 'DeWalt' },
+                         { type: 'Range', navigationName: 'price', low: 20, high: 40 }];
+    query.withQuery('refinements')
+      .withSelectedRefinements(...<any>refinements);
+    expect(query.build().refinements.length).to.eq(2);
+
+    query.withoutSelectedRefinements({ type: 'Value', navigationName: 'not-brand', value: 'DeWalt' });
+    const request = query.build();
+    expect(request.refinements).to.eql(refinements);
+  });
+
   it('should convert custom URL params', () => {
     const request = new Query('parameters')
       .withCustomUrlParams('banner=nike_landing&style=branded')
@@ -160,6 +183,14 @@ suite('Query', ({ expect }) => {
       .build();
 
     expect(request.customUrlParams).to.eql(CUSTOM_PARAMS_FROM_STRING);
+  });
+
+  it('should not convert custom URL params if invalid param', () => {
+    const request = new Query('parameters')
+      .withCustomUrlParams(<any>4)
+      .build();
+
+    expect(request.customUrlParams).to.be.undefined;
   });
 
   it('should expose a copy of the raw request', () => {
@@ -191,6 +222,17 @@ suite('Query', ({ expect }) => {
   it('should allow sorts to be unselected', () => {
     query.withQuery('')
       .withSorts({ field: 'this', order: 'Ascending' }, { field: 'that', order: 'Descending' });
+    expect(query.raw.sort.length).to.eq(2);
+    query.withoutSorts({ field: 'that', order: 'Ascending' });
+    expect(query.raw.sort.length).to.eq(1);
+    expect(query.raw.sort[0].field).to.eq('this');
+    query.withoutSorts({ field: 'this', order: 'Ascending' });
+    expect(query.raw.sort.length).to.eq(0);
+  });
+
+  it('should default query to empty string', () => {
+    const noQuery = new Query();
+    query.withSorts({ field: 'this', order: 'Ascending' }, { field: 'that', order: 'Descending' });
     expect(query.raw.sort.length).to.eq(2);
     query.withoutSorts({ field: 'that', order: 'Ascending' });
     expect(query.raw.sort.length).to.eq(1);

@@ -1,5 +1,6 @@
-import * as mock from 'xhr-mock';
-import { AbstractBridge, BrowserBridge, CloudBridge } from '../../../src/core/bridge';
+import * as fetchMock from 'fetch-mock';
+import * as sinon from 'sinon';
+import { AbstractBridge, BrowserBridge, CloudBridge, BridgeTimeout } from '../../../src/core/bridge';
 import { Query } from '../../../src/core/query';
 import suite from '../_suite';
 
@@ -8,32 +9,50 @@ const CUSTOMER_ID = 'services';
 
 suite('Bridge', ({ expect, spy, stub }) => {
   let bridge;
+  let browserBridge;
   let query;
+  let fetch;
+  let browserFetch;
 
   beforeEach(() => {
-    mock.setup();
     bridge = new CloudBridge(CLIENT_KEY, CUSTOMER_ID);
+    browserBridge = new BrowserBridge(CUSTOMER_ID);
+    fetch = bridge.fetch = fetchMock.sandbox();
+    browserFetch = browserBridge.fetch = fetchMock.sandbox();
     query = new Query('test');
   });
 
-  afterEach(() => mock.teardown());
+  afterEach(fetchMock.reset);
 
   it('should be defined', () => {
     expect(bridge).to.be.ok;
   });
 
   it('should have default values', () => {
-    expect(bridge.config).to.eql({
-      timeout: 1500
-    });
+    expect(bridge.config).to.eql({ timeout: 1500 });
   });
 
   it('should accept configuration', () => {
     bridge = new CloudBridge(CLIENT_KEY, CUSTOMER_ID, { timeout: 4000 });
 
-    expect(bridge.config).to.eql({
-      timeout: 4000
+    expect(bridge.config).to.eql({ timeout: 4000 });
+  });
+
+  it('should handle timed out request', () => {
+    this.clock = sinon.useFakeTimers();
+
+    bridge.fetch = () => new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(3);
+      }, 3000);
     });
+    bridge.search(new Query('skirts')).catch((err) => {
+      expect(err).to.be.an.instanceof(BridgeTimeout);
+      expect(err.message).to.eql('Timed out in 1500 ms'); // default timeout
+    });
+    this.clock.tick(2000);
+
+    this.clock.restore();
   });
 
   it('should handle invalid query types', () => {
@@ -46,23 +65,21 @@ suite('Bridge', ({ expect, spy, stub }) => {
   });
 
   it('should accept a direct query string', () => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
-      const body = JSON.parse(req.body());
+    fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
+      const body = JSON.parse(req.body);
       expect(body.query).to.eq('skirts');
       expect(body.clientKey).to.eq(CLIENT_KEY);
-      return res.status(200)
-        .body('success');
+      return JSON.stringify({});
     });
 
     return bridge.search('skirts');
   });
 
   it('should accept a raw request', () => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
-      const body = JSON.parse(req.body());
+    fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
+      const body = JSON.parse(req.body);
       expect(body.fields).to.eql(['title', 'description']);
-      return res.status(200)
-        .body('success');
+      return JSON.stringify('success');
     });
 
     return bridge.search(new Query('skirts').withFields('title', 'description').build())
@@ -72,8 +89,8 @@ suite('Bridge', ({ expect, spy, stub }) => {
   });
 
   it('should be reuseable', () => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
-      return res.status(200).body('success');
+    fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
+      return JSON.stringify('success');
     });
 
     return bridge.search(query = new Query('skirts'))
@@ -83,8 +100,8 @@ suite('Bridge', ({ expect, spy, stub }) => {
   });
 
   it('should send a search query and return a promise', () => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&syle=branded&other=`, (req, res) => {
-      return res.status(200).body('success');
+    fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&syle=branded&other=`, (url, req) => {
+      return JSON.stringify('success');
     });
 
     query = new Query('skirts')
@@ -99,8 +116,8 @@ suite('Bridge', ({ expect, spy, stub }) => {
   });
 
   it('should send a search query and take a callback', (done) => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&style=branded`, (req, res) => {
-      return res.status(200).body('success');
+    fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&style=branded`, (url, req) => {
+      return JSON.stringify('success');
     });
 
     query = new Query('shoes')
@@ -112,9 +129,12 @@ suite('Bridge', ({ expect, spy, stub }) => {
     });
   });
 
-  it('should be able to handle errors in promise chain', () => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
-      return res.status(400).body('error');
+  it('should be able to handle errors in promise chain, also check for status text', () => {
+    fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
+      return {
+        status: 400,
+        body: JSON.stringify('error'),
+      };
     });
 
     query = new Query('shoes');
@@ -122,13 +142,17 @@ suite('Bridge', ({ expect, spy, stub }) => {
     return bridge.search(query)
       .catch((err) => {
         expect(err.data).to.eq('error');
+        expect(err.statusText).to.eql('Bad Request');
         expect(err.status).to.eq(400);
       });
   });
 
   it('should be able to handle errors in callback', (done) => {
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
-      return res.status(400).body('error');
+    fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
+      return {
+        status: 400,
+        body: JSON.stringify('error'),
+      };
     });
 
     query = new Query('shoes');
@@ -142,8 +166,11 @@ suite('Bridge', ({ expect, spy, stub }) => {
 
   it('should invoke any configured errorHandler on error and allow downstream promise catching', () => {
     const errorHandler = bridge.errorHandler = spy();
-    mock.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (req, res) => {
-      return res.status(400).body('error');
+    fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
+      return {
+        status: 400,
+        body: JSON.stringify('error')
+      };
     });
     query = new Query('shoes');
 
@@ -156,42 +183,49 @@ suite('Bridge', ({ expect, spy, stub }) => {
   });
 
   describe('BrowserBridge', () => {
+    it('should accept configuration', () => {
+      bridge = new BrowserBridge(CUSTOMER_ID, true, { timeout: 4000 });
+
+      expect(bridge.config).to.eql({ timeout: 4000 });
+    });
+
     describe('search()', () => {
       it('should send requests to the CORS supported search endpoint', (done) => {
-        mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
-          return res.status(200).body('success');
+        browserFetch.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (url, req) => {
+          return JSON.stringify('success');
         });
 
         query = new Query('shoes');
 
-        new BrowserBridge(CUSTOMER_ID)
-          .search(query, (err, results) => {
+        browserBridge.search(query, (err, results) => {
             expect(results).to.eq('success');
             done();
           });
       });
 
       it('should send HTTPS request', (done) => {
-        mock.post(`https://${CUSTOMER_ID}-cors.groupbycloud.com:443/api/v1/search`, (req, res) => {
-          return res.status(200).body('success');
+        browserFetch.post(`https://${CUSTOMER_ID}-cors.groupbycloud.com:443/api/v1/search`, (url, req) => {
+          return JSON.stringify('success');
         });
 
         query = new Query('shoes');
 
-        new BrowserBridge(CUSTOMER_ID)
-          .search(query, (err, results) => done());
+        const browser = new BrowserBridge(CUSTOMER_ID, true);
+        browser.fetch = browserFetch;
+
+        browser.search(query, (err, results) => done());
       });
 
       it('should include headers', (done) => {
         const headers = { a: 'b' };
-        mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (req, res) => {
-          expect(req['_headers']).to.include.keys('a');
-          return res.status(200).body('success');
+        browserFetch.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search`, (url, req) => {
+          expect(req.headers).to.include.keys('a');
+          return JSON.stringify('success');
         });
 
         query = new Query('shoes');
 
-        Object.assign(new BrowserBridge(CUSTOMER_ID), { headers })
+        Object.assign(browserBridge, { headers })
           .search(query, (err, results) => {
             expect(results).to.eq('success');
             done();
@@ -200,16 +234,24 @@ suite('Bridge', ({ expect, spy, stub }) => {
     });
 
     describe('refinements()', () => {
+      it('should generate error on invalid query', () => {
+        const callback = 'call';
+        const err = browserBridge.generateError = spy();
+
+        browserBridge.refinements(undefined, 'brand', callback);
+
+        expect(err).to.be.calledOnce.and.calledWithExactly('query was not of a recognised type', callback);
+      });
+
       it('should send requests to the CORS supported refinements endpoint', (done) => {
-        mock.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search/refinements`, (req, res) => {
-          expect(JSON.parse(req['_body'])).to.contain.all.keys('originalQuery', 'navigationName');
-          return res.status(200).body('success');
+        browserFetch.post(`http://${CUSTOMER_ID}-cors.groupbycloud.com/api/v1/search/refinements`, (url, req) => {
+          expect(JSON.parse(req.body)).to.contain.all.keys('originalQuery', 'navigationName');
+          return JSON.stringify('success');
         });
 
         query = new Query('shoes');
 
-        new BrowserBridge(CUSTOMER_ID)
-          .refinements(query, 'brand', (err, results) => {
+        browserBridge.refinements(query, 'brand', (err, results) => {
             expect(results).to.eq('success');
             done();
           });
@@ -269,6 +311,21 @@ suite('Bridge', ({ expect, spy, stub }) => {
           _snippet: snippet
         };
         const transformedRecord = { a: 'b', id, url, title, snippet };
+
+        expect(BrowserBridge.convertRecordFields(record)).to.eql(transformedRecord);
+      });
+
+      it('should not delete snipped if not present', () => {
+        const id = '1239';
+        const url = 'www.whateva.ca';
+        const title = 'my stuff';
+        const record = <any>{
+          a: 'b',
+          _id: id,
+          _u: url,
+          _t: title,
+        };
+        const transformedRecord = { a: 'b', id, url, title };
 
         expect(BrowserBridge.convertRecordFields(record)).to.eql(transformedRecord);
       });
