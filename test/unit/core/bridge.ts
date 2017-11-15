@@ -55,7 +55,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
     this.clock.restore();
   });
 
-  it('should handle invalid query types, check for status text as well', () => {
+  it('should handle invalid query types', () => {
     return bridge.search(12331)
       .catch((err) => expect(err.message).to.eq('query was not of a recognised type'))
       .then(() => bridge.search(true, (err, res) => {
@@ -129,7 +129,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
     });
   });
 
-  it('should be able to handle errors in promise chain', () => {
+  it('should be able to handle errors in promise chain, also check for status text', () => {
     fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
       return {
         status: 400,
@@ -142,6 +142,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
     return bridge.search(query)
       .catch((err) => {
         expect(err.data).to.eq('error');
+        expect(err.statusText).to.eql('Bad Request');
         expect(err.status).to.eq(400);
       });
   });
