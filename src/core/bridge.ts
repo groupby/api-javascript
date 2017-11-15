@@ -33,6 +33,16 @@ export class BridgeTimeout extends Error {
   }
 }
 
+export class BridgeError extends Error {
+  constructor (statusText: string, public status: number, public data: any) {
+    super(statusText);
+  }
+
+  get statusText() {
+    return this.message;
+  }
+}
+
 export type BridgeQuery = string | Query | Request;
 
 export const DEFAULT_CONFIG: BridgeConfig = {
@@ -121,11 +131,11 @@ export abstract class AbstractBridge {
           return res.json();
         } else {
           return res.json().then((err) => {
-            throw {
-              status: res.status,
-              statusText: res.statusText,
-              data: err,
-            };
+            throw new BridgeError(
+              res.statusText,
+              res.status,
+              err
+            );
           });
         }
       })
