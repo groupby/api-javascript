@@ -114,7 +114,9 @@ export abstract class AbstractBridge {
         }, this.config.timeout);
       });
 
-    const response = Promise.race([this.fetch(url + qs.stringify(queryParams), options), timeoutPromise()])
+    const params = qs.stringify(queryParams);
+    url = params ? url + '?' + params : url;
+    const response = Promise.race([this.fetch(url, options), timeoutPromise()])
       .then((res) => {
         if (res.ok) {
           return res.json();
