@@ -35,11 +35,6 @@ suite('Query', ({ expect }) => {
       .withOrFields('brand', 'colour')
       .withIncludedNavigations('brand', 'size')
       .withExcludedNavigations('_meta', 'originalPrice')
-      .withQueryParams({
-        attrs: 'size,brand',
-        id: ''
-      })
-      .withQueryParams('?what=unused')
       .withSorts({ field: 'price', order: 'Ascending' }, { field: 'boost', order: 'Descending' })
       .withPageSize(300)
       .skip(40)
