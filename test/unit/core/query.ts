@@ -39,6 +39,7 @@ suite('Query', ({ expect }) => {
         attrs: 'size,brand',
         id: ''
       })
+      .withQueryParams('?what=unused')
       .withSorts({ field: 'price', order: 'Ascending' }, { field: 'boost', order: 'Descending' })
       .withPageSize(300)
       .skip(40)
@@ -152,6 +153,18 @@ suite('Query', ({ expect }) => {
     expect(request.refinements[0].type).to.eq('Range');
   });
 
+  it('should allow unsetting refinement, without removing non-existent refinements', () => {
+    const refinements = [{ type: 'Value', navigationName: 'brand', value: 'DeWalt' },
+                         { type: 'Range', navigationName: 'price', low: 20, high: 40 }];
+    query.withQuery('refinements')
+      .withSelectedRefinements(...<any>refinements);
+    expect(query.build().refinements.length).to.eq(2);
+
+    query.withoutSelectedRefinements({ type: 'Value', navigationName: 'not-brand', value: 'DeWalt' });
+    const request = query.build();
+    expect(request.refinements).to.eql(refinements);
+  });
+
   it('should convert custom URL params', () => {
     const request = new Query('parameters')
       .withCustomUrlParams('banner=nike_landing&style=branded')
@@ -160,6 +173,14 @@ suite('Query', ({ expect }) => {
       .build();
 
     expect(request.customUrlParams).to.eql(CUSTOM_PARAMS_FROM_STRING);
+  });
+
+  it('should not convert custom URL params if invalid param', () => {
+    const request = new Query('parameters')
+      .withCustomUrlParams(<any>4)
+      .build();
+
+    expect(request.customUrlParams).to.be.undefined;
   });
 
   it('should expose a copy of the raw request', () => {
