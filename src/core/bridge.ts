@@ -9,6 +9,13 @@ const REFINEMENTS = '/refinements';
 
 const INVALID_QUERY_ERROR = 'query was not of a recognised type';
 
+const createTimeoutPromise = (timeout: number) =>
+      new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new BridgeTimeout(`Timed out in ${timeout} ms`));
+        }, timeout);
+      });
+
 export interface RawRecord extends Record {
   _id: string;
   _u: string;
@@ -23,7 +30,6 @@ export interface BridgeCallback {
 export class BridgeTimeout extends Error {
   constructor (err: string) {
     super(err);
-    Object.setPrototypeOf(this, BridgeTimeout.prototype);
   }
 }
 
@@ -36,7 +42,7 @@ export const DEFAULT_CONFIG: BridgeConfig = {
 export abstract class AbstractBridge {
 
   config: BridgeConfig;
-  fetch: fetchPonyfill;
+  fetch: fetchPonyfill = fetchPonyfill().fetch;
   headers: any = {};
   baseUrl: string;
   errorHandler: (error: Error) => void;
@@ -45,7 +51,6 @@ export abstract class AbstractBridge {
 
   constructor(config: BridgeConfig) {
     this.config = Object.assign({}, DEFAULT_CONFIG, config);
-    this.fetch = fetchPonyfill().fetch;
   }
 
   search(query: BridgeQuery, callback?: BridgeCallback): Promise<Results> {
@@ -107,16 +112,10 @@ export abstract class AbstractBridge {
       },
       body: JSON.stringify(this.augmentRequest(body)),
     };
-    const timeoutPromise = () =>
-      new Promise((resolve, reject) => {
-        setTimeout(() => {
-          reject(new BridgeTimeout(`Timed out in ${this.config.timeout} ms`));
-        }, this.config.timeout);
-      });
 
     const params = qs.stringify(queryParams);
-    url = params ? url + '?' + params : url;
-    const response = Promise.race([this.fetch(url, options), timeoutPromise()])
+    url = params ? `${url}?${params}` : url;
+    const response = Promise.race([this.fetch(url, options), createTimeoutPromise(this.config.timeout)])
       .then((res) => {
         if (res.ok) {
           return res.json();
