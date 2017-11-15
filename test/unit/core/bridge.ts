@@ -29,17 +29,13 @@ suite('Bridge', ({ expect, spy, stub }) => {
   });
 
   it('should have default values', () => {
-    expect(bridge.config).to.eql({
-      timeout: 1500
-    });
+    expect(bridge.config).to.eql({ timeout: 1500 });
   });
 
   it('should accept configuration', () => {
     bridge = new CloudBridge(CLIENT_KEY, CUSTOMER_ID, { timeout: 4000 });
 
-    expect(bridge.config).to.eql({
-      timeout: 4000
-    });
+    expect(bridge.config).to.eql({ timeout: 4000 });
   });
 
   it('should handle timed out request', () => {
@@ -52,7 +48,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
     });
     bridge.search(new Query('skirts')).catch((err) => {
       expect(err).to.be.an.instanceof(BridgeTimeout);
-      expect(err.message).to.eql('Timed out in 1500 ms');
+      expect(err.message).to.eql('Timed out in 1500 ms'); // default timeout
     });
     this.clock.tick(2000);
 
@@ -189,9 +185,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
     it('should accept configuration', () => {
       bridge = new BrowserBridge(CUSTOMER_ID, true, { timeout: 4000 });
 
-      expect(bridge.config).to.eql({
-        timeout: 4000
-      });
+      expect(bridge.config).to.eql({ timeout: 4000 });
     });
 
     describe('search()', () => {
