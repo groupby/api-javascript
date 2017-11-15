@@ -49,10 +49,10 @@ export abstract class AbstractBridge {
   }
 
   search(query: BridgeQuery, callback?: BridgeCallback): Promise<Results> {
-    let { request, queryParams } = this.extractRequest(query);
+    let { request } = this.extractRequest(query);
     if (request === null) return this.generateError(INVALID_QUERY_ERROR, callback);
 
-    const response = this.fireRequest(this.bridgeUrl, request, queryParams)
+    const response = this.fireRequest(this.bridgeUrl, request)
       .then(AbstractBridge.transformRecords)
       .then(AbstractBridge.transformRefinements);
     return this.handleResponse(response, callback);
@@ -78,13 +78,13 @@ export abstract class AbstractBridge {
     }
   }
 
-  private extractRequest(query: any): { request: Request; queryParams: any; } {
+  private extractRequest(query: any): { request: Request } {
     switch (typeof query) {
-      case 'string': return { request: new Query(<string>query).build(), queryParams: {} };
+      case 'string': return { request: new Query(<string>query).build() };
       case 'object': return query instanceof Query
-        ? { request: query.build(), queryParams: query.queryParams }
-        : { request: query, queryParams: {} };
-      default: return { request: null, queryParams: null };
+        ? { request: query.build() }
+        : { request: query };
+      default: return { request: null };
     }
   }
 
@@ -98,7 +98,7 @@ export abstract class AbstractBridge {
   }
 
   // tslint:disable-next-line max-line-length
-  private fireRequest(url: string, body: Request | any, queryParams: any = {}): fetchPonyfill.Promise<any> {
+  private fireRequest(url: string, body: Request | any): fetchPonyfill.Promise<any> {
     const options = {
       method: 'POST',
       headers: {

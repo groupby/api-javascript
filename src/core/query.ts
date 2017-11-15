@@ -31,14 +31,12 @@ export interface QueryConfiguration {
 
 export class Query {
 
-  queryParams: any;
   private request: Request;
   private unprocessedNavigations: Navigation[];
 
   constructor(query: string = '') {
     this.request = <Request>{};
     this.unprocessedNavigations = [];
-    this.queryParams = {};
 
     this.request.query = query;
     this.request.sort = [];
@@ -124,15 +122,6 @@ export class Query {
   withExcludedNavigations(...navigationNames: string[]): Query {
     this.request.excludedNavigations.push(...navigationNames);
     return this;
-  }
-
-  withQueryParams(queryParams: any | string): Query {
-    switch (typeof queryParams) {
-      case 'string':
-        return Object.assign(this, { queryParams: this.convertQueryString(<string>queryParams) });
-      case 'object':
-        return Object.assign(this, { queryParams });
-    }
   }
 
   refineByValue(navigationName: string, value: string, exclude: boolean = false): Query {
@@ -228,10 +217,6 @@ export class Query {
   private convertParamString(customUrlParams: string): CustomUrlParam[] {
     const parsed = qs.parse(customUrlParams);
     return Object.keys(parsed).reduce((converted, key) => converted.concat({ key, value: parsed[key] }), []);
-  }
-
-  private convertQueryString(queryParams: string): any {
-    return qs.parse(queryParams);
   }
 
   private clearEmptyArrays(request: Request): Request {
