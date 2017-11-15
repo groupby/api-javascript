@@ -126,7 +126,7 @@ export abstract class AbstractBridge {
 
     const params = qs.stringify(queryParams);
     url = params ? `${url}?${params}` : url;
-    const response = Promise.race([this.fetch(url, options), createTimeoutPromise(this.config.timeout)])
+    return Promise.race([this.fetch(url, options), createTimeoutPromise(this.config.timeout)])
       .then((res) => {
         if (res.ok) {
           return res.json();
@@ -146,8 +146,6 @@ export abstract class AbstractBridge {
         }
         throw err;
       });
-
-    return response;
   }
 
   static transform(response: any, key: string, callback: Function) {
