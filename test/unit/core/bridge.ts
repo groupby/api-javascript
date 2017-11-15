@@ -55,7 +55,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
     this.clock.restore();
   });
 
-  it('should handle invalid query types', () => {
+  it('should handle invalid query types, check for status text as well', () => {
     return bridge.search(12331)
       .catch((err) => expect(err.message).to.eq('query was not of a recognised type'))
       .then(() => bridge.search(true, (err, res) => {
@@ -133,7 +133,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
     fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
       return {
         status: 400,
-        body: JSON.stringify('error')
+        body: JSON.stringify('error'),
       };
     });
 
@@ -150,7 +150,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
     fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
       return {
         status: 400,
-        body: JSON.stringify('error')
+        body: JSON.stringify('error'),
       };
     });
 

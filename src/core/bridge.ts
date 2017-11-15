@@ -36,6 +36,7 @@ export class BridgeTimeout extends Error {
 export class BridgeError extends Error {
   constructor (statusText: string, public status: number, public data: any) {
     super(statusText);
+    Object.setPrototypeOf(this, BridgeError.prototype);
   }
 
   get statusText() {
