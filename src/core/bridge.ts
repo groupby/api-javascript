@@ -28,17 +28,18 @@ export interface BridgeCallback {
 }
 
 export class BridgeTimeout extends Error {
+  /* istanbul ignore next */
   constructor (err: string) {
     super(err);
   }
 }
 
 export class BridgeError extends Error {
+  /* istanbul ignore next */
   constructor (statusText: string, public status: number, public data: any) {
     super(statusText);
     Object.setPrototypeOf(this, BridgeError.prototype);
   }
-
   get statusText() {
     return this.message;
   }

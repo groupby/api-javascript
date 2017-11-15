@@ -229,4 +229,15 @@ suite('Query', ({ expect }) => {
     query.withoutSorts({ field: 'this', order: 'Ascending' });
     expect(query.raw.sort.length).to.eq(0);
   });
+
+  it('should default query to empty string', () => {
+    const noQuery = new Query();
+    query.withSorts({ field: 'this', order: 'Ascending' }, { field: 'that', order: 'Descending' });
+    expect(query.raw.sort.length).to.eq(2);
+    query.withoutSorts({ field: 'that', order: 'Ascending' });
+    expect(query.raw.sort.length).to.eq(1);
+    expect(query.raw.sort[0].field).to.eq('this');
+    query.withoutSorts({ field: 'this', order: 'Ascending' });
+    expect(query.raw.sort.length).to.eq(0);
+  });
 });
