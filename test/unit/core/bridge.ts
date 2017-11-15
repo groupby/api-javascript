@@ -103,6 +103,36 @@ suite('Bridge', ({ expect, spy, stub }) => {
       .then((results) => expect(results).to.eq('success'));
   });
 
+  // it('should send a search query and return a promise', () => {
+  //   fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&syle=branded&other=`, (url, req) => {
+  //     return JSON.stringify('success');
+  //   });
+
+  //   query = new Query('skirts')
+  //     .withQueryParams({
+  //       size: 20,
+  //       syle: 'branded',
+  //       other: ''
+  //     });
+
+  //   return bridge.search(query)
+  //     .then((results) => expect(results).to.eq('success'));
+  // });
+
+  // it('should send a search query and take a callback', (done) => {
+  //   fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search?size=20&style=branded`, (url, req) => {
+  //     return JSON.stringify('success');
+  //   });
+
+  //   query = new Query('shoes')
+  //     .withQueryParams('size=20&style=branded');
+
+  //   bridge.search(query, (err, results) => {
+  //     expect(results).to.eq('success');
+  //     done();
+  //   });
+  // });
+
   it('should be able to handle errors in promise chain', () => {
     fetch.post(`https://${CUSTOMER_ID}.groupbycloud.com:443/api/v1/search`, (url, req) => {
       return {
