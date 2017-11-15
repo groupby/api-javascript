@@ -1,4 +1,5 @@
 import * as fetchPonyfill from 'fetch-ponyfill';
+import * as qs from 'qs';
 import { Request } from '../models/request';
 import { Navigation, RangeRefinement, Record, RefinementResults, Results } from '../models/response';
 import { Query } from './query';
@@ -113,7 +114,7 @@ export abstract class AbstractBridge {
         }, this.config.timeout);
       });
 
-    const response = Promise.race([this.fetch(url, options), timeoutPromise()])
+    const response = Promise.race([this.fetch(url + qs.stringify(queryParams), options), timeoutPromise()])
       .then((res) => {
         if (res.ok) {
           return res.json();
