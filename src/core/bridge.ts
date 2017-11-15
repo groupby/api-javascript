@@ -95,7 +95,8 @@ export abstract class AbstractBridge {
     const options = {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...this.headers
       },
       body: JSON.stringify(this.augmentRequest(body)),
     };
@@ -108,10 +109,16 @@ export abstract class AbstractBridge {
 
     const response = Promise.race([this.fetch(url, options), timeoutPromise()])
       .then((res) => {
-        if (res.status >= 200 && res.status < 300) {
+        if (res.ok) {
           return res.json();
         } else {
-          throw new Error(res.statusText);
+          return res.json().then((err) => {
+            throw {
+              status: res.status,
+              statusText: res.statusText,
+              data: err,
+            };
+          });
         }
       })
       .catch((err) => {
