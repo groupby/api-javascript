@@ -133,6 +133,16 @@ suite('Query', ({ expect }) => {
     expect(request.refinements).to.eql(COMBINED_REFINEMENTS);
   });
 
+  it('should expose getter for withNavigations', () => {
+    const navigations = [1,2,3,4];
+    query.withNavigations(...<any>navigations);
+
+    const nav = query.rawNavigations;
+    for (const key of navigations) {
+      expect(nav[key]).to.eql(navigations[key]);
+    }
+  });
+
   it('should not allow setting the same refinement multiple times', () => {
     const refinement: SelectedValueRefinement = { type: 'Value', navigationName: 'brand', value: 'DeWalt' };
     query.withQuery('refinements')
