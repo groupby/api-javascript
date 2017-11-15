@@ -1,4 +1,3 @@
-import * as axios from 'axios';
 import * as fetchPonyfill from 'fetch-ponyfill';
 import { Request } from '../models/request';
 import { Navigation, RangeRefinement, Record, RefinementResults, Results } from '../models/response';
