@@ -1,5 +1,4 @@
 export type SortOrder = 'Ascending' | 'Descending';
-export type SortType = 'ById' | 'Field';
 
 export interface Request {
     // query parameters
@@ -35,8 +34,12 @@ export interface Request {
     wildcardSearchEnabled: boolean;
 }
 
+export namespace Sort {
+    export type Type = 'ById' | 'Field';
+}
+
 export interface Sort {
-    type: SortType;
+    type: Sort.Type;
     ids?: string[];
     field?: string;
     order?: SortOrder;

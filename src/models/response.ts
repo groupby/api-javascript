@@ -1,4 +1,4 @@
-export type NavigationSortType = 'Count_Ascending' | 'Count_Descending' | 'Value_Ascending' | 'Value_Descending';
+export type SortType = 'Count_Ascending' | 'Count_Descending' | 'Value_Ascending' | 'Value_Descending';
 
 export interface Results {
 
@@ -68,7 +68,7 @@ export interface Navigation {
     or?: boolean;
     moreRefinements?: boolean;
     ignored?: boolean;
-    sort?: NavigationSortType;
+    sort?: SortType;
 }
 
 export interface BaseRefinement {
