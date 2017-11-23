@@ -1,8 +1,8 @@
 export let COMPLEX_REQUEST = {
   query: 'complex',
   sort: [
-    { type: 'field', field: 'price', order: 'Ascending' },
-    { type: 'field', field: 'boost', order: 'Descending' }
+    { type: 'Field', field: 'price', order: 'Ascending' },
+    { type: 'Field', field: 'boost', order: 'Descending' }
   ],
   fields: ['title', 'description'],
   orFields: ['brand', 'colour'],
@@ -39,8 +39,8 @@ export let COMPLEX_REQUEST = {
 export let BULK_REQUEST = {
   query: 'bulk',
   sort: [
-    { type: 'field', field: 'price', order: 'Ascending' },
-    { type: 'field', field: 'boost', order: 'Descending' }
+    { type: 'Field', field: 'price', order: 'Ascending' },
+    { type: 'Field', field: 'boost', order: 'Descending' }
   ],
   fields: ['title', 'description'],
   orFields: ['brand', 'colour'],

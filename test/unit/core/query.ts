@@ -40,8 +40,8 @@ suite('Query', ({ expect }) => {
         id: ''
       })
       .withQueryParams('?what=unused')
-      .withSorts({ type: 'field', field: 'price', order: 'Ascending' },
-      { type: 'field', field: 'boost', order: 'Descending' })
+      .withSorts({ type: 'Field', field: 'price', order: 'Ascending' },
+      { type: 'Field', field: 'boost', order: 'Descending' })
       .withPageSize(300)
       .skip(40)
       .restrictNavigation({
@@ -222,25 +222,25 @@ suite('Query', ({ expect }) => {
 
   it('should allow sorts to be unselected', () => {
     query.withQuery('')
-      .withSorts({ type: 'field', field: 'this', order: 'Ascending' },
-      { type: 'field', field: 'that', order: 'Descending' });
+      .withSorts({ type: 'Field', field: 'this', order: 'Ascending' },
+      { type: 'Field', field: 'that', order: 'Descending' });
     expect(query.raw.sort.length).to.eq(2);
-    query.withoutSorts({ type: 'field', field: 'that', order: 'Ascending' });
+    query.withoutSorts({ type: 'Field', field: 'that', order: 'Ascending' });
     expect(query.raw.sort.length).to.eq(1);
     expect(query.raw.sort[0].field).to.eq('this');
-    query.withoutSorts({ type: 'field', field: 'this', order: 'Ascending' });
+    query.withoutSorts({ type: 'Field', field: 'this', order: 'Ascending' });
     expect(query.raw.sort.length).to.eq(0);
   });
 
   it('should default query to empty string', () => {
     const noQuery = new Query();
-    query.withSorts({ type: 'field', field: 'this', order: 'Ascending' },
-    { type: 'field', field: 'that', order: 'Descending' });
+    query.withSorts({ type: 'Field', field: 'this', order: 'Ascending' },
+    { type: 'Field', field: 'that', order: 'Descending' });
     expect(query.raw.sort.length).to.eq(2);
-    query.withoutSorts({ type: 'field', field: 'that', order: 'Ascending' });
+    query.withoutSorts({ type: 'Field', field: 'that', order: 'Ascending' });
     expect(query.raw.sort.length).to.eq(1);
     expect(query.raw.sort[0].field).to.eq('this');
-    query.withoutSorts({ type: 'field', field: 'this', order: 'Ascending' });
+    query.withoutSorts({ type: 'Field', field: 'this', order: 'Ascending' });
     expect(query.raw.sort.length).to.eq(0);
   });
 });
