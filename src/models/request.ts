@@ -1,4 +1,5 @@
 export type SortOrder = 'Ascending' | 'Descending';
+export type SortType = 'ById' | 'Field';
 
 export interface Request {
     // query parameters
@@ -35,8 +36,10 @@ export interface Request {
 }
 
 export interface Sort {
-    field: string;
-    order: SortOrder;
+    type: SortType;
+    ids?: string[];
+    field?: string;
+    order?: SortOrder;
 }
 
 export interface CustomUrlParam {
@@ -79,6 +82,7 @@ export interface Bias {
 
 export interface Biasing {
     bringToTop?: string[];
+    restrictToIds?: string[];
     augmentBiases: boolean;
     biases: Bias[];
     influence?: number;
