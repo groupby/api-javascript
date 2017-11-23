@@ -35,7 +35,7 @@ export interface Request {
 }
 
 export namespace Sort {
-    export type Type = 'ById' | 'Field';
+    export type Type = 'ByIds' | 'Field';
 }
 
 export interface Sort {
