@@ -34,9 +34,15 @@ export interface Request {
     wildcardSearchEnabled: boolean;
 }
 
+export namespace Sort {
+    export type Type = 'ByIds' | 'Field';
+}
+
 export interface Sort {
-    field: string;
-    order: SortOrder;
+    type: Sort.Type;
+    ids?: string[];
+    field?: string;
+    order?: SortOrder;
 }
 
 export interface CustomUrlParam {
@@ -79,6 +85,7 @@ export interface Bias {
 
 export interface Biasing {
     bringToTop?: string[];
+    restrictToIds?: string[];
     augmentBiases: boolean;
     biases: Bias[];
     influence?: number;
