@@ -218,7 +218,7 @@ export class BrowserBridge extends AbstractBridge {
     super(config);
     const scheme = https ? 'https' : 'http';
     const port = https ? ':443' : '';
-    this.baseUrl = `${scheme}://${customerId}-cors.groupbycloud.com${port}/api/v1`;
+    this.baseUrl = config.proxyUrl || `${scheme}://${customerId}-cors.groupbycloud.com${port}/api/v1`;
     this.bridgeUrl = this.baseUrl + SEARCH;
     this.refinementsUrl = this.bridgeUrl + REFINEMENTS;
   }
@@ -230,4 +230,5 @@ export class BrowserBridge extends AbstractBridge {
 
 export interface BridgeConfig {
   timeout?: number;
+  proxyUrl?: string;
 }
