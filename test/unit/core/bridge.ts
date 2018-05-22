@@ -6,6 +6,7 @@ import suite from '../_suite';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
 const CUSTOMER_ID = 'services';
+const PROXY_ENDPOINT = 'https://dance.groovebycloud.com';
 
 suite('Bridge', ({ expect, spy, stub }) => {
   let bridge;
@@ -231,6 +232,20 @@ suite('Bridge', ({ expect, spy, stub }) => {
             done();
           });
       });
+
+      it('should send requests to baseUrl prefixed search endpoint when provided', (done) => {
+        browserFetch.post(`${PROXY_ENDPOINT}/search`, (url, req) => {
+          return JSON.stringify('success');
+        });
+
+        const browser = new BrowserBridge(CUSTOMER_ID, true, { proxyUrl: PROXY_ENDPOINT });
+        query = new Query('pants');
+        browser.fetch = browserFetch;
+        browser.search(query, (err, results) => {
+          expect(results).to.eq('success');
+          done();
+        });
+      });
     });
 
     describe('refinements()', () => {
@@ -255,6 +270,20 @@ suite('Bridge', ({ expect, spy, stub }) => {
             expect(results).to.eq('success');
             done();
           });
+      });
+
+      it('should send requests to baseUrl prefixed refinements endpoint when provided', (done) => {
+        browserFetch.post(`${PROXY_ENDPOINT}/search/refinements`, (url, req) => {
+          return JSON.stringify('success');
+        });
+
+        const browser = new BrowserBridge(CUSTOMER_ID, true, { proxyUrl: PROXY_ENDPOINT });
+        query = new Query('pants');
+        browser.fetch = browserFetch;
+        browser.refinements(query, 'designer', (err, results) => {
+          expect(results).to.eq('success');
+          done();
+        });
       });
     });
   });
