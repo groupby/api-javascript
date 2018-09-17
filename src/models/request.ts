@@ -34,15 +34,20 @@ export interface Request {
     wildcardSearchEnabled: boolean;
 }
 
-export namespace Sort {
-    export type Type = 'ByIds' | 'Field';
+export type Sort = FieldSort | ByIdSort;
+
+export interface BaseSort {
+  order?: SortOrder;
 }
 
-export interface Sort {
-    type: Sort.Type;
-    ids?: string[];
-    field?: string;
-    order?: SortOrder;
+export interface ByIdSort extends BaseSort {
+  type: 'ByIds';
+  ids: string[];
+}
+
+export interface FieldSort extends BaseSort {
+  type?: 'Field';
+  field: string;
 }
 
 export interface CustomUrlParam {
