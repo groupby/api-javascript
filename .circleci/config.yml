@@ -21,6 +21,9 @@ jobs:
     docker:
       - image: kkarczmarczyk/node-yarn
     steps:
+      - checkout
+      - restore_cache:
+          key: api-javascript-{{ .Branch }}-{{ checksum "yarn.lock" }}
       - run:
           name: Test
           command: yarn start ci
@@ -29,6 +32,9 @@ jobs:
     docker:
       - image: kkarczmarczyk/node-yarn
     steps:
+      - checkout
+      - restore_cache:
+          key: api-javascript-{{ .Branch }}-{{ checksum "yarn.lock" }}
       - run:
           name: Release
           command: yarn start release || true
