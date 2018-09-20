@@ -19,7 +19,7 @@ jobs:
       - save_cache:
           <<: *node_cache
           paths:
-            - ~/node_modules
+            - ~/api-javascript/node_modules
   unit_test:
     working_directory: ~/api-javascript
     docker:
