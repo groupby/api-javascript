@@ -1,3 +1,7 @@
+defaults:
+  node_cache: &node_cache
+    key: v-{{ .Environment.CACHE_VERSION }}-api-javascript-{{ .Branch }}-{{ checksum "yarn.lock" }}
+
 version: 2
 
 jobs:
@@ -8,12 +12,12 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: api-javascript-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          <<: *node_cache
       - run:
           name: Install
           command: yarn
       - save_cache:
-          key: api-javascript-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          <<: *node_cache
           paths:
             - ~/node_modules
   unit_test:
@@ -23,7 +27,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: api-javascript-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          <<: *node_cache
       - run:
           name: Test
           command: yarn start ci
@@ -34,7 +38,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: api-javascript-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          <<: *node_cache
       - run:
           name: Release
           command: yarn start release || true
