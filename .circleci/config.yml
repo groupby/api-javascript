@@ -16,9 +16,36 @@ jobs:
           key: api-javascript-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
             - ~/node_modules
+  unit_test:
+    working_directory: ~/api-javascript
+    docker:
+      - image: kkarczmarczyk/node-yarn
+    steps:
       - run:
           name: Test
           command: yarn start ci
+  release:
+    working_directory: ~/api-javascript
+    docker:
+      - image: kkarczmarczyk/node-yarn
+    steps:
       - run:
           name: Release
           command: yarn start release || true
+
+workflows:
+  version: 2
+
+  build_test_release:
+    jobs:
+      - build
+      - unit_test:
+          requires:
+            - build
+      - release:
+          context: org-global
+          filters:
+            branches:
+              only: develop
+          requires:
+            - unit_test
