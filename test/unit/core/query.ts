@@ -1,5 +1,5 @@
 import { Query } from '../../../src/core/query';
-import { SelectedValueRefinement } from '../../../src/models/request';
+import { ByIdSort, FieldSort, SelectedValueRefinement } from '../../../src/models/request';
 import suite from '../_suite';
 import { COMBINED_REFINEMENTS, COMPLEX_REQUEST, CUSTOM_PARAMS_FROM_STRING } from '../fixtures';
 
@@ -223,12 +223,17 @@ suite('Query', ({ expect }) => {
   it('should allow sorts to be unselected', () => {
     query.withQuery('')
       .withSorts({ type: 'Field', field: 'this', order: 'Ascending' },
-      { type: 'Field', field: 'that', order: 'Descending' });
-    expect(query.raw.sort.length).to.eq(2);
+      { type: 'Field', field: 'that', order: 'Descending' },
+      { type: 'ByIds', ids: ['1', '2', '3'] }
+    );
+    expect(query.raw.sort.length).to.eq(3);
     query.withoutSorts({ type: 'Field', field: 'that', order: 'Ascending' });
-    expect(query.raw.sort.length).to.eq(1);
-    expect(query.raw.sort[0].field).to.eq('this');
+    expect(query.raw.sort.length).to.eq(2);
+    expect((<FieldSort>query.raw.sort[0]).field).to.eq('this');
     query.withoutSorts({ type: 'Field', field: 'this', order: 'Ascending' });
+    expect(query.raw.sort.length).to.eq(1);
+    expect((<ByIdSort>query.raw.sort[0]).ids).to.eql(['1', '2', '3']);
+    query.withoutSorts({ type: 'ByIds', ids: ['1', '2', '3'] });
     expect(query.raw.sort.length).to.eq(0);
   });
 
@@ -239,7 +244,7 @@ suite('Query', ({ expect }) => {
     expect(query.raw.sort.length).to.eq(2);
     query.withoutSorts({ type: 'Field', field: 'that', order: 'Ascending' });
     expect(query.raw.sort.length).to.eq(1);
-    expect(query.raw.sort[0].field).to.eq('this');
+    expect((<FieldSort>query.raw.sort[0]).field).to.eq('this');
     query.withoutSorts({ type: 'Field', field: 'this', order: 'Ascending' });
     expect(query.raw.sort.length).to.eq(0);
   });

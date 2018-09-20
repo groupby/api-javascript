@@ -5,6 +5,7 @@ import * as qs from 'qs';
 import {
   Biasing,
   CustomUrlParam,
+  FieldSort,
   MatchStrategy,
   Request,
   RestrictNavigation,
@@ -112,7 +113,11 @@ export class Query {
   }
 
   withoutSorts(...sorts: Sort[]): Query {
-    this.request.sort = this.request.sort.filter((oldSort) => !sorts.find((sort) => sort.field === oldSort.field));
+    this.request.sort = this.request.sort.filter((oldSort) => !sorts.find((sort) =>
+      sort.type === 'ByIds'
+        ? oldSort.type === 'ByIds' && sort.ids.toString() === oldSort.ids.toString()
+        : sort.field === (<FieldSort>oldSort).field
+    ));
     return this;
   }
 
