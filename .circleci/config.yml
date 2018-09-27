@@ -6,9 +6,8 @@ version: 2
 
 jobs:
   build:
-    working_directory: ~/api-javascript
     docker:
-      - image: kkarczmarczyk/node-yarn
+      - image: circleci/node
     steps:
       - checkout
       - restore_cache:
@@ -19,11 +18,10 @@ jobs:
       - save_cache:
           <<: *node_cache
           paths:
-            - ~/api-javascript/node_modules
+            - ~/project/node_modules
   unit_test:
-    working_directory: ~/api-javascript
     docker:
-      - image: kkarczmarczyk/node-yarn
+      - image: circleci/node
     steps:
       - checkout
       - restore_cache:
@@ -32,9 +30,8 @@ jobs:
           name: Test
           command: yarn start ci
   release:
-    working_directory: ~/api-javascript
     docker:
-      - image: kkarczmarczyk/node-yarn
+      - image: circleci/node
     steps:
       - checkout
       - restore_cache:
