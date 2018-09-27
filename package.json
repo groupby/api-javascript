@@ -27,7 +27,8 @@
     "test": "npm start test",
     "tdd": "npm start tdd",
     "prepush": "npm start prepush",
-    "prepublish": "npm start build && npm run esnext"
+    "prepare": "npm start build && npm run esnext",
+    "prepublishOnly": "npm start build && npm run esnext"
   },
   "release": {
     "branch": "develop",
