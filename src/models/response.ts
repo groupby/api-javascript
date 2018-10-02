@@ -1,3 +1,5 @@
+import { Request } from './request';
+
 export type SortType = 'Count_Ascending' | 'Count_Descending' | 'Value_Ascending' | 'Value_Descending';
 
 export interface Results {
