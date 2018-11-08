@@ -3819,6 +3819,10 @@ var TrackerFactory = function TrackerFactory(__schemas__, __sanitizeEvent__) {
       sanitizedEvent.visit.generated.timezoneOffset = new Date().getTimezoneOffset();
       sanitizedEvent.visit.generated.localTime = new Date().toISOString();
 
+      if (document && document.referrer) {
+        sanitizedEvent.visit.generated.referer = document.referrer;
+      }
+
       return { event: sanitizedEvent };
     };
 
@@ -4704,7 +4708,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;var LZString=function(){function o(o,r){if(!t[
 /* 16 */
 /***/ (function(module, exports) {
 
-module.exports = {"name":"gb-tracker-client","version":"3.5.7","description":"GroupBy client-side event tracker","keywords":["groupby","tracker","recommendations"],"repository":{"type":"git","url":"git+https://github.com/groupby/gb-tracker-client.git"},"main":"index.js","scripts":{"test":"gulp test","build":"babel lib --out-dir build","coverage:codacy":"cat ./coverage/lcov.info | codacy-coverage"},"engines":{"node":">=6"},"author":"Eric Hacke","license":"MIT","devDependencies":{"babel-cli":"^6.24.1","babel-core":"^6.21.0","babel-loader":"^7.1.0","babel-preset-latest":"^6.16.0","chai":"^4.0.2","codacy-coverage":"^2.0.0","del":"^3.0.0","eslint-plugin-no-only-tests":"^2.0.0","glob":"^7.1.1","gulp":"^3.9.1","gulp-babel":"^7.0.0","gulp-eslint":"^4.0.1","gulp-exec":"^2.1.3","gulp-if":"^2.0.2","gulp-istanbul":"^1.1.3","gulp-mocha":"^3.0.1","gulp-replace":"^0.6.1","gulp-util":"^3.0.7","istanbul":"^0.4.3","jsdom":"^9.9.1","json-loader":"^0.5.4","lodash":"^4.16.6","mocha":"^3.1.2","moment":"^2.20.1","stream-combiner2":"^1.1.1","stringify-object":"3.0.0","supertest":"^3.0.0","supertest-as-promised":"^4.0.2","webpack":"^3.10.0","webpack-stream":"^4.0.0"},"dependencies":{"cookies-js":"^1.2.3","cuid":"^1.3.8","deep-diff":"0.3.4","lz-string":"^1.4.4","schema-inspector":"^1.6.8"}}
+module.exports = {"name":"gb-tracker-client","version":"3.5.8","description":"GroupBy client-side event tracker","keywords":["groupby","tracker","recommendations"],"repository":{"type":"git","url":"git+https://github.com/groupby/gb-tracker-client.git"},"main":"index.js","scripts":{"gulp":"./node_modules/.bin/gulp","test":"gulp test","build":"babel lib --out-dir build","coverage:codacy":"cat ./coverage/lcov.info | codacy-coverage"},"engines":{"node":">=6"},"author":"Eric Hacke","license":"MIT","devDependencies":{"babel-cli":"^6.24.1","babel-core":"^6.21.0","babel-loader":"^7.1.0","babel-preset-latest":"^6.16.0","chai":"^4.0.2","codacy-coverage":"^2.0.0","del":"^3.0.0","eslint-plugin-no-only-tests":"^2.0.0","glob":"^7.1.1","gulp":"^3.9.1","gulp-babel":"^7.0.0","gulp-eslint":"^4.0.1","gulp-exec":"^2.1.3","gulp-if":"^2.0.2","gulp-istanbul":"^1.1.3","gulp-mocha":"^3.0.1","gulp-replace":"^0.6.1","gulp-util":"^3.0.7","istanbul":"^0.4.3","jsdom":"^9.9.1","json-loader":"^0.5.4","lodash":"^4.16.6","mocha":"^3.1.2","moment":"^2.20.1","stream-combiner2":"^1.1.1","stringify-object":"3.0.0","supertest":"^3.0.0","supertest-as-promised":"^4.0.2","webpack":"^3.10.0","webpack-stream":"^4.0.0"},"dependencies":{"cookies-js":"^1.2.3","cuid":"^1.3.8","deep-diff":"0.3.4","lz-string":"^1.4.4","schema-inspector":"^1.6.8"}}
 
 /***/ }),
 /* 17 */
