@@ -292,12 +292,12 @@ suite('Bridge', ({ expect, spy, stub }) => {
   describe('AbstractBridge', () => {
     describe('normalizeRequest()', () => {
       it('should call relevant normalize functions for the request', () => {
-        const normalizeSort = spy(AbstractBridge, 'normalizeSort');
+        const normalizeSort = spy(Normalizers, 'normalizeSort');
         const request = <any>{ a: 'b', sort: { c: 'd' } };
 
         const result = AbstractBridge.normalizeRequest(request);
 
-        expect(Normalizers.normalizeSort).to.be.called;
+        expect(normalizeSort).to.be.called;
         expect(result).to.eq(request);
       });
     });
