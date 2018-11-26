@@ -1,6 +1,6 @@
 import * as fetchMock from 'fetch-mock';
 import * as sinon from 'sinon';
-import { AbstractBridge, BrowserBridge, CloudBridge, BridgeTimeout } from '../../../src/core/bridge';
+import { AbstractBridge, BridgeTimeout, BrowserBridge, CloudBridge } from '../../../src/core/bridge';
 import { Query } from '../../../src/core/query';
 import suite from '../_suite';
 
@@ -289,6 +289,38 @@ suite('Bridge', ({ expect, spy, stub }) => {
   });
 
   describe('AbstractBridge', () => {
+    describe('normalizeRequest()', () => {
+      it('should call relevant normalize functions for the request', () => {
+        const normalizeSort = spy(AbstractBridge, 'normalizeSort');
+        const request = <any>{ a: 'b', sort: { c: 'd' } };
+
+        const result = AbstractBridge.normalizeRequest(request);
+
+        expect(AbstractBridge.normalizeSort).to.be.called;
+        expect(result).to.eq(request);
+      });
+    });
+
+    describe('normalizeSort()', () => {
+      it('should remove sort if it is a single relevance sort', () => {
+        const rest = { a: 'b' };
+        const request = <any>{ ...rest, sort: { field: '_relevance' } };
+
+        AbstractBridge.normalizeSort(request, 'sort');
+
+        expect(request).to.eql(rest);
+      });
+
+      it('should not modify request', () => {
+        const rest = { a: 'b' };
+        const request = <any>{ ...rest, sort: { field: 'anything else' } };
+
+        AbstractBridge.normalizeSort(request, 'sort');
+
+        expect(request).to.eql(request);
+      });
+    });
+
     describe('transform()', () => {
       it('should execute callback on properties of key', () => {
         const key = [{ c: 'd' }, { e: 'f' }, { g: 'h' }];

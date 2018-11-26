@@ -122,7 +122,7 @@ export abstract class AbstractBridge {
         'Content-Type': 'application/json',
         ...this.headers
       },
-      body: JSON.stringify(this.augmentRequest(body)),
+      body: JSON.stringify(AbstractBridge.normalizeRequest(this.augmentRequest(body))),
     };
 
     const params = qs.stringify(queryParams);
@@ -147,6 +147,22 @@ export abstract class AbstractBridge {
         }
         throw err;
       });
+  }
+
+  static normalizeRequest(request: Request): Request {
+    Object.keys(request).forEach((section) => {
+      const callback = AbstractBridge[`normalize${section.charAt(0).toUpperCase() + section.slice(1)}`];
+      if (request[section] && callback) {
+        callback(request, section);
+      }
+    });
+    return request;
+  }
+
+  static normalizeSort(request: Request, key: string) {
+    if (!(request[key] instanceof Array) && request[key].field === '_relevance') {
+      delete request[key];
+    }
   }
 
   static transform(response: any, key: string, callback: Function) {
