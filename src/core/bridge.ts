@@ -1,7 +1,9 @@
+import * as clone from 'clone';
 import * as fetchPonyfill from 'fetch-ponyfill';
 import * as qs from 'qs';
 import { Request } from '../models/request';
 import { Navigation, RangeRefinement, Record, RefinementResults, Results } from '../models/response';
+import { Normalizers } from '../utils/converter';
 import { Query } from './query';
 
 const SEARCH = '/search';
@@ -100,7 +102,7 @@ export abstract class AbstractBridge {
       case 'string': return { request: new Query(<string>query).build(), queryParams: {} };
       case 'object': return query instanceof Query
         ? { request: query.build(), queryParams: query.queryParams }
-        : { request: query, queryParams: {} };
+        : { request: clone(query), queryParams: {} };
       default: return { request: null, queryParams: null };
     }
   }
@@ -150,19 +152,8 @@ export abstract class AbstractBridge {
   }
 
   static normalizeRequest(request: Request): Request {
-    Object.keys(request).forEach((section) => {
-      const callback = AbstractBridge[`normalize${section.charAt(0).toUpperCase() + section.slice(1)}`];
-      if (request[section] && callback) {
-        callback(request, section);
-      }
-    });
+    Object.keys(Normalizers).forEach((normalize) => Normalizers[normalize](request));
     return request;
-  }
-
-  static normalizeSort(request: Request, key: string) {
-    if (!(request[key] instanceof Array) && request[key].field === '_relevance') {
-      delete request[key];
-    }
   }
 
   static transform(response: any, key: string, callback: Function) {

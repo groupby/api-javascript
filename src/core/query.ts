@@ -108,12 +108,12 @@ export class Query {
   }
 
   withSorts(...sorts: Sort[]): Query {
-    this.request.sort.push(...sorts);
+    (<Sort[]>this.request.sort).push(...sorts);
     return this;
   }
 
   withoutSorts(...sorts: Sort[]): Query {
-    this.request.sort = this.request.sort.filter((oldSort) => !sorts.find((sort) =>
+    this.request.sort = (<Sort[]>this.request.sort).filter((oldSort) => !sorts.find((sort) =>
       sort.type === 'ByIds'
         ? oldSort.type === 'ByIds' && sort.ids.toString() === oldSort.ids.toString()
         : sort.field === (<FieldSort>oldSort).field

@@ -1,4 +1,4 @@
-import { SelectedRefinement } from '../models/request';
+import { FieldSort, Request, SelectedRefinement } from '../models/request';
 import { Navigation } from '../models/response';
 
 export class NavigationConverter {
@@ -9,5 +9,13 @@ export class NavigationConverter {
         .forEach((refinement) => refinements.push(<SelectedRefinement>Object.assign(refinement, { navigationName: navigation.name })));
       return refinements;
     }, []);
+  }
+}
+
+export namespace Normalizers {
+  export function normalizeSort(request: Request) {
+    if (!Array.isArray(request.sort) && (<FieldSort>request.sort).field === '_relevance') {
+      delete request.sort;
+    }
   }
 }
