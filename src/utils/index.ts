@@ -14,7 +14,7 @@ export class NavigationConverter {
 
 export namespace Normalizers {
   export function normalizeSort(request: Request) {
-    if (!Array.isArray(request.sort) && (<FieldSort>request.sort).field === '_relevance') {
+    if (request.sort && !Array.isArray(request.sort) && (<FieldSort>request.sort).field === '_relevance') {
       delete request.sort;
     }
   }

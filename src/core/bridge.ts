@@ -3,7 +3,7 @@ import * as fetchPonyfill from 'fetch-ponyfill';
 import * as qs from 'qs';
 import { Request } from '../models/request';
 import { Navigation, RangeRefinement, Record, RefinementResults, Results } from '../models/response';
-import { Normalizers } from '../utils/converter';
+import { Normalizers } from '../utils';
 import { Query } from './query';
 
 const SEARCH = '/search';

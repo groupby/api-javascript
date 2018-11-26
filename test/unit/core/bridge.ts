@@ -2,6 +2,7 @@ import * as fetchMock from 'fetch-mock';
 import * as sinon from 'sinon';
 import { AbstractBridge, BridgeTimeout, BrowserBridge, CloudBridge } from '../../../src/core/bridge';
 import { Query } from '../../../src/core/query';
+import { Normalizers } from '../../../src/utils';
 import suite from '../_suite';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
@@ -296,28 +297,8 @@ suite('Bridge', ({ expect, spy, stub }) => {
 
         const result = AbstractBridge.normalizeRequest(request);
 
-        expect(AbstractBridge.normalizeSort).to.be.called;
+        expect(Normalizers.normalizeSort).to.be.called;
         expect(result).to.eq(request);
-      });
-    });
-
-    describe('normalizeSort()', () => {
-      it('should remove sort if it is a single relevance sort', () => {
-        const rest = { a: 'b' };
-        const request = <any>{ ...rest, sort: { field: '_relevance' } };
-
-        AbstractBridge.normalizeSort(request, 'sort');
-
-        expect(request).to.eql(rest);
-      });
-
-      it('should not modify request', () => {
-        const rest = { a: 'b' };
-        const request = <any>{ ...rest, sort: [{ field: '_relevance' }, { field: 'anything else' }] };
-
-        AbstractBridge.normalizeSort(request, 'sort');
-
-        expect(request).to.eql(request);
       });
     });
 

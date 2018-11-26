@@ -16,7 +16,7 @@ import {
   Navigation,
   Refinement,
 } from '../models/response';
-import { NavigationConverter } from '../utils/converter';
+import { NavigationConverter } from '../utils';
 
 const REFINEMENT_MASK = '{navigationName,value,low,high}';
 
