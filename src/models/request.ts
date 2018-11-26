@@ -10,7 +10,7 @@ export interface Request {
     orFields: string[];
     includedNavigations: string[];
     excludedNavigations: string[];
-    sort: Sort[];
+    sort: Sort | Sort[];
     customUrlParams: CustomUrlParam[];
     restrictNavigation: RestrictNavigation;
     biasing: Biasing;

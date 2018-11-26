@@ -1,7 +1,9 @@
+import * as clone from 'clone';
 import * as fetchPonyfill from 'fetch-ponyfill';
 import * as qs from 'qs';
 import { Request } from '../models/request';
 import { Navigation, RangeRefinement, Record, RefinementResults, Results } from '../models/response';
+import { Normalizers } from '../utils';
 import { Query } from './query';
 
 const SEARCH = '/search';
@@ -100,7 +102,7 @@ export abstract class AbstractBridge {
       case 'string': return { request: new Query(<string>query).build(), queryParams: {} };
       case 'object': return query instanceof Query
         ? { request: query.build(), queryParams: query.queryParams }
-        : { request: query, queryParams: {} };
+        : { request: clone(query), queryParams: {} };
       default: return { request: null, queryParams: null };
     }
   }
@@ -122,7 +124,7 @@ export abstract class AbstractBridge {
         'Content-Type': 'application/json',
         ...this.headers
       },
-      body: JSON.stringify(this.augmentRequest(body)),
+      body: JSON.stringify(AbstractBridge.normalizeRequest(this.augmentRequest(body))),
     };
 
     const params = qs.stringify(queryParams);
@@ -147,6 +149,11 @@ export abstract class AbstractBridge {
         }
         throw err;
       });
+  }
+
+  static normalizeRequest(request: Request): Request {
+    Object.keys(Normalizers).forEach((normalize) => Normalizers[normalize](request));
+    return request;
   }
 
   static transform(response: any, key: string, callback: Function) {

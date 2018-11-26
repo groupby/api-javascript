@@ -16,7 +16,7 @@ import {
   Navigation,
   Refinement,
 } from '../models/response';
-import { NavigationConverter } from '../utils/converter';
+import { NavigationConverter } from '../utils';
 
 const REFINEMENT_MASK = '{navigationName,value,low,high}';
 
@@ -91,7 +91,7 @@ export class Query {
   withCustomUrlParams(customUrlParams: CustomUrlParam[] | string): Query {
     if (typeof customUrlParams === 'string') {
       this.request.customUrlParams.push(...this.convertParamString(customUrlParams));
-    } else if (customUrlParams instanceof Array) {
+    } else if (Array.isArray(customUrlParams)) {
       this.request.customUrlParams.push(...customUrlParams);
     }
     return this;
@@ -108,12 +108,12 @@ export class Query {
   }
 
   withSorts(...sorts: Sort[]): Query {
-    this.request.sort.push(...sorts);
+    (<Sort[]>this.request.sort).push(...sorts);
     return this;
   }
 
   withoutSorts(...sorts: Sort[]): Query {
-    this.request.sort = this.request.sort.filter((oldSort) => !sorts.find((sort) =>
+    this.request.sort = (<Sort[]>this.request.sort).filter((oldSort) => !sorts.find((sort) =>
       sort.type === 'ByIds'
         ? oldSort.type === 'ByIds' && sort.ids.toString() === oldSort.ids.toString()
         : sort.field === (<FieldSort>oldSort).field
@@ -241,7 +241,7 @@ export class Query {
 
   private clearEmptyArrays(request: Request): Request {
     for (let key in request) {
-      if (request[key] instanceof Array && request[key].length === 0) {
+      if (Array.isArray(request[key]) && request[key].length === 0) {
         delete request[key];
       }
     }

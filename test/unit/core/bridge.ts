@@ -1,7 +1,8 @@
 import * as fetchMock from 'fetch-mock';
 import * as sinon from 'sinon';
-import { AbstractBridge, BrowserBridge, CloudBridge, BridgeTimeout } from '../../../src/core/bridge';
+import { AbstractBridge, BridgeTimeout, BrowserBridge, CloudBridge } from '../../../src/core/bridge';
 import { Query } from '../../../src/core/query';
+import { Normalizers } from '../../../src/utils';
 import suite from '../_suite';
 
 const CLIENT_KEY = 'XXX-XXX-XXX-XXX';
@@ -289,6 +290,18 @@ suite('Bridge', ({ expect, spy, stub }) => {
   });
 
   describe('AbstractBridge', () => {
+    describe('normalizeRequest()', () => {
+      it('should call relevant normalize functions for the request', () => {
+        const normalizeSort = spy(Normalizers, 'normalizeSort');
+        const request = <any>{ a: 'b', sort: { c: 'd' } };
+
+        const result = AbstractBridge.normalizeRequest(request);
+
+        expect(normalizeSort).to.be.called;
+        expect(result).to.eq(request);
+      });
+    });
+
     describe('transform()', () => {
       it('should execute callback on properties of key', () => {
         const key = [{ c: 'd' }, { e: 'f' }, { g: 'h' }];
