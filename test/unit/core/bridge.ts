@@ -313,7 +313,7 @@ suite('Bridge', ({ expect, spy, stub }) => {
 
       it('should not modify request', () => {
         const rest = { a: 'b' };
-        const request = <any>{ ...rest, sort: { field: 'anything else' } };
+        const request = <any>{ ...rest, sort: [{ field: '_relevance' }, { field: 'anything else' }] };
 
         AbstractBridge.normalizeSort(request, 'sort');
 
