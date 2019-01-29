@@ -30,6 +30,8 @@ export interface Results {
   warnings: string[];
   debugInfo: DebugInfo;
   originalRequest: Request;
+
+  siteParams: SiteParams[];
 }
 
 export interface Template {
@@ -116,4 +118,9 @@ export interface RecordZone extends BaseZone {
   type: 'Record';
   query: string;
   records: Record[];
+}
+
+export interface SiteParams {
+  key: string;
+  value: string;
 }
