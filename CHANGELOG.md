@@ -4,21 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] [major|minor|patch]
-### Changed
-- <Describe changes>
-
-### Removed
-- <Describe removals>
-
+## [2.6.0] - 2019-01-29
 ### Added
-- <Describe additions>
-
-### Fixed
-- <Describe fixes>
-
-### Deprecated
-- <Describe deprecations>
-
-### Security
-- <Describe security fixes>
+- SF-1276: Added `siteParams` to response type definition.
