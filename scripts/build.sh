@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-# Ensure process is running in root.
+# Change to the root of the repo
 cd "${BASH_SOURCE%/*}/.."
 
 # dist
