@@ -121,3 +121,10 @@ workflows:
               only: develop
           requires:
             - unit_test
+      - publish:
+          context: org-global
+          filters:
+            branches:
+              only: develop
+          requires:
+            - release
