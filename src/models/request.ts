@@ -32,6 +32,10 @@ export interface Request {
     pruneRefinements: boolean;
     disableAutocorrection: boolean;
     wildcardSearchEnabled: boolean;
+
+    // tracking
+    sessionId?: string;
+    visitorId?: string;
 }
 
 export type Sort = FieldSort | ByIdSort;
