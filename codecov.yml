@@ -1,2 +1,2 @@
 fixes:
-  - 'root/api-javascript/src/::src/'
+  - '*/src/::src/'
