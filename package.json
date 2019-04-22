@@ -23,7 +23,7 @@
   "scripts": {
     "build": "./scripts/build.sh",
     "start": "start-runner -p re-start/presets/typescript",
-    "dev": "npm start dev",
+    "dev": "nodemon --watch src --exec npm run build",
     "test": "nyc mocha --recursive --require ts-node/register --require source-map-support/register './test/bootstrap.ts' './test/unit/**/*.ts'",
     "tdd": "npm start tdd",
     "prepush": "npm test"
@@ -40,6 +40,9 @@
       "text-summary"
     ],
     "all": true
+  },
+  "nodemonConfig": {
+    "ext": "ts,json,html,css"
   },
   "release": {
     "branch": "develop",
