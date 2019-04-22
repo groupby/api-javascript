@@ -1,44 +1,109 @@
 defaults:
-  node_cache: &node_cache
-    key: v-{{ .Environment.CACHE_VERSION }}-api-javascript-{{ .Branch }}-{{ checksum "yarn.lock" }}
+  image: &image
+    docker:
+      - image: circleci/node:11.6.0
+  yarn_cache: &yarn_cache
+    key: yarn_cache-v{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ checksum "yarn.lock" }}
+  yarn_install: &yarn_install
+    name: Install
+    command: yarn
+  setup_git: &setup_git
+    name: Setup Git user
+    command: |
+      git config --global user.email "ops@groupbyinc.com"
+      git config --global user.name "GroupBy Ops"
+      git config --global push.default simple
+
+      cp .circleci/prepare-commit-msg .git/hooks/prepare-commit-msg
+      chmod +x .git/hooks/prepare-commit-msg
 
 version: 2
 
 jobs:
   build:
-    docker:
-      - image: circleci/node
+    <<: *image
     steps:
       - checkout
-      - restore_cache:
-          <<: *node_cache
+      - attach_workspace:
+          at: ~/
+      - restore_cache: *yarn_cache
       - run:
-          name: Install
-          command: yarn
+          name: Dependencies
+          command: sudo apt install -y rsync
+      - run: *yarn_install
       - save_cache:
-          <<: *node_cache
+          <<: *yarn_cache
           paths:
-            - ~/project/node_modules
+            - ~/.cache/yarn
+      - run:
+          name: Build
+          command: yarn build
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/dist
+            - project/esnext
+
   unit_test:
-    docker:
-      - image: circleci/node
+    <<: *image
     steps:
       - checkout
-      - restore_cache:
-          <<: *node_cache
+      - attach_workspace:
+          at: ~/
+      - restore_cache: *yarn_cache
+      - run: *yarn_install
       - run:
           name: Test
-          command: yarn start ci
+          command: yarn test
+      - run:
+          name: Upload coverage
+          command: yarn uploadCoverage
+
   release:
-    docker:
-      - image: circleci/node
+    <<: *image
     steps:
       - checkout
-      - restore_cache:
-          <<: *node_cache
+      - attach_workspace:
+          at: ~/
+      - restore_cache: *yarn_cache
+      - run: *yarn_install
+      - run: *setup_git
+      - run:
+          name: Install dependencies
+          command: sudo apt install -y ed
       - run:
           name: Release
-          command: yarn start release || true
+          command: |
+            if ./scripts/release.sh; then
+              exit_code=0
+            elif ec=$?; (( ec == 4 )); then
+              exit_code=0
+            else
+              exit_code=$ec
+            fi
+
+            exit $exit_code
+
+  publish:
+    <<: *image
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install utilities
+          command: sudo apt install jq
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - run:
+          name: Publish
+          command: |
+            if ! npm view ".@$(jq -r .version package.json)" | grep -q .; then
+              ./scripts/publish.sh
+            else
+              echo "Nothing to publish."
+            fi
 
 workflows:
   version: 2
@@ -56,3 +121,10 @@ workflows:
               only: develop
           requires:
             - unit_test
+      - publish:
+          context: org-global
+          filters:
+            branches:
+              only: develop
+          requires:
+            - release
