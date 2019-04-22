@@ -55,8 +55,12 @@
     "husky": "^0.13.4",
     "mocha": "^3.4.2",
     "mocha-suite": "^1.0.9",
+    "nodemon": "^1.18.11",
+    "nyc": "^14.0.0",
     "sinon": "^2.3.2",
     "sinon-chai": "^2.10.0",
+    "source-map-support": "^0.5.12",
+    "ts-node": "^7.0.1",
     "tslint": "^5.4.3",
     "tslint-config-groupby": "^1.0.0",
     "typescript": "^2.3.4",
@@ -71,10 +75,6 @@
     "deep-equal": "^1.0.1",
     "fetch-ponyfill": "^4.1.0",
     "filter-object": "^2.1.0",
-    "nodemon": "^1.18.11",
-    "nyc": "^14.0.0",
-    "qs": "^6.1.0",
-    "source-map-support": "^0.5.12",
-    "ts-node": "^7.0.1"
+    "qs": "^6.1.0"
   }
 }
