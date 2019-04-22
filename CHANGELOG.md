@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] [patch]
 ### Added
-- SF-1335: Add `sessionId` and `visitorId` typings to the `Request` interface.
+- SF-1335: Added `sessionId` and `visitorId` typings to the `Request` interface.
 
 ## [2.6.0] - 2019-01-29
 ### Added
