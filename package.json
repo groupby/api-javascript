@@ -44,24 +44,6 @@
   "nodemonConfig": {
     "ext": "ts,json,html,css"
   },
-  "release": {
-    "branch": "develop",
-    "verifyConditions": "condition-circle"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    },
-    "restart": {
-      "testFiles": [
-        "test/bootstrap.ts",
-        "test/unit/**/*.ts"
-      ],
-      "releaseOpts": {
-        "public": true
-      }
-    }
-  },
   "devDependencies": {
     "@types/chai": "^4.0.0",
     "@types/mocha": "^2.2.41",
