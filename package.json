@@ -79,6 +79,7 @@
     "filter-object": "^2.1.0",
     "nyc": "^14.0.0",
     "qs": "^6.1.0",
+    "source-map-support": "^0.5.12",
     "ts-node": "^7.0.1"
   }
 }
