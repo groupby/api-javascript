@@ -24,7 +24,7 @@
     "build": "./scripts/build.sh",
     "start": "start-runner -p re-start/presets/typescript",
     "dev": "npm start dev",
-    "test": "npm start test",
+    "test": "nyc mocha --recursive --require ts-node/register --require source-map-support/register './test/bootstrap.ts' './test/unit/**/*.ts'",
     "tdd": "npm start tdd",
     "prepush": "npm start prepush"
   },
