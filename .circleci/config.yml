@@ -20,18 +20,6 @@ defaults:
 version: 2
 
 jobs:
-  ### Stores the current build number in a file to use in unique cache keys and branch names for this workflow.
-  ### The build number is guaranteed to be unique per build per project and is suitable for use as an identifier.
-  generate_cache_key_file:
-    <<: *image
-    working_directory: ~/
-    steps:
-      - run: echo "$CIRCLE_BUILD_NUM" > workflow-start
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - workflow-start
-
   build:
     <<: *image
     steps:
