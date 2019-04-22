@@ -29,12 +29,12 @@ Adds an unreleased section to the CHANGELOG.md file.
 
 OPTIONS
 EOF
-  sed -n '/^[[:space:]]*#\[doc\]/ s//   /p' "$BASH_SOURCE"
+  sed -n '/^[[:space:]]*##:/ s//   /p' "$BASH_SOURCE"
 }
 
 while getopts :h opt; do
   case "$opt" in
-    #[doc] -h	Show this help
+    ##: -h	Show this help
     h)
       print_usage
       exit 0
