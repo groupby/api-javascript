@@ -33,7 +33,7 @@ export interface Request {
     disableAutocorrection: boolean;
     wildcardSearchEnabled: boolean;
 
-    // Tracking
+    // tracking
     sessionId?: string;
     visitorId?: string;
 }
