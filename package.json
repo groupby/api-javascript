@@ -25,7 +25,7 @@
     "start": "start-runner -p re-start/presets/typescript",
     "dev": "nodemon --watch src --exec npm run build",
     "test": "nyc mocha --recursive --require ts-node/register --require source-map-support/register './test/bootstrap.ts' './test/unit/**/*.ts'",
-    "tdd": "npm start tdd",
+    "tdd": "nodemon --watch src --watch test --exec npm test",
     "prepush": "npm test"
   },
   "nyc": {
