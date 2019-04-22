@@ -28,6 +28,19 @@
     "tdd": "npm start tdd",
     "prepush": "npm start prepush"
   },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ],
+    "all": true
+  },
   "release": {
     "branch": "develop",
     "verifyConditions": "condition-circle"
