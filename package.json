@@ -26,7 +26,8 @@
     "test": "nyc mocha --recursive --require ts-node/register --require source-map-support/register './test/**/*.ts'",
     "tdd": "nodemon --watch src --watch test --exec npm test",
     "prepush": "npm test",
-    "prepublishOnly": "[ -n \"$CI\" ] || npm run build"
+    "prepublishOnly": "[ -n \"$CI\" ] || npm run build",
+    "uploadCoverage": "codecov"
   },
   "nyc": {
     "extension": [
