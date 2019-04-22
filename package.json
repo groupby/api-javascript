@@ -23,12 +23,10 @@
   "scripts": {
     "build": "./scripts/build.sh",
     "start": "start-runner -p re-start/presets/typescript",
-    "esnext": "npm start build -- -- --compileOpts.configFile tsconfig.esnext.json --outDir esnext",
     "dev": "npm start dev",
     "test": "npm start test",
     "tdd": "npm start tdd",
-    "prepush": "npm start prepush",
-    "prepare": "npm start build && npm run esnext"
+    "prepush": "npm start prepush"
   },
   "release": {
     "branch": "develop",
