@@ -67,6 +67,9 @@ jobs:
       - run:
           name: Test
           command: yarn test
+      - run:
+          name: Upload coverage
+          command: yarn uploadCoverage
 
   release:
     <<: *image
