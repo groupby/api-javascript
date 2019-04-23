@@ -16,6 +16,10 @@ defaults:
 
       cp .circleci/prepare-commit-msg .git/hooks/prepare-commit-msg
       chmod +x .git/hooks/prepare-commit-msg
+  persist_repo: &persist_repo
+    root: ~/
+    paths:
+      - project
 
 version: 2
 
@@ -38,20 +42,13 @@ jobs:
       - run:
           name: Build
           command: yarn build
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/dist
-            - project/esnext
+      - persist_to_workspace: *persist_repo
 
   unit_test:
     <<: *image
     steps:
-      - checkout
       - attach_workspace:
           at: ~/
-      - restore_cache: *yarn_cache
-      - run: *yarn_install
       - run:
           name: Test
           command: yarn test
@@ -62,11 +59,8 @@ jobs:
   release:
     <<: *image
     steps:
-      - checkout
       - attach_workspace:
           at: ~/
-      - restore_cache: *yarn_cache
-      - run: *yarn_install
       - run: *setup_git
       - run:
           name: Install dependencies
@@ -83,11 +77,11 @@ jobs:
             fi
 
             exit $exit_code
+      - persist_to_workspace: *persist_repo
 
   publish:
     <<: *image
     steps:
-      - checkout
       - attach_workspace:
           at: ~/
       - run:
