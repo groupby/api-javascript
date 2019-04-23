@@ -1,6 +1,6 @@
 {
   "name": "groupby-api",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Client for the GroupBy Searchandiser API.",
   "repository": {
     "type": "git",
