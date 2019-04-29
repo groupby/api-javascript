@@ -65,7 +65,7 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.4.3",
     "tslint-config-groupby": "^1.0.0",
-    "typescript": "^2.3.4",
+    "typescript": "^3.4.5",
     "typings": "^2.1.1",
     "xhr-mock": "^1.9.0"
   },
