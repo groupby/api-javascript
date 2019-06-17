@@ -62,7 +62,7 @@
     "sinon": "^4.5.0",
     "sinon-chai": "^2.10.0",
     "source-map-support": "^0.5.12",
-    "ts-node": "^7.0.1",
+    "ts-node": "^8.3.0",
     "tslint": "^5.4.3",
     "tslint-config-groupby": "^1.0.0",
     "typescript": "^2.3.4",
