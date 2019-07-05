@@ -11,12 +11,11 @@ export interface Utils {
 export default suite<Utils, any>((tests) => {
   let sandbox: sinon.SinonSandbox;
 
-  beforeEach(() => sandbox = sinon.sandbox.create());
-  afterEach(() => sandbox.restore());
+  afterEach(() => sinon.restore());
 
   tests({
     expect,
-    spy: (...args) => (<any>sandbox.spy)(...args),
-    stub: (...args) => (<any>sandbox.stub)(...args)
+    spy: sinon.spy,
+    stub: sinon.stub
   });
 });
