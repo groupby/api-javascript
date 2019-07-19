@@ -56,7 +56,7 @@ export const DEFAULT_CONFIG: BridgeConfig = {
 export abstract class AbstractBridge {
 
   config: BridgeConfig;
-  fetch: fetchPonyfill = fetchPonyfill().fetch;
+  fetch: typeof fetch = fetchPonyfill().fetch;
   headers: any = {};
   baseUrl: string;
   errorHandler: (error: Error) => void;
@@ -117,7 +117,7 @@ export abstract class AbstractBridge {
   }
 
   // tslint:disable-next-line max-line-length
-  private fireRequest(url: string, body: Request | any, queryParams: any = {}): fetchPonyfill.Promise<any> {
+  private fireRequest(url: string, body: Request | any, queryParams: any = {}): Promise<any> {
     const options = {
       method: 'POST',
       headers: {
@@ -130,7 +130,7 @@ export abstract class AbstractBridge {
     const params = qs.stringify(queryParams);
     url = params ? `${url}?${params}` : url;
     return Promise.race([this.fetch(url, options), createTimeoutPromise(this.config.timeout)])
-      .then((res) => {
+      .then((res: any) => {
         if (res.ok) {
           return res.json();
         } else {
