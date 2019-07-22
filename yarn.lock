@@ -3623,9 +3623,9 @@ xdg-basedir@^3.0.0:
   integrity sha1-SWsswQnsqNus/i3HK2A8F8WHCtQ=
 
 xhr-mock@^2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/xhr-mock/-/xhr-mock-2.4.1.tgz#cb502e3d50b8b2ec31bd61766ce516bfc1dd072f"
-  integrity sha1-y1AuPVC4suwxvWF2bOUWv8HdBy8=
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/xhr-mock/-/xhr-mock-2.5.0.tgz#e9ebb6bb705e26e33c56dc986ff184b5c8a1d424"
+  integrity sha512-OFd7nm5mJTVQl9rC3Orp1HiJqWOqlh7W1hem/Ld/At+bjs7Dy2FuWYwTuP3gP8Y51FjGbIRAW9B9hbQdrZOPzw==
   dependencies:
     global "^4.3.0"
     url "^0.11.0"
