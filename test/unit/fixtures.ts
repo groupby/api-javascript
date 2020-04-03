@@ -32,6 +32,7 @@ export let COMPLEX_REQUEST = {
     augmentBiases: true,
     biases: [{ name: 'popularity', strength: 'Strong_Decrease' }]
   },
+  'pre-filter': 'brand = "shiny"',
   disableAutocorrection: true,
   returnBinary: false
 };

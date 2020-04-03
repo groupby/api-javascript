@@ -184,6 +184,11 @@ export class Query {
     return this;
   }
 
+  withPreFilterExpression(preFilterExpression: string): Query {
+    this.request['pre-filter'] = preFilterExpression;
+    return this;
+  }
+
   enableWildcardSearch(): Query {
     this.request.wildcardSearchEnabled = true;
     return this;
