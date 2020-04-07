@@ -15,6 +15,7 @@ export interface Request {
     restrictNavigation: RestrictNavigation;
     biasing: Biasing;
     matchStrategy: MatchStrategy;
+    'pre-filter'?: string;
 
     // configuration
     userId: string;

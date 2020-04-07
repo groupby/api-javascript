@@ -55,6 +55,7 @@ suite('Query', ({ expect }) => {
         augmentBiases: true,
         biases: [{ name: 'popularity', strength: 'Strong_Decrease' }]
       })
+      .withPreFilterExpression('brand = "shiny"')
       .enableWildcardSearch()
       .disableAutocorrection()
       .allowPrunedRefinements()
