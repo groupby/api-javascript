@@ -143,10 +143,10 @@
   resolved "https://registry.yarnpkg.com/@types/clone/-/clone-0.1.30.tgz#e7365648c1b42136a59c7d5040637b3b5c83b614"
   integrity sha1-5zZWSMG0ITalnH1QQGN7O1yDthQ=
 
-"@types/deep-equal@^0.0.30":
-  version "0.0.30"
-  resolved "https://registry.yarnpkg.com/@types/deep-equal/-/deep-equal-0.0.30.tgz#c14df825c9201a1804980e7ebc3ef30e137bb64c"
-  integrity sha1-wU34JckgGhgEmA5+vD7zDhN7tkw=
+"@types/deep-equal@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/deep-equal/-/deep-equal-1.0.1.tgz#71cfabb247c22bcc16d536111f50c0ed12476b03"
+  integrity sha512-mMUu4nWHLBlHtxXY17Fg6+ucS/MnndyOWyOe7MmwkoMYxvfQU2ajtRaEvqSUv+aVkMqH/C0NCI8UoVfRNQ10yg==
 
 "@types/mocha@^2.2.40":
   version "2.2.48"
